@@ -1,0 +1,16 @@
+# name of file with own settings in same directory. null if the user has not saved any settings
+ownsettings=
+
+# from this point on factorydefaults. These values will never changed through the application.
+i18nPropFilePostFix=P1.0.0.I18n_
+i18nPropFilePreFix=.properties
+i18nPropertiesLocation=C:\\Users\\Daniel\\Documents\\NetBeansProjects\\I18n-Testresources
+i18nDefaultValue=TEXT:TRANSLATE ME!!!
+fileExtensions=java,html,htm
+
+# pretty-print settings for I18n-Property-Files
+keyGrouping=0
+keyGroupSpace=0
+preservePropertyLayout=NONSTRICT
+keyOrder=ASC
+attachCommentsWithEmptyLineCount=0
