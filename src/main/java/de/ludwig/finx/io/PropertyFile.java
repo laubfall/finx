@@ -10,17 +10,19 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 
 import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.Language;
 import de.ludwig.finx.io.Block.BlockType;
 import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
 
 /**
+ * A programmatic representation of an I18n-Properties-File
+ * 
  * @author Daniel
  * 
  */
@@ -28,15 +30,78 @@ public class PropertyFile implements Iterable<Block>
 {
 	private Block startingBlock;
 
-	private Locale language;
+	/**
+	 * required to get the correct values of I18n-Nodes
+	 */
+	private Language language;
 
-	public PropertyFile(final File i18nRes, final Locale language) throws FileNotFoundException, IOException
+	/**
+	 * 
+	 * @param i18nRes
+	 *            The I18n-Properties-File this object is based on. If it is null you start with an
+	 *            empty {@link PropertyFile} Object, otherwise the File is processed and its content
+	 *            is pushed to this object.
+	 * @param language
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public PropertyFile(final File i18nRes, final Language language) throws FileNotFoundException, IOException
 	{
-		this(IOUtils.readLines(new FileInputStream(i18nRes)));
+		if (i18nRes != null && i18nRes.exists())
+			process(IOUtils.readLines(new FileInputStream(i18nRes)));
 		this.language = language;
 	}
 
-	private PropertyFile(final List<String> lines)
+	public int size()
+	{
+		int cnt = 0;
+		final Iterator<Block> it = iterator();
+		while (it.hasNext()) {
+			it.next();
+			cnt++;
+		}
+
+		return cnt;
+	}
+
+	/**
+	 * Inserts if necessary (if there is actually no key in this structure equals to the key of the
+	 * {@link I18nNode}) the given I18nNode with respect to all relevant Prettyprint-Settings e.g.:
+	 * PropertiesWriter#preservePropertyLayout
+	 * 
+	 * Regarding the value of the key-value-Pair it has to be said, that it is dependent of the
+	 * language of this object which value will be retrieved of the {@link I18nNode}.
+	 * 
+	 * @param insertThis
+	 */
+	public final void insert(final I18nNode insertThis)
+	{
+		if (startingBlock == null) {
+			// startingBlock = new Block(dimension, rawLines, type)
+		}
+	}
+
+	/**
+	 * Removes the given keyValue-Pair from the file
+	 * 
+	 * @param removeThis
+	 */
+	public final void remove(final I18nNode removeThis)
+	{
+
+	}
+
+	/**
+	 * group all keyValues as specified by {@link PropertiesWriter#keyGrouping} and
+	 * {@link PropertiesWriter#keyGroupSpace}
+	 * 
+	 */
+	public void grouping()
+	{
+		// for(final Block b)
+	}
+
+	private void process(final List<String> lines)
 	{
 		List<BlockDimension> commentBlocks = commentBlocks(lines);
 		List<BlockDimension> keyValueBlocks = keyValueBlocks(lines);
@@ -53,27 +118,22 @@ public class PropertyFile implements Iterable<Block>
 		List<Block> blocks = new ArrayList<Block>();
 
 		// initialize the relevant Block-Types
-		for (int i = 0; i < allBlocks.size(); i++)
-		{
+		for (int i = 0; i < allBlocks.size(); i++) {
 			final BlockDimension dimension = allBlocks.get(i);
 			BlockType type = null;
-			if (commentBlocks.contains(dimension))
-			{
+			if (commentBlocks.contains(dimension)) {
 				type = BlockType.COMMENT;
 			}
 
-			if (keyValueBlocks.contains(dimension))
-			{
+			if (keyValueBlocks.contains(dimension)) {
 				type = BlockType.KEYVALUE;
 			}
 
-			if (blankBlocks.contains(dimension))
-			{
+			if (blankBlocks.contains(dimension)) {
 				type = BlockType.BLANK;
 			}
 
-			if (type == null)
-			{
+			if (type == null) {
 				throw new ApplicationCodingException("unable to determine Block-Type with dimensions of: " + dimension);
 			}
 
@@ -81,22 +141,17 @@ public class PropertyFile implements Iterable<Block>
 		}
 
 		// now concat every block with its neighbours
-		for (int i = 0; i < blocks.size(); i++)
-		{
+		for (int i = 0; i < blocks.size(); i++) {
 			Block block = blocks.get(i);
-			if (i == 0)
-			{
+			if (i == 0) {
 				startingBlock = block;
 			}
 
-			if (i + 1 < blocks.size() && i > 0)
-			{
+			if (i + 1 < blocks.size() && i > 0) {
 				block.concat(blocks.get(i - 1), blocks.get(i + 1));
-			} else if (i + 1 == blocks.size() && i > 0)
-			{
+			} else if (i + 1 == blocks.size() && i > 0) {
 				block.concat(blocks.get(i - 1), null);
-			} else if (i + 1 < blocks.size() && i == 0)
-			{
+			} else if (i + 1 < blocks.size() && i == 0) {
 				block.concat(null, blocks.get(i + 1));
 			}
 		}
@@ -104,54 +159,10 @@ public class PropertyFile implements Iterable<Block>
 		preFormat();
 	}
 
-	public int size()
-	{
-		int cnt = 0;
-		final Iterator<Block> it = iterator();
-		while (it.hasNext())
-		{
-			it.next();
-			cnt++;
-		}
-
-		return cnt;
-	}
-
-	/**
-	 * Inserts if necessary the given I18nNode with respect to all relevant
-	 * Prettyprint-Settings e.g.: PropertiesWriter#preservePropertyLayout
-	 * 
-	 * @param insertThis
-	 */
-	public void insert(final I18nNode insertThis)
-	{
-
-	}
-
-	/**
-	 * Removes the given keyValue-Pair from the file
-	 * 
-	 * @param removeThis
-	 */
-	public void remove(final I18nNode removeThis)
-	{
-
-	}
-
-	/**
-	 * group all keyValues as specified by {@link PropertiesWriter#keyGrouping}
-	 * and {@link PropertiesWriter#keyGroupSpace}
-	 * 
-	 */
-	public void grouping()
-	{
-		// for(final Block b)
-	}
-
 	/**
 	 * ordering means to order all blocks of type {@link BlockType#KEYVALUE}
 	 */
-	public void sort()
+	private void sort()
 	{
 		List<Block> sortedByKeyValues = blocksOfType(BlockType.KEYVALUE);
 		Collections.sort(sortedByKeyValues, new Comparator<Block>() {
@@ -161,8 +172,7 @@ public class PropertyFile implements Iterable<Block>
 				List<Line> lines1 = o1.getLines();
 				List<Line> lines2 = o2.getLines();
 
-				if (lines1.isEmpty() || lines1.size() != 1 || lines2.isEmpty() || lines2.size() != 1)
-				{
+				if (lines1.isEmpty() || lines1.size() != 1 || lines2.isEmpty() || lines2.size() != 1) {
 					throw new ApplicationCodingException("unable to sort block, blocks have to be exploded first");
 				}
 				PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
@@ -180,32 +190,25 @@ public class PropertyFile implements Iterable<Block>
 		});
 
 		/**
-		 * position behalten: - aktueller Block ist der sortierte Block (/) -
-		 * der aktuelle Block ist der Block der in der Sortierung direkt nach
-		 * dem sortierten Block folgt (/)
+		 * position behalten: - aktueller Block ist der sortierte Block (/) - der aktuelle Block ist
+		 * der Block der in der Sortierung direkt nach dem sortierten Block folgt (/)
 		 * 
-		 * eins vorrücken: - aktueller Block ist ein Kommentar ohne Verbindung
-		 * zu einem Key-Value-Block - aktueller Block ist ein Kommmentar mit
-		 * Verbindung zu einem Key-Value-Block - aktueller Block ist ein
-		 * Empty-Space-Block
+		 * eins vorrücken: - aktueller Block ist ein Kommentar ohne Verbindung zu einem
+		 * Key-Value-Block - aktueller Block ist ein Kommmentar mit Verbindung zu einem
+		 * Key-Value-Block - aktueller Block ist ein Empty-Space-Block
 		 */
 		final ListIterator<Block> listIterator = sortedByKeyValues.listIterator();
-		while (listIterator.hasNext())
-		{
+		while (listIterator.hasNext()) {
 			Block keyValue = listIterator.next();
 			Block checkAgainst = startingBlock;
-			while (checkAgainst != null)
-			{
-				if (checkAgainst == keyValue)
-				{
+			while (checkAgainst != null) {
+				if (checkAgainst == keyValue) {
 					break;
 				}
 
-				if (listIterator.hasNext())
-				{
+				if (listIterator.hasNext()) {
 					Block next = listIterator.next();
-					if (next == checkAgainst)
-					{
+					if (next == checkAgainst) {
 						keyValue.detach();
 						checkAgainst.concat(keyValue, checkAgainst.getPersuing());
 					}
@@ -213,10 +216,8 @@ public class PropertyFile implements Iterable<Block>
 					break;
 				}
 
-				if (checkAgainst.getType().equals(BlockType.BLANK))
-				{
-					if (checkAgainst.getPersuing() == null)
-					{
+				if (checkAgainst.getType().equals(BlockType.BLANK)) {
+					if (checkAgainst.getPersuing() == null) {
 						keyValue.detach();
 						checkAgainst.concat(checkAgainst.getPreceding(), keyValue);
 						break;
@@ -226,8 +227,7 @@ public class PropertyFile implements Iterable<Block>
 					continue;
 				}
 
-				if (isCommentAttached(checkAgainst) != null)
-				{
+				if (isCommentAttached(checkAgainst) != null) {
 
 				}
 
@@ -239,20 +239,17 @@ public class PropertyFile implements Iterable<Block>
 	/**
 	 * 
 	 * @param block
-	 *            check this block if it is attached as a comment to a
-	 *            key-value-block or if it has an attached comment if it is a
-	 *            key-value-Block
+	 *            check this block if it is attached as a comment to a key-value-block or if it has
+	 *            an attached comment if it is a key-value-Block
 	 * @return the block where a comment is attachted to otherwise null
 	 */
 	private Block isCommentAttached(final Block block)
 	{
 		final Integer emptyLineCnt = PropertiesWriter.attachCommentsWithEmptyLineCount.setting();
 
-		if (block.getType().equals(BlockType.COMMENT))
-		{
+		if (block.getType().equals(BlockType.COMMENT)) {
 			Block tmp = block.getPersuing();
-			while (tmp != null)
-			{
+			while (tmp != null) {
 				switch (tmp.getType())
 				{
 				case BLANK:
@@ -265,12 +262,10 @@ public class PropertyFile implements Iterable<Block>
 			}
 		}
 
-		if (block.getType().equals(BlockType.KEYVALUE))
-		{
+		if (block.getType().equals(BlockType.KEYVALUE)) {
 			int cntAgainstEmptyLineCnt = 0;
 			Block tmp = block.getPreceding();
-			while (tmp != null)
-			{
+			while (tmp != null) {
 				switch (tmp.getType())
 				{
 				default:
@@ -291,10 +286,9 @@ public class PropertyFile implements Iterable<Block>
 	}
 
 	/**
-	 * After all modifcations are done to this PropertyFile Instance its time to
-	 * write the result to a properties file. Use this method after all
-	 * modifications are applied and to receive the data that shall be written
-	 * to the properties file.
+	 * After all modifcations are done to this PropertyFile Instance its time to write the result to
+	 * a properties file. Use this method after all modifications are applied and to receive the
+	 * data that shall be written to the properties file.
 	 * 
 	 * @return see description
 	 */
@@ -302,10 +296,8 @@ public class PropertyFile implements Iterable<Block>
 	{
 		final List<String> result = new ArrayList<String>();
 
-		for (final Block b : this)
-		{
-			for (Line l : b.getLines())
-			{
+		for (final Block b : this) {
+			for (Line l : b.getLines()) {
 				result.add(l.getLine());
 			}
 		}
@@ -313,13 +305,12 @@ public class PropertyFile implements Iterable<Block>
 	}
 
 	/**
-	 * If Finx shall take care about the formatting of the properties file this
-	 * method do any necessary formatting before further changes are made.
+	 * If Finx shall take care about the formatting of the properties file this method do any
+	 * necessary formatting before further changes are made.
 	 */
 	private void preFormat()
 	{
-		if (PropertiesWriter.preservePropertyLayout.setting().equals(PropertyPreserveMode.NONE) == false)
-		{
+		if (PropertiesWriter.preservePropertyLayout.setting().equals(PropertyPreserveMode.NONE) == false) {
 			return;
 		}
 
@@ -343,9 +334,8 @@ public class PropertyFile implements Iterable<Block>
 	 * Searches for Comments in raw-Property-File Data.
 	 * 
 	 * @param rawPropertyLines
-	 * @return a list of pairs of integers. Every pair describes a start and an
-	 *         end point where comments occures. Size of this list is always 0
-	 *         if % 2;
+	 * @return a list of pairs of integers. Every pair describes a start and an end point where
+	 *         comments occures. Size of this list is always 0 if % 2;
 	 */
 	private List<BlockDimension> commentBlocks(final List<String> rawPropertyLines)
 	{
@@ -364,32 +354,25 @@ public class PropertyFile implements Iterable<Block>
 		boolean matched = false;
 		boolean fetchedLastMatch = false;
 
-		for (final String line : rawPropertyLines)
-		{
+		for (final String line : rawPropertyLines) {
 			final Matcher match = pat.matcher(line);
-			if (match.matches())
-			{
+			if (match.matches()) {
 				matched = true;
-				if (lineCount == rawPropertyLines.size() - 1)
-				{
+				if (lineCount == rawPropertyLines.size() - 1) {
 					fetchedLastMatch = true;
 				}
 
-				if (firstMatchedLine == -1)
-				{
+				if (firstMatchedLine == -1) {
 					firstMatchedLine = lineCount;
 					lastMatchedLine = lineCount;
-				} else
-				{
+				} else {
 					lastMatchedLine = lineCount;
 				}
-			} else if (matched)
-			{
+			} else if (matched) {
 				fetchedLastMatch = true;
 			}
 
-			if (fetchedLastMatch && matched)
-			{
+			if (fetchedLastMatch && matched) {
 				blocks.add(new BlockDimension(firstMatchedLine, lastMatchedLine));
 				lastMatchedLine = -1;
 				firstMatchedLine = -1;
@@ -407,8 +390,7 @@ public class PropertyFile implements Iterable<Block>
 	{
 		final List<Block> blocks = new ArrayList<Block>();
 		final Iterator<Block> blockIterator = iterator();
-		while (blockIterator.hasNext())
-		{
+		while (blockIterator.hasNext()) {
 			Block next = blockIterator.next();
 			if (next.getType().equals(type) == false)
 				continue;
@@ -455,8 +437,7 @@ class Block
 		if (rawLines == null || rawLines.isEmpty())
 			throw new ApplicationCodingException("block with no lines is not allowed");
 
-		for (int i = dimension.getFirst(); i <= dimension.getLast(); i++)
-		{
+		for (int i = dimension.getFirst(); i <= dimension.getLast(); i++) {
 			final String raw = rawLines.get(i);
 			lines.add(new Line(i, raw));
 		}
@@ -469,9 +450,8 @@ class Block
 	}
 
 	/**
-	 * Every line of this block is moved to an own Block instance. This instance
-	 * becomes the head of the resulting list of Block Elements. No sorting is
-	 * applied!
+	 * Every line of this block is moved to an own Block instance. This instance becomes the head of
+	 * the resulting list of Block Elements. No sorting is applied!
 	 */
 	public void explode()
 	{
@@ -483,20 +463,16 @@ class Block
 		final Block startingBlock = this;
 		final Block endBlock = persuing;
 		Block previous = this;
-		for (int i = 1; i < tmp.size(); i++)
-		{
+		for (int i = 1; i < tmp.size(); i++) {
 			final List<Line> newLine = new ArrayList<Line>();
 			newLine.add(tmp.get(i));
 			final Block newBlock = new Block(newLine, type);
 
-			if (i == 1)
-			{ // start
+			if (i == 1) { // start
 				newBlock.concat(startingBlock, null);
-			} else if (i == tmp.size() - 1)
-			{ // end
+			} else if (i == tmp.size() - 1) { // end
 				newBlock.concat(previous, endBlock);
-			} else
-			{
+			} else {
 				newBlock.concat(previous, null);
 			}
 
@@ -505,12 +481,11 @@ class Block
 	}
 
 	/**
-	 * Merges two blocks resulting in one single block. Only blocks of same type
-	 * can be merged.
+	 * Merges two blocks resulting in one single block. Only blocks of same type can be merged.
 	 * 
 	 * @param mergeThis
-	 *            this block is going to be merged into this block. His persuing
-	 *            block will be attached to this block as persuing block.
+	 *            this block is going to be merged into this block. His persuing block will be
+	 *            attached to this block as persuing block.
 	 */
 	public void merge(final Block mergeThis)
 	{
@@ -536,15 +511,12 @@ class Block
 					"trying to concat block with two blocks that are not connected to each other");
 
 		// remove old connections or refresh them
-		if (this.preceding != null && this.persuing != null)
-		{
+		if (this.preceding != null && this.persuing != null) {
 			this.preceding.persuing = this.persuing;
 			this.persuing.preceding = this.preceding;
-		} else if (this.preceding != null)
-		{
+		} else if (this.preceding != null) {
 			this.preceding.persuing = null;
-		} else if (this.persuing != null)
-		{
+		} else if (this.persuing != null) {
 			this.persuing.preceding = null;
 		}
 
@@ -560,14 +532,11 @@ class Block
 
 	public void detach()
 	{
-		if (preceding != null && persuing != null)
-		{
+		if (preceding != null && persuing != null) {
 			preceding.concat(null, persuing);
-		} else if (preceding != null)
-		{
+		} else if (preceding != null) {
 			preceding.persuing = null;
-		} else if (persuing != null)
-		{
+		} else if (persuing != null) {
 			persuing.preceding = null;
 		}
 
@@ -649,8 +618,8 @@ class Line
 }
 
 /**
- * Describes the positioning of a Block in a Property-File. That means: gives
- * you information about the start- and end-line.
+ * Describes the positioning of a Block in a Property-File. That means: gives you information about
+ * the start- and end-line.
  * 
  * @author Daniel
  * 
@@ -669,8 +638,7 @@ class BlockDimension implements Comparable<BlockDimension>
 	{
 		super();
 
-		if (last < first)
-		{
+		if (last < first) {
 			throw new ApplicationCodingException("last is not allowed to be lower then first");
 		}
 
@@ -724,14 +692,12 @@ class BlockDimension implements Comparable<BlockDimension>
 		if (getClass() != obj.getClass())
 			return false;
 		BlockDimension other = (BlockDimension) obj;
-		if (first == null)
-		{
+		if (first == null) {
 			if (other.first != null)
 				return false;
 		} else if (!first.equals(other.first))
 			return false;
-		if (last == null)
-		{
+		if (last == null) {
 			if (other.last != null)
 				return false;
 		} else if (!last.equals(other.last))
@@ -789,8 +755,7 @@ class BlockIterator implements ListIterator<Block>
 		boolean result = actualBlock != null
 				&& (actualBlock.getPersuing() != null || (actualBlock.getPreceding() == null && actualBlock
 						.getPersuing() == null));
-		if (actualBlock == null || (result == false && actualBlock == null))
-		{
+		if (actualBlock == null || (result == false && actualBlock == null)) {
 			return false;
 		}
 		return true;

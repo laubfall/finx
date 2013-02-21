@@ -1,20 +1,17 @@
 package de.ludwig.finx.io;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
 import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.ApplicationException;
 import de.ludwig.finx.settings.SettingsDaoImpl;
 import de.ludwig.finx.settings.UpdatableSetting;
 
@@ -25,11 +22,7 @@ import de.ludwig.finx.settings.UpdatableSetting;
  */
 public class PropertiesWriter
 {
-	private File source;
-
-	private List<String> lines;
-
-	private Locale localeToWriteFor;
+	private File target;
 
 	/**
 	 * The original I18n-Property-Files stays untouched, their formatting is not modified.
@@ -79,10 +72,54 @@ public class PropertiesWriter
 	 */
 	public static UpdatableSetting<Integer> attachCommentsWithEmptyLineCount;
 
+	/**
+	 * The line-ending-sequence to use at the end of a line
+	 */
+	public static UpdatableSetting<String> lineEnding;
+
 	private static final Logger LOG = Logger.getLogger(PropertiesWriter.class);
 
 	static {
 		SettingsDaoImpl.instance().init(PropertiesWriter.class);
+	}
+
+	/**
+	 * @param target
+	 *            the I18n-Property-Files the application reads from and writes to.
+	 */
+	public PropertiesWriter(File target) throws ApplicationCodingException
+	{
+		Validate.notNull(target);
+		this.target = target;
+	}
+
+	public void write(PropertyFile pf)
+	{
+		LOG.info("write PropertyFile to File " + target.getName());
+		Iterator<Block> blockIterator = pf.iterator();
+		final File f = new File(target.getParent(), target.getName() + ".tmp");
+		while (blockIterator.hasNext()) {
+			final Block block = blockIterator.next();
+			List<Line> lines = block.getLines();
+			LOG.debug("write block of type " + block.getType().name());
+			for (Line l : lines) {
+				try {
+					FileUtils.writeStringToFile(f, l.getLine() + lineEnding, "ISO-8859-1", true);
+					LOG.debug(String.format("wrote line %s to file %s", l.getLine(), f.getName()));
+				} catch (IOException e) {
+					LOG.error("propertyFile could not be written to file " + f.getName(), e);
+					throw new ApplicationException("unable to write the propertyFile Object to a file");
+				}
+			}
+		}
+
+		try {
+			FileUtils.copyFile(f, target);
+			LOG.info("moved tmp-File to original File " + target.getName());
+		} catch (IOException e) {
+			LOG.error("moving tmp-File to original failed: " + e.getMessage(), e);
+			throw new ApplicationException("it was not possible to update the properties-file " + target.getName());
+		}
 	}
 
 	/**
@@ -105,196 +142,4 @@ public class PropertiesWriter
 		return sb;
 	}
 
-	/**
-	 * @param source
-	 *            the I18n-Property-Files the application reads from and writes to.
-	 * @param sourceLocale
-	 *            controls which values the application pulls from the given {@link I18nNode}s
-	 */
-	public PropertiesWriter(File source, Locale sourceLocale) throws ApplicationCodingException
-	{
-		this.source = source;
-		localeToWriteFor = sourceLocale;
-
-		try {
-			lines = IOUtils.readLines(new FileInputStream(source));
-		} catch (FileNotFoundException e) {
-			throw new ApplicationCodingException(e);
-		} catch (IOException e) {
-			throw new ApplicationCodingException(e);
-		}
-	}
-
-	/**
-	 * Transforms the root-node into Strings with respect to the existing I18n-Property-File and
-	 * existing Pretty-Print-Settings. If an I18n-Key-Value-Pair exists in file but not in the
-	 * root-node the I18n-Key-Value-Pair is removed from the file.
-	 * 
-	 * Only nodes with an locale equals to the locale that was defined during construction of this
-	 * object are processed.
-	 * 
-	 * After processing the property-file will be written to the given Properties-File during
-	 * construction of this object.
-	 */
-	void process(final RootNode root)
-	{
-		LOG.info("processing nodes for language " + localeToWriteFor.getLanguage());
-		try {
-			insert(root);
-			removeDeleted(root);
-			rework();
-			store();
-		} catch (FileNotFoundException e) {
-			throw new ApplicationCodingException(e);
-		} catch (IOException e) {
-			throw new ApplicationCodingException(e);
-		}
-	}
-
-	/**
-	 * This method inserts nodes that are new (actually not in the properties-file) into the
-	 * properties-file.
-	 * 
-	 * @param node
-	 *            insert this node into the file structure with respect to existing
-	 *            Pretty-Print-Settings. Does nothing if the Key-Value-Pair already exists in the
-	 *            file. If there is no node for the language of this PropertiesWriter only the key
-	 *            is inserted.
-	 */
-	private void insert(final RootNode root)
-	{
-		for (final I18nNode processThis : root.flatten()) {
-			int foundAt = -1;
-			final String keyToFind = processThis.key() + "=";
-			for (int i = 0; i < lines.size(); i++) {
-				if (lines.get(i).startsWith(keyToFind) == false) {
-					continue;
-				}
-
-				foundAt = i;
-				break;
-			}
-
-			// insert
-			if (foundAt == -1) {
-				// because we insert new lines it is necessary to calculate the
-				// comment positions again
-				// if we want to insert a new line.
-				final List<Integer> commentBlocks = PropertyFileUtils.commentBlocks(lines);
-
-				switch (preservePropertyLayout.setting())
-				{
-				case NONSTRICT:
-					int posToInsert = 0;
-					final String keyValue = processThis.keyValue(localeToWriteFor);
-					for (; posToInsert < lines.size(); posToInsert++) {
-						// this line is part of a comment
-						if (commentBlocks.contains(Integer.valueOf(posToInsert))) {
-							// that means that is no place for a key-value-pair
-							continue;
-						}
-
-						final String actualLine = lines.get(posToInsert);
-						if (actualLine.compareTo(keyValue) > 1) {
-							break;
-						}
-					}
-
-					lines.add(posToInsert + 1, keyValue);
-					break;
-				case NONE:
-					// TODO Sort und "Druck" nach Settings
-					break;
-				case STRICT:
-					lines.add(keyToFind + processThis.value(localeToWriteFor.getLanguage()));
-					break;
-				default:
-					break;
-				}
-			} else { // update
-						// TODO
-			}
-		}
-	}
-
-	/**
-	 * Removes I18n-Key-Value-Pairs from fail that are not any longer in the Root-Node-Structure
-	 * 
-	 * @throws IOException
-	 * @throws FileNotFoundException
-	 */
-	private void removeDeleted(final RootNode root) throws FileNotFoundException, IOException
-	{
-		Properties p = new Properties();
-		p.load(new FileInputStream(source));
-
-		for (I18nNode processThis : root.flatten()) {
-			// TODO
-		}
-	}
-
-	/**
-	 * Sorts the lines of a given I18n-Properties-File with respect to the actual
-	 * Pretty-Print-Settings.
-	 */
-	private void rework()
-	{
-
-	}
-
-	private void store() throws FileNotFoundException, IOException
-	{
-		IOUtils.writeLines(lines, "\n", new FileOutputStream(source), "ISO-8859-1");
-	}
-
-	/**
-	 * Inserts a string after a textline that starts with the given String.
-	 * 
-	 * @param afterThis
-	 *            Normally this holds the key of an I18n-Node and the equals-Symbol.
-	 * @throws IOException
-	 */
-	private void insertAfterStartsWith(final String afterThis, final String insertThis, final File insertHere)
-			throws IOException
-	{
-		long sizeOfFile = FileUtils.sizeOf(insertHere);
-		try (RandomAccessFile raf = new RandomAccessFile(insertHere, "rw")) {
-			String line = null;
-			while ((line = raf.readLine()) != null) {
-				if (line.startsWith(afterThis)) {
-					String filePart = filePart(insertHere, raf.getFilePointer());
-					sizeOfFile += insertThis.length();
-					raf.setLength(sizeOfFile);
-					raf.writeChars(insertThis);
-					raf.writeChars(filePart);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Returns a part of a given textfile starting from a given offset.
-	 * 
-	 * @param f
-	 *            a textfile
-	 * @param offset
-	 *            the offset, from that point on method will return text from the given file
-	 * @return s. description
-	 * @throws IOException
-	 */
-	private String filePart(File f, long offset) throws IOException
-	{
-		final RandomAccessFile rafR = new RandomAccessFile(f, "r");
-		try {
-			rafR.seek(offset);
-			String result = null;
-			StringBuilder sb = new StringBuilder();
-			while ((result = rafR.readLine()) != null) {
-				sb.append(result);
-			}
-			return sb.toString();
-		} finally {
-			rafR.close();
-		}
-	}
 }

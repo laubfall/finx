@@ -4,13 +4,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
-import junit.framework.Assert;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 
+import de.ludwig.finx.Language;
 import de.ludwig.finx.io.Block.BlockType;
 
 /**
@@ -26,7 +27,7 @@ public class PropertyFileTest
 	{
 		end = I18nFileCreator.start().addKeyValue("de.ludwig", "test").addKeyValue("de.luwdig.sub", "test").end();
 
-		PropertyFile pf = new PropertyFile(end, Locale.GERMANY);
+		PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
 		Block startingBlock = pf.getStartingBlock();
 		Assert.assertNotNull(startingBlock);
 		Assert.assertEquals(1, pf.size());
@@ -38,7 +39,7 @@ public class PropertyFileTest
 		end = I18nFileCreator.start().addSimpleComment("a comment").addSimpleComment(" a Comment with space")
 				.addSimpleComment("!!!").end();
 
-		PropertyFile pf = new PropertyFile(end, Locale.GERMANY);
+		PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
 		Block startingBlock = pf.getStartingBlock();
 		Assert.assertNotNull(startingBlock);
 		Assert.assertEquals(1, pf.size());
@@ -53,7 +54,7 @@ public class PropertyFileTest
 	{
 		end = I18nFileCreator.start().addEmptyLine(1, 4).addEmptyLine(1).end();
 
-		PropertyFile pf = new PropertyFile(end, Locale.GERMANY);
+		PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
 		Block startingBlock = pf.getStartingBlock();
 		Assert.assertNotNull(startingBlock);
 		Assert.assertEquals(1, pf.size());
@@ -64,7 +65,7 @@ public class PropertyFileTest
 	{
 		end = I18nFileCreator.start().addEmptyLine(1).end();
 
-		PropertyFile pf = new PropertyFile(end, Locale.GERMANY);
+		PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
 		Block startingBlock = pf.getStartingBlock();
 		Assert.assertNotNull(startingBlock);
 		Assert.assertEquals(1, pf.size());
@@ -76,7 +77,7 @@ public class PropertyFileTest
 		end = I18nFileCreator.start().addSimpleComment("test comment").addKeyValue("de.ludwig", "some value")
 				.addEmptyLine(1, 2).end();
 
-		final PropertyFile pf = new PropertyFile(end, Locale.GERMANY);
+		final PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
 		final Iterator<Block> iterator = pf.iterator();
 		Assert.assertTrue(iterator.hasNext());
 		Block startingBlock = iterator.next();
@@ -105,7 +106,7 @@ public class PropertyFileTest
 	{
 		end = I18nFileCreator.start().addKeyValue("de.ludwig", "test").addKeyValue("de.ludwig.2", "blah")
 				.addKeyValue("de.ludwig.3", "blub").end();
-		final PropertyFile pf = new PropertyFile(end, Locale.GERMANY);
+		final PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
 		Assert.assertNotNull(pf.getStartingBlock());
 		Assert.assertNull(pf.getStartingBlock().getPersuing());
 
@@ -139,7 +140,7 @@ public class PropertyFileTest
 	{
 		end = I18nFileCreator.start().addKeyValue("de.ludwig", "test").addKeyValue("de.ludwig.2", "blah")
 				.addKeyValue("de.ludwig.3", "blub").end();
-		final PropertyFile pf = new PropertyFile(end, Locale.GERMANY);
+		final PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
 		Assert.assertNotNull(pf.getStartingBlock());
 
 		pf.getStartingBlock().explode();
@@ -153,22 +154,50 @@ public class PropertyFileTest
 	}
 
 	@Test
-	public void mergeComplex() throws FileNotFoundException, IOException
+	public void insertIntoEmpty() throws FileNotFoundException, IOException
 	{
-		end = I18nFileCreator.start().addKeyValue("de.ludwig", "test").addSimpleComment("i am a comment")
-				.addKeyValue("de.ludwig.2", "blah").addSimpleComment("another comment")
-				.addKeyValue("de.ludwig.3", "blub").end();
-		final PropertyFile pf = new PropertyFile(end, Locale.GERMANY);
+		end = I18nFileCreator.start().end();
+		final PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
+
+		I18nNode insertThis = I18nNode.create("de.ludwig.sub", "DE", "unter-knoten");
+		insertThis.update("EN", "sub-node");
+		pf.insert(insertThis);
+		Block startingBlock = pf.getStartingBlock();
+		Assert.assertNotNull(startingBlock);
+		List<Line> lines = startingBlock.getLines();
+		Assert.assertNotNull(lines);
+		Assert.assertEquals(1, lines.size());
+
+		final Line line = lines.get(0);
+		// we expect the value in german language because the PropertyFile was constructed with a
+		// german locale
+		Assert.assertEquals("de.ludwig.sub=unter-knoten", line.getLine());
+	}
+
+	@Test
+	public void insertIntoFull() throws FileNotFoundException, IOException
+	{
+		end = I18nFileCreator.start().addKeyValue("de.ludwig", "top-node").end();
+		final PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMANY));
+		Assert.assertNotNull(pf.getStartingBlock());
+
+		I18nNode insertThis = I18nNode.create("de.ludwig.sub", "DE", "sub-node");
+		pf.insert(insertThis);
+		Block startingBlock = pf.getStartingBlock();
+		Assert.assertNotNull(startingBlock);
+		List<Line> lines = startingBlock.getLines();
+		Assert.assertNotNull(lines);
+		Assert.assertEquals(2, lines.size());
 	}
 
 	@After
 	public void deleteFile()
 	{
-		// if (end == null)
-		// return;
-		//
-		// boolean delete = end.delete();
-		// if(delete == false)
-		// throw new RuntimeException("unable to delete tmp-testfile");
+		if (end == null)
+			return;
+
+		boolean delete = end.delete();
+		if (delete == false)
+			throw new RuntimeException("unable to delete tmp-testfile");
 	}
 }
