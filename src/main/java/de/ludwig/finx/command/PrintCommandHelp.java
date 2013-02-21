@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  * @author Daniel
  * 
  */
-public class PrintCommandHelp implements Command {
+public class PrintCommandHelp implements Command<Void> {
 	private static Logger log = Logger.getLogger(PrintCommandHelp.class);
 	
 	/*
@@ -19,11 +19,11 @@ public class PrintCommandHelp implements Command {
 	 * 
 	 * @see de.ludwig.i18n.commandline.Command#execute(java.lang.String)
 	 */
-	public Object execute(final String payload) {
-		Command find = (Command) CollectionUtils.find(
+	public Void execute(final String payload) {
+		Command<?> find = (Command<?>) CollectionUtils.find(
 				CommandHub.getKnownCommands(), new Predicate() {
 					public boolean evaluate(Object object) {
-						final Command c = (Command) object;
+						final Command<?> c = (Command<?>) object;
 						return c.name().equals(payload);
 					}
 				});

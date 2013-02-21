@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 
 import junit.framework.Assert;
@@ -12,9 +11,6 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Test;
 
-import de.ludwig.finx.io.Block;
-import de.ludwig.finx.io.Line;
-import de.ludwig.finx.io.PropertyFile;
 import de.ludwig.finx.io.Block.BlockType;
 
 /**

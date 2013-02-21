@@ -3,12 +3,8 @@
  */
 package de.ludwig.finx.command;
 
-import java.util.List;
 
-import de.ludwig.finx.io.PropertyFileHandling;
-import de.ludwig.finx.scanner.I18nKey;
-
-public class CmdPrintLatestChanges implements Command
+public class CmdPrintLatestChanges implements Command<Void>
 {
 
 	/*
@@ -16,7 +12,7 @@ public class CmdPrintLatestChanges implements Command
 	 * 
 	 * @see de.ludwig.i18n.commandline.Command#execute()
 	 */
-	public Object execute(String payload)
+	public Void execute(String payload)
 	{
 		cmdPrintLatestChanges();
 		return null;

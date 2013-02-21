@@ -17,14 +17,14 @@ import de.ludwig.finx.monitor.Monitoring;
  * @author Daniel
  *
  */
-public class AddSrcPath implements Command {
+public class AddSrcPath implements Command<Void> {
 	public static final String OPT_SRCPATH = "srcPaths";
 
 	/**
 	 * 
 	 * @param payload List off absolute paths of directories (see {@link #help()}) seperated by a semicolon
 	 */
-	public Object execute(String payload) {
+	public Void execute(String payload) {
 		final List<File> srcDirs = srcDirs(payload);
 		Monitoring.instance().addSrcDirectoriesToMonitor(srcDirs);
 		return null;
@@ -46,7 +46,6 @@ public class AddSrcPath implements Command {
 	}
 
     private final List<File> srcDirs(final String srcPaths){
-    	@SuppressWarnings("unchecked")
 		final List<String> tokenList = StrTokenizer.getCSVInstance(srcPaths).setDelimiterChar(';').getTokenList();
     	final List<File> result = new ArrayList<File>();
     	for(String path : tokenList) {

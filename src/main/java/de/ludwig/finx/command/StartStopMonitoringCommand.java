@@ -8,7 +8,7 @@ import de.ludwig.finx.monitor.Monitoring;
  * @author Daniel
  *
  */
-public class StartStopMonitoringCommand implements Command {
+public class StartStopMonitoringCommand implements Command<Void> {
 	public static final String START = "start";
 	
 	public static final String STOP = "stop";
@@ -16,7 +16,7 @@ public class StartStopMonitoringCommand implements Command {
 	/* (non-Javadoc)
 	 * @see de.ludwig.i18n.commandline.Command#execute(java.lang.String)
 	 */
-	public Object execute(String payload) throws CommandException {
+	public Void execute(String payload) throws CommandException {
 		if(StringUtils.isBlank(payload)) {
 			throw new CommandException("no action for monitoring defined");
 		}

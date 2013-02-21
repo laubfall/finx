@@ -7,12 +7,12 @@ package de.ludwig.finx.command;
  * @author Daniel
  *
  */
-public class CmdShutdown implements Command {
+public class CmdShutdown implements Command<Void> {
 
 	/* (non-Javadoc)
 	 * @see de.ludwig.i18n.commandline.Command#execute()
 	 */
-	public Object execute(String payload) {
+	public Void execute(String payload) {
 		System.exit(0);
 		
 		// if(unsavedSettings)

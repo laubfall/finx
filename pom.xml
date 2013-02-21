@@ -79,5 +79,11 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito</artifactId>
+			<version>1.5</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

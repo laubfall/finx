@@ -3,7 +3,6 @@ package de.ludwig.finx.command;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import de.ludwig.finx.settings.AppSettingNames;
 import de.ludwig.finx.settings.SettingsDaoImpl;
 
 /**
@@ -12,16 +11,16 @@ import de.ludwig.finx.settings.SettingsDaoImpl;
  * @author Daniel
  * 
  */
-public class ChangeSettingCommand implements Command
+public class ChangeSettingCommand implements Command<Void>
 {
 	private static final Logger log = Logger.getLogger(ChangeSettingCommand.class);
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see de.ludwig.i18n.commandline.Command#execute(java.lang.String)
 	 */
-	public Object execute(String payload) throws CommandException
+	public Void execute(String payload) throws CommandException
 	{
 		// mySetting [PAYLOAD]
 		final int indexOf = payload.indexOf(' ');

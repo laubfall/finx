@@ -14,13 +14,13 @@ import de.ludwig.finx.scanner.SimpleTagScanner;
  * @author Daniel
  *
  */
-public class AddSimpleTagScanner implements Command {
+public class AddSimpleTagScanner implements Command<Void> {
 	private Logger log = Logger.getLogger(AddSimpleTagScanner.class);
 	
 	/* (non-Javadoc)
 	 * @see de.ludwig.i18n.commandline.Command#execute(java.lang.String)
 	 */
-	public Object execute(String payload) {
+	public Void execute(String payload) {
 		String[] tokens = payload.split(" ");
 		
 		if(tokens == null || tokens.length != 4) {

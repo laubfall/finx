@@ -1,4 +1,4 @@
-package de.ludwig.finx.command;
+package de.ludwig.finx;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +10,19 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.command.AddI18nPropertyPath;
+import de.ludwig.finx.command.AddSimpleTagScanner;
+import de.ludwig.finx.command.AddSrcPath;
+import de.ludwig.finx.command.ChangeSettingCommand;
+import de.ludwig.finx.command.CmdPrintLatestChanges;
+import de.ludwig.finx.command.CmdShutdown;
+import de.ludwig.finx.command.CommandException;
+import de.ludwig.finx.command.CommandHub;
+import de.ludwig.finx.command.PrintNodeStructure;
+import de.ludwig.finx.command.ReloadNodeStructure;
+import de.ludwig.finx.command.ShowAppSettings;
+import de.ludwig.finx.command.ShowKnownCommands;
+import de.ludwig.finx.command.StartStopMonitoringCommand;
 
 /**
  * Commandline-Anwendung für Finx
@@ -49,31 +61,25 @@ public class CmdFinx
 		opts.addOption(OPT_I18NPATH, true, "The absolute path to the directory where your I18n-Propertie-Files are");
 
 		CommandLineParser parser = new GnuParser();
-		try
-		{
+		try {
 			CommandLine result = parser.parse(opts, arg);
 			CmdFinx finx = new CmdFinx(result);
 			finx.run();
-		} catch (ParseException ex)
-		{
+		} catch (ParseException ex) {
 			log.error("Unable to parse Commandline Argument", ex);
 		}
 	}
 
 	public void run()
 	{
-		while (true)
-		{
-			try
-			{
+		while (true) {
+			try {
 				final BufferedReader cmdInput = new BufferedReader(new InputStreamReader(System.in));
 				String input = cmdInput.readLine();
 				commandDispatch(input);
-			} catch (IOException e)
-			{
+			} catch (IOException e) {
 				log.error("IOException during Command Dispatch", e);
-			} catch (CommandException e)
-			{
+			} catch (CommandException e) {
 				log.warn(e.getMessage());
 			} catch (ApplicationCodingException e) {
 				log.error("an application error occured. please try again with different settings", e);

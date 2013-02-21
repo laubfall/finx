@@ -9,14 +9,14 @@ import java.util.List;
  * @author Daniel
  *
  */
-public class ShowKnownCommands implements Command {
+public class ShowKnownCommands implements Command<Void> {
 
 	/* (non-Javadoc)
 	 * @see de.ludwig.i18n.commandline.Command#execute()
 	 */
-	public Object execute(String payload) {
-		List<Command> knownCommands = CommandHub.getKnownCommands();
-		for(Command c : knownCommands) {
+	public Void execute(String payload) {
+		List<Command<?>> knownCommands = CommandHub.getKnownCommands();
+		for(Command<?> c : knownCommands) {
 			System.out.println(c.name());
 		}
 		return null;

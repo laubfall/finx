@@ -16,7 +16,7 @@ import de.ludwig.finx.io.PropertyFileHandling;
  * @author Daniel
  * 
  */
-public class AddI18nPropertyPath implements Command
+public class AddI18nPropertyPath implements Command<Void>
 {
 
 	/*
@@ -24,7 +24,7 @@ public class AddI18nPropertyPath implements Command
 	 * 
 	 * @see de.ludwig.i18n.commandline.Command#execute(java.lang.String)
 	 */
-	public Object execute(String payload) throws CommandException
+	public Void execute(String payload) throws CommandException
 	{
 		if(StringUtils.isBlank(payload)) {
 			throw new CommandException("you have to provide the path of the property file directory");

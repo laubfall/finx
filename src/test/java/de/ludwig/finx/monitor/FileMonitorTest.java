@@ -1,17 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.ludwig.finx.monitor;
 
 import java.io.File;
 import java.io.IOException;
-import junit.framework.Assert;
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
 
-import de.ludwig.finx.monitor.FileListener;
-import de.ludwig.finx.monitor.FileMonitor;
+import junit.framework.Assert;
+
+import org.junit.Test;
+import org.powermock.api.mockito.PowerMockito;
 
 /**
  * 
@@ -27,7 +22,6 @@ public class FileMonitorTest
 
 		class TestListener implements FileListener
 		{
-
 			private boolean changeDetected = false;
 
 			public void fileChanged(File file)
@@ -36,18 +30,35 @@ public class FileMonitorTest
 			}
 		}
 
-		TestListener t = new TestListener();
-		fm.addListener(t);
+		TestListener listener = new TestListener();
+		fm.addListener(listener);
 		fm.start();
 
-		final File f = File.createTempFile("fileMonitorTest", null);
-		fm.addFile(f);
-		
-		FileUtils.write(f, "a Change");
+		File fileMock = PowerMockito.mock(File.class);
+		Assert.assertNotNull(fileMock);
+		PowerMockito.when(fileMock.lastModified()).thenReturn(1L, 2L);
+		PowerMockito.when(fileMock.exists()).thenReturn(true);
+		PowerMockito.when(fileMock.getName()).thenReturn("/file/by/powermock.mock");
 
-		Thread.sleep(500);
-		
-		Assert.assertTrue(f.exists());
-		Assert.assertTrue(t.changeDetected);
+		fm.addFile(fileMock);
+
+		Thread.sleep(100);
+
+		// Checks if the listener was triggered
+		Assert.assertTrue(listener.changeDetected);
+	}
+
+	@Test
+	public void testStartStop()
+	{
+		try {
+			final FileMonitor fm = new FileMonitor(10);
+			fm.start();
+			fm.stop();
+			fm.start();
+			fm.stop();
+		} catch (Exception e) {
+			Assert.fail();
+		}
 	}
 }
