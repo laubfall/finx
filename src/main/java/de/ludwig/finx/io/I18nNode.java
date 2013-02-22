@@ -3,13 +3,14 @@ package de.ludwig.finx.io;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.list.UnmodifiableList;
 import org.apache.commons.lang3.StringUtils;
+
+import de.ludwig.finx.Language;
 
 /**
  * 
@@ -19,8 +20,8 @@ public class I18nNode
 {
 
 	/**
-	 * Wenn der Key de.ludwig.blah ist wäre ein Key-Part "de" Das Child dieser
-	 * Node hätte als Key-Part "ludwig" usw.
+	 * Wenn der Key de.ludwig.blah ist wäre ein Key-Part "de" Das Child dieser Node hätte als
+	 * Key-Part "ludwig" usw.
 	 */
 	private String i18nKeyPart;
 
@@ -29,11 +30,10 @@ public class I18nNode
 	private List<I18nNode> childs = new ArrayList<I18nNode>();
 
 	/**
-	 * Key Language ISO2 Code Value Der Wert des Keys, null wenn es sich nicht
-	 * um das letzte Node-Element handelt oder der Key für die gewählte Sprache
-	 * einfach keinen Wert hat.
+	 * Key Language ISO2 Code Value Der Wert des Keys, null wenn es sich nicht um das letzte
+	 * Node-Element handelt oder der Key für die gewählte Sprache einfach keinen Wert hat.
 	 */
-	private Map<String, String> value = new HashMap<String, String>();
+	private Map<Language, String> value = new HashMap<>();
 
 	private I18nNode()
 	{
@@ -41,8 +41,8 @@ public class I18nNode
 	}
 
 	/**
-	 * Erzeugt unterhalb eines I18nNodes ein Child-Element und liefert dieses
-	 * zurück. Fehlende Elemente innerhalb des Pfads werden automatisch erzeugt.
+	 * Erzeugt unterhalb eines I18nNodes ein Child-Element und liefert dieses zurück. Fehlende
+	 * Elemente innerhalb des Pfads werden automatisch erzeugt.
 	 * 
 	 * Beispiel: parent: x neues child: y.z
 	 * 
@@ -66,11 +66,11 @@ public class I18nNode
 	 * @param iso2
 	 * @param value
 	 * @param parent
-	 *            Unter diese NOde werden die neu zu erstellenden (falls noch
-	 *            nicht vorhandenen) Nodes eingehangen.
+	 *            Unter diese NOde werden die neu zu erstellenden (falls noch nicht vorhandenen)
+	 *            Nodes eingehangen.
 	 * @return
 	 */
-	static I18nNode attach(final String key, final I18nNode parent, String value, String iso2Language)
+	static I18nNode attach(final String key, final I18nNode parent, String value, Language iso2Language)
 	{
 		if (parent == null)
 			return create(key, iso2Language, value);
@@ -78,8 +78,7 @@ public class I18nNode
 		String[] parts = i18nKeySplit(key);
 		List<I18nNode> childs = parent.getChilds();
 		I18nNode matchingChild = (I18nNode) CollectionUtils.find(childs, new KeyPartPredicate(parts[0]));
-		if (matchingChild == null)
-		{
+		if (matchingChild == null) {
 			I18nNode create = create(key, iso2Language, value);
 			parent.childs.add(create);
 			create.parent = parent;
@@ -87,11 +86,9 @@ public class I18nNode
 		}
 
 		String partKey = "";
-		if (parts.length == 1)
-		{
+		if (parts.length == 1) {
 			partKey = key;
-		} else
-		{
+		} else {
 			partKey = StringUtils.join(parts, ".", 1, parts.length - 1);
 		}
 
@@ -103,19 +100,19 @@ public class I18nNode
 	 * 
 	 * Beispiel: key "de.ludwig.x"
 	 * 
-	 * root keyPart "de" Methode sucht unter root nach I18nNode mit keyPart
-	 * "ludwig" und dann darunter (wenn gefunden) nach I18nNode mit keyPart "x".
-	 * Wenn gefunden wird diese Node gelöscht.
+	 * root keyPart "de" Methode sucht unter root nach I18nNode mit keyPart "ludwig" und dann
+	 * darunter (wenn gefunden) nach I18nNode mit keyPart "x". Wenn gefunden wird diese Node
+	 * gelöscht.
 	 * 
 	 * Beispiel: key "de.ludwig.x"
 	 * 
-	 * root keyPart "blub" Keine Aktion da keyPart des Roots nicht mit erstem
-	 * Teil des keys übereinstimmt.
+	 * root keyPart "blub" Keine Aktion da keyPart des Roots nicht mit erstem Teil des keys
+	 * übereinstimmt.
 	 * 
 	 * @param key
 	 * @param root
-	 * @return Leaf-Node welches entfernt wurde. Null wenn keines unter dem
-	 *         übermittelten Key gefunden wurde.
+	 * @return Leaf-Node welches entfernt wurde. Null wenn keines unter dem übermittelten Key
+	 *         gefunden wurde.
 	 */
 	static I18nNode remove(final String key, final I18nNode root)
 	{
@@ -151,16 +148,15 @@ public class I18nNode
 
 	}
 
-	static I18nNode create(final String key, final String iso2, final String value)
+	static I18nNode create(final String key, final Language iso2, final String value)
 	{
-		final Map<String, String> val = new HashMap<String, String>();
+		final Map<Language, String> val = new HashMap<>();
 		val.put(iso2, value);
 		return create(key, val);
 	}
 
 	/**
-	 * Erzeugt auf Basis eine . separierten Schlüsselwerts die Kette von
-	 * I18nNodes.
+	 * Erzeugt auf Basis eine . separierten Schlüsselwerts die Kette von I18nNodes.
 	 * 
 	 * Beispiel: de.ludwig.x.y
 	 * 
@@ -170,20 +166,18 @@ public class I18nNode
 	 * @param values
 	 * @return
 	 */
-	static I18nNode create(final String key, final Map<String, String> values)
+	static I18nNode create(final String key, final Map<Language, String> values)
 	{
 		String[] parts = i18nKeySplit(key);
 		I18nNode current = new I18nNode();
 		I18nNode root = current;
 
-		for (int i = 0; i < parts.length; i++)
-		{
+		for (int i = 0; i < parts.length; i++) {
 			current.i18nKeyPart = parts[i];
 			if (i == parts.length - 1)
 				current.value = values;
 
-			if (i < parts.length - 1)
-			{
+			if (i < parts.length - 1) {
 				// current.parent = new I18nNode();
 				I18nNode child = new I18nNode();
 				child.parent = current;
@@ -204,8 +198,7 @@ public class I18nNode
 	 */
 	private static String[] i18nKeySplit(final String key)
 	{
-		if (key == null || StringUtils.isBlank(key))
-		{
+		if (key == null || StringUtils.isBlank(key)) {
 			return new String[0];
 		}
 
@@ -240,25 +233,20 @@ public class I18nNode
 		final String[] parts = i18nKeySplit(key);
 		I18nNode lastMatching = null;
 
-		if (rootNode.i18nKeyPart.equals(parts[0]) == false)
-		{
+		if (rootNode.i18nKeyPart.equals(parts[0]) == false) {
 			return lastMatching;
-		} else
-		{
+		} else {
 			lastMatching = rootNode;
 		}
 
 		String partKey = "";
-		if (parts.length == 1)
-		{
+		if (parts.length == 1) {
 			partKey = key;
-		} else
-		{
+		} else {
 			partKey = StringUtils.join(parts, ".", 1, parts.length);
 		}
 
-		for (I18nNode c : rootNode.childs)
-		{
+		for (I18nNode c : rootNode.childs) {
 			final I18nNode childMatching = mostMatching(partKey, c);
 			if (childMatching == null)
 				continue;
@@ -279,18 +267,15 @@ public class I18nNode
 	{
 		final List<String> keyParts = new ArrayList<String>();
 		I18nNode tmp = this;
-		do
-		{
+		do {
 			keyParts.add(tmp.getI18nKeyPart());
 			tmp = tmp.getParent();
 		} while (tmp != null);
 
 		final StringBuilder sb = new StringBuilder();
-		for (int i = keyParts.size() - 1; i >= 0; i--)
-		{
+		for (int i = keyParts.size() - 1; i >= 0; i--) {
 			sb.append(keyParts.get(i));
-			if (i > 0)
-			{
+			if (i > 0) {
 				sb.append(".");
 			}
 		}
@@ -300,8 +285,7 @@ public class I18nNode
 	public I18nNode child(final String key)
 	{
 		I18nNode mostMatching = mostMatching(key, this);
-		if (key.equals(mostMatching.key()))
-		{
+		if (key.equals(mostMatching.key())) {
 			return mostMatching;
 		}
 		return null;
@@ -309,6 +293,7 @@ public class I18nNode
 
 	/**
 	 * Brings all nodes of the Treestructure in one line (an array).
+	 * 
 	 * @return
 	 */
 	public List<I18nNode> flatten()
@@ -316,55 +301,53 @@ public class I18nNode
 		return flatten(this, new ArrayList<I18nNode>());
 	}
 
-	public String keyValue(final Locale language) {
-		return key() + "=" + value(language.getLanguage());
+	public String keyValue(final Language language)
+	{
+		return key() + "=" + value(language);
 	}
-	
+
 	/**
 	 * 
 	 * @param parent
 	 * @param flattened
-	 * @return flattened Tree-Structure with all childs of the parent (and sub-childs) and the parent itself.
+	 * @return flattened Tree-Structure with all childs of the parent (and sub-childs) and the
+	 *         parent itself.
 	 */
 	private List<I18nNode> flatten(final I18nNode parent, final List<I18nNode> flattened)
 	{
 		boolean parentAdded = false;
 
-		if ((parent.childs == null || parent.childs.isEmpty()))
-		{
+		if ((parent.childs == null || parent.childs.isEmpty())) {
 			flattened.add(parent);
 			parentAdded = true;
 		}
 
-		for (I18nNode c : parent.childs)
-		{
+		for (I18nNode c : parent.childs) {
 			flatten(c, flattened);
 		}
 
-		if (parentAdded == false)
-		{
+		if (parentAdded == false) {
 			flattened.add(parent);
 		}
 
 		return flattened;
 	}
 
-	void update(final String iso2Language, final String value)
+	void update(final Language language, final String value)
 	{
-		this.value.put(iso2Language, value);
+		this.value.put(language, value);
 	}
 
 	/**
-	 * use this method to set a value for all existing languages. existing
-	 * means: all languages that are defined for this node.
+	 * use this method to set a value for all existing languages. existing means: all languages that
+	 * are defined for this node.
 	 * 
 	 * @param value
 	 *            the value to be set
 	 */
 	void updateAll(final String value)
 	{
-		for (final String iso2 : this.value.keySet())
-		{
+		for (final Language iso2 : this.value.keySet()) {
 			this.value.put(iso2, value);
 		}
 	}
@@ -375,12 +358,12 @@ public class I18nNode
 		return UnmodifiableList.decorate(childs);
 	}
 
-	public String value(String iso2)
+	public String value(Language language)
 	{
-		if (value.containsKey(iso2) == false)
+		if (value.containsKey(language) == false)
 			return "";
 
-		return value.get(iso2);
+		return value.get(language);
 	}
 
 	public I18nNode getParent()

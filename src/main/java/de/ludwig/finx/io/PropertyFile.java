@@ -65,6 +65,25 @@ public class PropertyFile implements Iterable<Block>
 	}
 
 	/**
+	 * After all modifcations are done to this PropertyFile Instance its time to write the result to
+	 * a properties file. Use this method after all modifications are applied and to receive the
+	 * data that shall be written to the properties file.
+	 * 
+	 * @return see description
+	 */
+	public List<String> filedata()
+	{
+		final List<String> result = new ArrayList<String>();
+
+		for (final Block b : this) {
+			for (Line l : b.getLines()) {
+				result.add(l.getLine());
+			}
+		}
+		return result;
+	}
+
+	/**
 	 * Inserts if necessary (if there is actually no key in this structure equals to the key of the
 	 * {@link I18nNode}) the given I18nNode with respect to all relevant Prettyprint-Settings e.g.:
 	 * PropertiesWriter#preservePropertyLayout
@@ -76,8 +95,25 @@ public class PropertyFile implements Iterable<Block>
 	 */
 	public final void insert(final I18nNode insertThis)
 	{
+		final PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
+
 		if (startingBlock == null) {
-			// startingBlock = new Block(dimension, rawLines, type)
+			insertIntoEmpty(insertThis, keyOrder);
+			return;
+		}
+
+		final PropertyPreserveMode preserveMode = PropertiesWriter.preservePropertyLayout.setting();
+		switch (preserveMode)
+		{
+		case NONE:
+			insertPreserveModeNone();
+			break;
+		case NONSTRICT:
+			insertPreserveModeNonstrict();
+			break;
+		case STRICT:
+			insertPreserveModeStrict(insertThis);
+			break;
 		}
 	}
 
@@ -99,6 +135,57 @@ public class PropertyFile implements Iterable<Block>
 	public void grouping()
 	{
 		// for(final Block b)
+	}
+
+	private void insertPreserveModeNone()
+	{
+
+	}
+
+	private void insertPreserveModeNonstrict()
+	{
+
+	}
+
+	private void insertPreserveModeStrict(I18nNode nodeToInsert)
+	{
+		final Iterator<Block> blockIterator = iterator();
+		while (blockIterator.hasNext()) {
+			final Block last = blockIterator.next();
+			if (blockIterator.hasNext()) {
+				continue;
+			}
+
+			if (last.getType().equals(BlockType.KEYVALUE)) {
+				last.getLines().add(new Line(0, nodeToInsert.keyValue(language)));
+			} else {
+				final List<String> rawLines = new ArrayList<>();
+				rawLines.add(nodeToInsert.keyValue(language));
+				Block newKeyValueBlock = new Block(new BlockDimension(0, 0), rawLines, BlockType.KEYVALUE);
+				last.concat(null, newKeyValueBlock);
+			}
+
+			break;
+		}
+	}
+
+	/**
+	 * @param insertThis
+	 * @param keyOrder
+	 */
+	private void insertIntoEmpty(final I18nNode insertThis, final PropertyKeyOrder keyOrder)
+	{
+		if (startingBlock != null) {
+			throw new ApplicationCodingException("cannot insert into empty because startingBlock already exists");
+		}
+
+		final List<String> rawLines = new ArrayList<>();
+		final List<I18nNode> flattened = insertThis.flatten();
+		PropertyKeyOrderSetting.sort(flattened, keyOrder);
+		for (I18nNode n : flattened) {
+			rawLines.add(n.keyValue(language));
+		}
+		startingBlock = new Block(new BlockDimension(0, flattened.size() - 1), rawLines, BlockType.KEYVALUE);
 	}
 
 	private void process(final List<String> lines)
@@ -286,25 +373,6 @@ public class PropertyFile implements Iterable<Block>
 	}
 
 	/**
-	 * After all modifcations are done to this PropertyFile Instance its time to write the result to
-	 * a properties file. Use this method after all modifications are applied and to receive the
-	 * data that shall be written to the properties file.
-	 * 
-	 * @return see description
-	 */
-	public List<String> filedata()
-	{
-		final List<String> result = new ArrayList<String>();
-
-		for (final Block b : this) {
-			for (Line l : b.getLines()) {
-				result.add(l.getLine());
-			}
-		}
-		return result;
-	}
-
-	/**
 	 * If Finx shall take care about the formatting of the properties file this method do any
 	 * necessary formatting before further changes are made.
 	 */
@@ -420,6 +488,14 @@ public class PropertyFile implements Iterable<Block>
 	}
 }
 
+/**
+ * A Block object represents one or more lines inside a property file that are of one type (s.
+ * BlockType) and if all of these lines following after each other. That means between these lines
+ * are no empty lines or blocks of a different type
+ * 
+ * @author Daniel
+ * 
+ */
 class Block
 {
 	private List<Line> lines = new ArrayList<Line>();
@@ -430,6 +506,14 @@ class Block
 
 	private Block persuing;
 
+	/**
+	 * 
+	 * @param dimension
+	 *            TODO that does not seems very usefull. Why not save the dimension at this object?
+	 *            Other question, is it really necessary?
+	 * @param rawLines
+	 * @param type
+	 */
 	public Block(BlockDimension dimension, List<String> rawLines, BlockType type)
 	{
 		this.type = type;
@@ -584,6 +668,11 @@ class Block
 
 class Line
 {
+	/**
+	 * actually without a use
+	 * 
+	 * TODO check if it is really necessary.
+	 */
 	private final int pos;
 
 	private final String line;
@@ -632,7 +721,9 @@ class BlockDimension implements Comparable<BlockDimension>
 
 	/**
 	 * @param first
+	 *            linenumber this block starts from
 	 * @param last
+	 *            linenumber this block ends
 	 */
 	public BlockDimension(Integer first, Integer last)
 	{

@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.Language;
 import de.ludwig.finx.settings.AppSettings;
 
 /**
@@ -28,8 +29,7 @@ public class PropertiesReader
 
 	PropertiesReader(final File propertieFilesDir)
 	{
-		if (propertieFilesDir.isDirectory() == false)
-		{
+		if (propertieFilesDir.isDirectory() == false) {
 			throw new ApplicationCodingException("This is not a directory: " + propertieFilesDir.getAbsolutePath());
 		}
 
@@ -39,16 +39,14 @@ public class PropertiesReader
 
 			public boolean accept(File pathname)
 			{
-				if (pathname.isDirectory())
-				{
+				if (pathname.isDirectory()) {
 					return false;
 				}
 
 				final String filename = pathname.getName();
 				String localInfo = StringUtils.substringBetween(filename, AppSettings.i18nPropFilePostFix.setting(),
 						AppSettings.i18nPropFilePreFix.setting());
-				if (StringUtils.isBlank(localInfo))
-				{
+				if (StringUtils.isBlank(localInfo)) {
 					log.debug("Unable to locate Locale-Info in Filename " + filename + " . Ignoring this file!");
 					return false;
 				}
@@ -68,16 +66,13 @@ public class PropertiesReader
 	{
 		final Map<Locale, Properties> langProperties = new HashMap<Locale, Properties>();
 
-		for (File f : propertiesfiles)
-		{
-			try
-			{
+		for (File f : propertiesfiles) {
+			try {
 				Locale localeFromFileName = localeFromFileName(f.getName());
 				Properties p = new Properties();
 				p.load(new FileInputStream(f));
 				langProperties.put(localeFromFileName, p);
-			} catch (IOException ex)
-			{
+			} catch (IOException ex) {
 				log.error("io-error while loading Properties-file", ex);
 			}
 		}
@@ -85,28 +80,25 @@ public class PropertiesReader
 		final Set<Locale> locales = langProperties.keySet();
 		// die Sprachen für die wir Internationalisierungsdateien gefunden haben
 		final RootNode root = new RootNode();
-		for (Locale l : locales)
-		{
+		for (Locale l : locales) {
 			log.debug("creating nodes for language: " + l.getLanguage());
 			final Properties i18ns = langProperties.get(l);
 			final Set<Object> keySet = i18ns.keySet();
 
 			// de.ludwig.blah=
 			// com.ludwig.blub=
-			for (Object key : keySet)
-			{
-				root.addNode((String) key, l.getLanguage(), i18ns.getProperty((String) key));
+			for (Object key : keySet) {
+				root.addNode((String) key, Language.language(l.getLanguage()), i18ns.getProperty((String) key));
 			}
 		}
 		return root;
 	}
-	
+
 	private Locale localeFromFileName(String filename)
 	{
 		String localInfo = StringUtils.substringBetween(filename, AppSettings.i18nPropFilePostFix.setting(),
 				AppSettings.i18nPropFilePreFix.setting());
-		if (localInfo.contains("_") == false)
-		{
+		if (localInfo.contains("_") == false) {
 			return new Locale(localInfo);
 		}
 

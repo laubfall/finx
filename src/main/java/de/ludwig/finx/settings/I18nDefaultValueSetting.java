@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.text.StrTokenizer;
 
+import de.ludwig.finx.Language;
 import de.ludwig.finx.io.RootNode;
 
 /**
@@ -56,8 +57,7 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 	public void initialize(String rawValue)
 	{
 		String type = rawValue;
-		if (rawValue.contains(":"))
-		{
+		if (rawValue.contains(":")) {
 			final StrTokenizer tokenizer = StrTokenizer.getCSVInstance(rawValue).setDelimiterChar(':');
 			String[] tokenArray = tokenizer.getTokenArray();
 			type = tokenArray[0];
@@ -76,9 +76,8 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 			break;
 		case ISO2KEY:
 			Map<String, String> value2 = value(node, key);
-			for (String iso2 : node.getExistingLanguages())
-			{
-				node.update(value2.get(iso2), key, iso2);
+			for (String iso2 : node.getExistingLanguages()) {
+				node.update(value2.get(iso2), key, Language.language(iso2));
 			}
 			break;
 		case KEY:
@@ -89,9 +88,8 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 			break;
 		case ISO2TEXT:
 			final Map<String, String> value = value(node, key);
-			for (String iso2 : node.getExistingLanguages())
-			{
-				node.update(value.get(iso2), key, iso2);
+			for (String iso2 : node.getExistingLanguages()) {
+				node.update(value.get(iso2), key, Language.language(iso2));
 			}
 			break;
 		default:
@@ -105,27 +103,27 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 		switch (type)
 		{
 		case EMPTY:
-			for(String iso2 : node.getExistingLanguages()) {
+			for (String iso2 : node.getExistingLanguages()) {
 				result.put(iso2, "");
 			}
 			break;
 		case ISO2KEY:
-			for(String iso2 : node.getExistingLanguages()) {
+			for (String iso2 : node.getExistingLanguages()) {
 				result.put(iso2, iso2 + "_" + key);
 			}
 			break;
 		case KEY:
-			for(String iso2 : node.getExistingLanguages()) {
+			for (String iso2 : node.getExistingLanguages()) {
 				result.put(iso2, key);
 			}
 			break;
 		case TEXT:
-			for(String iso2 : node.getExistingLanguages()) {
+			for (String iso2 : node.getExistingLanguages()) {
 				result.put(iso2, userDefinedText);
 			}
 			break;
 		case ISO2TEXT:
-			for(String iso2 : node.getExistingLanguages()) {
+			for (String iso2 : node.getExistingLanguages()) {
 				result.put(iso2, iso2 + "_" + userDefinedText);
 			}
 			break;
@@ -135,16 +133,19 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Enum#toString()
 	 */
 	@Override
 	public String toString()
 	{
-		if(type == null) return "";
+		if (type == null)
+			return "";
 		return type.name();
 	}
-	
+
 	enum DefaultValueTypes
 	{
 		KEY, // use the key of the I18nNode

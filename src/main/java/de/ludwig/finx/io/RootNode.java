@@ -10,6 +10,7 @@ import org.apache.commons.collections.set.UnmodifiableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import de.ludwig.finx.Language;
 import de.ludwig.finx.settings.AppSettings;
 
 /**
@@ -27,12 +28,12 @@ public class RootNode
 	 * 
 	 * dann wären hier zwei I18nNodes mit den keyParts de und page drin
 	 */
-	private List<I18nNode> rootNodes = new ArrayList<I18nNode>();
+	private List<I18nNode> rootNodes = new ArrayList<>();
 
 	/**
 	 * All iso2 codes of that languages we have some translations also called existing languages
 	 */
-	private final Set<String> existingLanguages = new HashSet<String>();
+	private final Set<Language> existingLanguages = new HashSet<>();
 
 	/**
 	 * 
@@ -40,17 +41,17 @@ public class RootNode
 	 *            Immer der absolute Schlüssel! Relative Schlüssel gibt es hier nicht! Beispiel
 	 *            key1: de.ludwig nun möchte man unter de.ludwig ein Node mit Key node anlegen. Dann
 	 *            muss man als key de.ludwig.node übergeben!
-	 * @param iso2Language
+	 * @param language
 	 * @param value
 	 */
-	public void addNode(final String key, final String iso2Language, final String value)
+	public void addNode(final String key, final Language language, final String value)
 	{
-		existingLanguages.add(iso2Language);
+		existingLanguages.add(language);
 
 		if (rootNodes.isEmpty()) {
-			rootNodes.add(I18nNode.create(key, iso2Language, value));
+			rootNodes.add(I18nNode.create(key, language, value));
 			log.debug(String.format("added node with key %s for language %s with value %s to empty root", key,
-					iso2Language, value));
+					language, value));
 			return;
 		}
 
@@ -58,14 +59,13 @@ public class RootNode
 		for (I18nNode root : rootNodes) {
 			final I18nNode mostMatchingRootPath = I18nNode.mostMatching(key, root);
 			if (mostMatchingRootPath == null) {
-				tmp.add(I18nNode.create(key, iso2Language, value));
-				log.debug(String.format("added node with key %s for language %s with value %s to root", key,
-						iso2Language, value));
+				tmp.add(I18nNode.create(key, language, value));
+				log.debug(String.format("added node with key %s for language %s with value %s to root", key, language,
+						value));
 				continue;
 			} else if (mostMatchingRootPath.key().equals(key)) {
-				mostMatchingRootPath.update(iso2Language, value);
-				log.debug(String.format("updated node with key %s for language %s with value %s", key, iso2Language,
-						value));
+				mostMatchingRootPath.update(language, value);
+				log.debug(String.format("updated node with key %s for language %s with value %s", key, language, value));
 				return;
 			} else {
 				final String mostMatchingKey = mostMatchingRootPath.key();
@@ -75,9 +75,9 @@ public class RootNode
 																	// immer den
 																	// Pfad ohne
 																	// . am Ende
-				I18nNode.attach(keyPart, mostMatchingRootPath, value, iso2Language);
+				I18nNode.attach(keyPart, mostMatchingRootPath, value, language);
 				log.debug(String.format("added node with key %s for language %s with value %s to child with key %s",
-						key, iso2Language, value, mostMatchingKey));
+						key, language, value, mostMatchingKey));
 				return;
 			}
 		}
@@ -97,8 +97,8 @@ public class RootNode
 	 */
 	public void addAll(final String key, String value)
 	{
-		for (String iso2 : existingLanguages) {
-			addNode(key, iso2, value);
+		for (Language language : existingLanguages) {
+			addNode(key, language, value);
 		}
 	}
 
@@ -114,14 +114,14 @@ public class RootNode
 	public void addAll(final String key)
 	{
 		final Map<String, String> value = AppSettings.i18nDefaultValue.setting().value(this, key);
-		for (String iso2 : existingLanguages) {
-			addNode(key, iso2, value.get(iso2));
+		for (Language language : existingLanguages) {
+			addNode(key, language, value.get(language));
 		}
 	}
 
-	public void update(String value, String key, String iso2)
+	public void update(String value, String key, Language language)
 	{
-		findNode(key).update(iso2, value);
+		findNode(key).update(language, value);
 	}
 
 	public void updateAll(String value, String key)

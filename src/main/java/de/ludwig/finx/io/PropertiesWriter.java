@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
@@ -12,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.ApplicationException;
+import de.ludwig.finx.Language;
 import de.ludwig.finx.settings.SettingsDaoImpl;
 import de.ludwig.finx.settings.UpdatableSetting;
 
@@ -25,19 +25,8 @@ public class PropertiesWriter
 	private File target;
 
 	/**
-	 * The original I18n-Property-Files stays untouched, their formatting is not modified.
-	 * 
-	 * Possible values: STRICT, NONSTRICT, NONE
-	 * 
-	 * nonstrict: The application adds new keys to the point where their natural ordering matches
-	 * most (for example existing key: de.ludwig.test new Key de.ludwig.tesz, in this case the new
-	 * key is added after the existing one). Other Pretty-Printing Settings have no effect.
-	 * 
-	 * strict: new keys are added to the end of the file. Other Pretty-Printing Settings have no
-	 * effect.
-	 * 
-	 * none: if the application writes the I18n-Property-Files Keys are sorted as specified by the
-	 * given Pretty-Print-Settings
+	 * For a full description of the meanings of the different kind of modes see
+	 * {@link PropertyPreserveMode}
 	 */
 	public static UpdatableSetting<PropertyPreserveMode> preservePropertyLayout;
 
@@ -131,11 +120,11 @@ public class PropertiesWriter
 	 *            TODO
 	 * @return
 	 */
-	public static StringBuilder dumpI18nTreeStructure(final List<I18nNode> childs, StringBuilder sb, Locale language)
+	public static StringBuilder dumpI18nTreeStructure(final List<I18nNode> childs, StringBuilder sb, Language language)
 	{
 		for (I18nNode c : childs) {
 			for (I18nNode n : c.flatten()) {
-				sb.append(n.key() + "=" + n.value(language.getLanguage())).append("\n");
+				sb.append(n.key() + "=" + n.value(language)).append("\n");
 			}
 		}
 

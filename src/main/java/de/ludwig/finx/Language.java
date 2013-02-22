@@ -1,6 +1,8 @@
 package de.ludwig.finx;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 public class Language
 {
 	private Locale base;
+
+	private static final Map<String, Language> CACHE = new HashMap<>();
 
 	/**
 	 * @param base
@@ -27,6 +31,32 @@ public class Language
 			throw new ApplicationCodingException("language is not set");
 		}
 		this.base = base;
+	}
+
+	/**
+	 * Shortcut Constructor.
+	 * 
+	 * @param iso2
+	 *            Not optional. normally you provide an iso2 code here, but in theory every value is
+	 *            possible
+	 */
+	public Language(String iso2)
+	{
+		// we dont need any toLowerCaseOperation at this point. If you call getLanguage of Locale
+		// you get a lower-case value
+		this(new Locale(iso2));
+	}
+
+	public static final Language language(final String languageIso2)
+	{
+		final String key = languageIso2.toLowerCase();
+
+		if (CACHE.containsKey(key)) {
+			return CACHE.get(key);
+		}
+		Language language = new Language(languageIso2);
+		CACHE.put(key, language);
+		return language;
 	}
 
 	public String language()
