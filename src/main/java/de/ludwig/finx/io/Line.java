@@ -38,4 +38,15 @@ class Line
 		return line;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return "Line [pos=" + pos + ", line=" + line + "]";
+	}
+
 }

@@ -17,10 +17,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.Language;
@@ -34,6 +33,8 @@ import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
  */
 public class PropertyFile implements Iterable<Block>
 {
+	private static final Logger LOG = Logger.getLogger(PropertyFile.class);
+
 	private Block startingBlock;
 
 	/**
@@ -136,32 +137,6 @@ public class PropertyFile implements Iterable<Block>
 	/**
 	 * group all keyValues as specified by {@link PropertiesWriter#keyGrouping} and
 	 * {@link PropertiesWriter#keyGroupSpace}
-	 * 
-	 * <code>
-	 * de.ludwig
-	 * de.ludwig.blah
-	 * de.ludwig.blah.blub
-	 * de.ludwig.test
-	 * com.ludwig
-	 * 
-	 * 2:
-	 * de.ludwig
-	 * de.ludwig.blah
-	 * de.ludwig.blah.blub
-	 * de.ludwig.test
-	 * 
-	 * com.ludwig
-	 * 
-	 * 3:
-	 * de.ludwig
-	 * 
-	 * de.ludwig.test
-	 * 
-	 * de.ludwig.blah
-	 * de.ludwig.blah.test
-	 * 
-	 * com.ludwig
-	 * </code>
 	 */
 	public final void grouping()
 	{
@@ -187,64 +162,77 @@ public class PropertyFile implements Iterable<Block>
 			keyLengthGrouped.get(keyLength).add(gp);
 		}
 
-		final Integer keyGrouping = PropertiesWriter.keyGrouping.setting();
-		final Set<Integer> keySet = keyLengthGrouped.keySet();
+		// final Integer keyGrouping = PropertiesWriter.keyGrouping.setting();
+		final Set<Integer> keyLengths = keyLengthGrouped.keySet();
 
-		@SuppressWarnings("unchecked")
-		Collection<Integer> biggerEquals = CollectionUtils.select(keySet, new Predicate() {
-			@Override
-			public boolean evaluate(Object object)
-			{
-				Integer length = (Integer) object;
-				return length > keyGrouping;
-			}
-		});
-		Map<String, List<GroupPart>> keyGroups = groupBiggerEquals(biggerEquals, keyLengthGrouped);
-
-		@SuppressWarnings("unchecked")
-		final Collection<Integer> lower = CollectionUtils.disjunction(keySet, biggerEquals);
-		keyGroups.putAll(groupLower(lower, keyLengthGrouped));
+		Map<String, List<GroupPart>> keyGroups = new HashMap<>();
+		keyGroups.putAll(groupLower(keyLengths, keyLengthGrouped));
 
 		final Set<String> groupingKeys = keyGroups.keySet();
-		Block lastBlockInGroup = null;
-		for (String gk : groupingKeys) {
-			final List<GroupPart> list = keyGroups.get(gk);
-			ListIterator<GroupPart> listIterator = list.listIterator();
-			while (listIterator.hasNext()) {
-				GroupPart next = listIterator.next();
-				next.owningBlock.detach();
+		LOG.debug("grouping keys: " + groupingKeys);
 
-				if (lastBlockInGroup != null) {
-					next.owningBlock.insertAfter(lastBlockInGroup);
-					lastBlockInGroup = null;
+		startingBlock = null;
+		final List<Block> mergedKeyValueBlocks = new ArrayList<>();
+		for (String gk : groupingKeys) {
+			final List<GroupPart> groupParts = keyGroups.get(gk);
+			LOG.debug(String.format("GroupParts for groupingKey %s : %d ", gk, groupParts.size()));
+
+			Block first = null;
+			for (int i = 0; i < groupParts.size(); i++) {
+				GroupPart next = groupParts.get(i);
+				next.owningBlock.detach();
+				if (first == null) {
+					first = next.owningBlock;
 				}
 
-				if (listIterator.hasNext()) {
-					Block owningBlock = listIterator.next().owningBlock;
-					next.owningBlock.concat(owningBlock.getPreceding(), owningBlock);
+				if (i < groupParts.size() - 1) {
+					GroupPart next2 = groupParts.get(i + 1);
+					next2.owningBlock.detach();
+					first.insertBefore(next2.owningBlock);
+					first.merge(next2.owningBlock);
 				} else {
-					Block empty = new EmptyBlock(PropertiesWriter.keyGroupSpace.setting());
-					empty.insertAfter(next.owningBlock);
-					lastBlockInGroup = empty;
+					mergedKeyValueBlocks.add(first);
+					first = null;
 				}
 			}
 		}
-	}
 
-	private Map<String, List<GroupPart>> groupBiggerEquals(final Collection<Integer> lengths,
-			Map<Integer, List<GroupPart>> keyLengthGrouped)
-	{
-		return null;
+		startingBlock = null;
+		Block lastBlockInGroup = null;
+		final Iterator<Block> mergedBlocksIterator = mergedKeyValueBlocks.iterator();
+		while (mergedBlocksIterator.hasNext()) {
+			Block b = mergedBlocksIterator.next();
+			if (startingBlock == null) {
+				startingBlock = b;
+			}
+
+			if (lastBlockInGroup != null) {
+				b.insertAfter(lastBlockInGroup);
+			}
+
+			if (mergedBlocksIterator.hasNext()) {
+				Block empty = new EmptyBlock(PropertiesWriter.keyGroupSpace.setting());
+				empty.insertAfter(b);
+				lastBlockInGroup = empty;
+			}
+		}
 	}
 
 	private Map<String, List<GroupPart>> groupLower(final Collection<Integer> lengths,
 			Map<Integer, List<GroupPart>> keyLengthGrouped)
 	{
 		final Map<String, List<GroupPart>> result = new HashMap<>();
+		final Integer keyGrouping = PropertiesWriter.keyGrouping.setting();
 		for (Integer len : lengths) {
 			final List<GroupPart> parts = keyLengthGrouped.get(len);
 			for (final GroupPart l : parts) {
-				final String groupingKeyPart = l.groupingKeyPart();
+
+				String groupingKeyPart;
+				if (len <= keyGrouping) {
+					groupingKeyPart = l.groupingKeyPart();
+				} else {
+					groupingKeyPart = l.partOfKey(keyGrouping);
+				}
 				if (groupingKeyPart == null) {
 					result.put(l.key(), new ArrayList<GroupPart>() {
 						private static final long serialVersionUID = 1L;
@@ -637,16 +625,27 @@ public class PropertyFile implements Iterable<Block>
 			return StringUtils.substringBefore(line.getLine(), "=");
 		}
 
+		/**
+		 * 
+		 * @return the part of the key that can be used to group other keys. For example: you have
+		 *         this key de.ludwig.test, then the groupingKeyPart would be de.ludwig, because
+		 *         there can be other keys with the same prefix de.ludwig . Maybe de.ludwig.test2
+		 */
 		String groupingKeyPart()
+		{
+			return partOfKey(keyLength());
+		}
+
+		String partOfKey(final int partCnt)
 		{
 			final String[] keyParts = keyParts();
 			if (keyParts.length == 1) {
 				return null;
 			}
 			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < keyParts.length; i++) {
+			for (int i = 0; i < partCnt; i++) {
 				sb.append(keyParts[i]);
-				if (i < keyParts.length - 1) {
+				if (i < partCnt - 1) {
 					sb.append(".");
 				}
 			}
@@ -655,7 +654,7 @@ public class PropertyFile implements Iterable<Block>
 
 		String[] keyParts()
 		{
-			return I18nNode.i18nKeySplit(line.getLine());
+			return I18nNode.i18nKeySplit(key());
 		}
 
 		Integer keyLength()

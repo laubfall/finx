@@ -46,20 +46,41 @@ public class PropertyFileGroupTest
 	}
 
 	@Test
-	public void grouping2()
+	public void grouping2() throws FileNotFoundException, IOException
 	{
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
+		PropertiesWriter.keyGrouping.change("2");
+		pf.grouping();
 
+		final List<String> filedata = pf.filedata();
+		Assert.assertNotNull(filedata);
+		// one empty line, because we have two groups (a... and b...)
+		Assert.assertEquals(cntLinesInFile + 7, filedata.size());
 	}
 
 	@Test
-	public void grouping3()
+	public void grouping3() throws FileNotFoundException, IOException
 	{
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
+		PropertiesWriter.keyGrouping.change("3");
+		pf.grouping();
 
+		final List<String> filedata = pf.filedata();
+		Assert.assertNotNull(filedata);
+		// one empty line, because we have two groups (a... and b...)
+		Assert.assertEquals(cntLinesInFile + 16, filedata.size());
 	}
 
 	@Test
-	public void grouping4()
+	public void grouping4() throws FileNotFoundException, IOException
 	{
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
+		PropertiesWriter.keyGrouping.change("4");
+		pf.grouping();
 
+		final List<String> filedata = pf.filedata();
+		Assert.assertNotNull(filedata);
+		// one empty line, because we have two groups (a... and b...)
+		Assert.assertEquals(cntLinesInFile + 20, filedata.size());
 	}
 }

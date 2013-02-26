@@ -113,7 +113,7 @@ class Block
 		// 0 0 0 1 0 0 0 2 0 0 3 : imagine you want to concat block 1 with 2 and
 		// 3. In this case the two blocks between 2 and 3 are not connected
 		// anymore to other blocks. so thats why we check if the two blocks as
-		// params a conntected to each other, to prevent inconsistent state.
+		// params are conntected to each other, to prevent inconsistent state.
 		if (preceding != null && persuing != null && persuing.getPreceding() != null
 				&& persuing.getPreceding() != preceding)
 			throw new ApplicationCodingException(
