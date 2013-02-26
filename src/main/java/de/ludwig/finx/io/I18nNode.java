@@ -196,7 +196,7 @@ public class I18nNode
 	 * @param key
 	 * @return Nie Null.
 	 */
-	private static String[] i18nKeySplit(final String key)
+	public static String[] i18nKeySplit(final String key)
 	{
 		if (key == null || StringUtils.isBlank(key)) {
 			return new String[0];

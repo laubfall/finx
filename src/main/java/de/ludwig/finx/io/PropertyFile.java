@@ -5,19 +5,25 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.Language;
-import de.ludwig.finx.io.Block.BlockType;
 import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
 
 /**
@@ -131,10 +137,132 @@ public class PropertyFile implements Iterable<Block>
 	 * group all keyValues as specified by {@link PropertiesWriter#keyGrouping} and
 	 * {@link PropertiesWriter#keyGroupSpace}
 	 * 
+	 * <code>
+	 * de.ludwig
+	 * de.ludwig.blah
+	 * de.ludwig.blah.blub
+	 * de.ludwig.test
+	 * com.ludwig
+	 * 
+	 * 2:
+	 * de.ludwig
+	 * de.ludwig.blah
+	 * de.ludwig.blah.blub
+	 * de.ludwig.test
+	 * 
+	 * com.ludwig
+	 * 
+	 * 3:
+	 * de.ludwig
+	 * 
+	 * de.ludwig.test
+	 * 
+	 * de.ludwig.blah
+	 * de.ludwig.blah.test
+	 * 
+	 * com.ludwig
+	 * </code>
 	 */
-	public void grouping()
+	public final void grouping()
 	{
-		// for(final Block b)
+		List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
+		if (keyValueBlocks.isEmpty())
+			return;
+
+		for (Block kv : keyValueBlocks) {
+			kv.explode();
+		}
+
+		keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
+
+		// key: key length (that means the number of key-parts)
+		final Map<Integer, List<GroupPart>> keyLengthGrouped = new HashMap<>();
+		for (Block exp : keyValueBlocks) {
+			final GroupPart gp = new GroupPart(exp);
+			Integer keyLength = gp.keyLength();
+			if (keyLengthGrouped.containsKey(keyLength) == false) {
+				keyLengthGrouped.put(keyLength, new ArrayList<GroupPart>());
+			}
+
+			keyLengthGrouped.get(keyLength).add(gp);
+		}
+
+		final Integer keyGrouping = PropertiesWriter.keyGrouping.setting();
+		final Set<Integer> keySet = keyLengthGrouped.keySet();
+
+		@SuppressWarnings("unchecked")
+		Collection<Integer> biggerEquals = CollectionUtils.select(keySet, new Predicate() {
+			@Override
+			public boolean evaluate(Object object)
+			{
+				Integer length = (Integer) object;
+				return length > keyGrouping;
+			}
+		});
+		Map<String, List<GroupPart>> keyGroups = groupBiggerEquals(biggerEquals, keyLengthGrouped);
+
+		@SuppressWarnings("unchecked")
+		final Collection<Integer> lower = CollectionUtils.disjunction(keySet, biggerEquals);
+		keyGroups.putAll(groupLower(lower, keyLengthGrouped));
+
+		final Set<String> groupingKeys = keyGroups.keySet();
+		Block lastBlockInGroup = null;
+		for (String gk : groupingKeys) {
+			final List<GroupPart> list = keyGroups.get(gk);
+			ListIterator<GroupPart> listIterator = list.listIterator();
+			while (listIterator.hasNext()) {
+				GroupPart next = listIterator.next();
+				next.owningBlock.detach();
+
+				if (lastBlockInGroup != null) {
+					next.owningBlock.insertAfter(lastBlockInGroup);
+					lastBlockInGroup = null;
+				}
+
+				if (listIterator.hasNext()) {
+					Block owningBlock = listIterator.next().owningBlock;
+					next.owningBlock.concat(owningBlock.getPreceding(), owningBlock);
+				} else {
+					Block empty = new EmptyBlock(PropertiesWriter.keyGroupSpace.setting());
+					empty.insertAfter(next.owningBlock);
+					lastBlockInGroup = empty;
+				}
+			}
+		}
+	}
+
+	private Map<String, List<GroupPart>> groupBiggerEquals(final Collection<Integer> lengths,
+			Map<Integer, List<GroupPart>> keyLengthGrouped)
+	{
+		return null;
+	}
+
+	private Map<String, List<GroupPart>> groupLower(final Collection<Integer> lengths,
+			Map<Integer, List<GroupPart>> keyLengthGrouped)
+	{
+		final Map<String, List<GroupPart>> result = new HashMap<>();
+		for (Integer len : lengths) {
+			final List<GroupPart> parts = keyLengthGrouped.get(len);
+			for (final GroupPart l : parts) {
+				final String groupingKeyPart = l.groupingKeyPart();
+				if (groupingKeyPart == null) {
+					result.put(l.key(), new ArrayList<GroupPart>() {
+						private static final long serialVersionUID = 1L;
+
+						{
+							add(l);
+						}
+					});
+					continue;
+				}
+				if (result.containsKey(groupingKeyPart) == false) {
+					result.put(groupingKeyPart, new ArrayList<GroupPart>());
+				}
+
+				result.get(groupingKeyPart).add(l);
+			}
+		}
+		return result;
 	}
 
 	private void insertPreserveModeNone()
@@ -486,465 +614,53 @@ public class PropertyFile implements Iterable<Block>
 	{
 		return new BlockIterator(startingBlock);
 	}
-}
 
-/**
- * A Block object represents one or more lines inside a property file that are of one type (s.
- * BlockType) and if all of these lines following after each other. That means between these lines
- * are no empty lines or blocks of a different type
- * 
- * @author Daniel
- * 
- */
-class Block
-{
-	private List<Line> lines = new ArrayList<Line>();
-
-	private final BlockType type;
-
-	private Block preceding;
-
-	private Block persuing;
-
-	/**
-	 * 
-	 * @param dimension
-	 *            TODO that does not seems very usefull. Why not save the dimension at this object?
-	 *            Other question, is it really necessary?
-	 * @param rawLines
-	 * @param type
-	 */
-	public Block(BlockDimension dimension, List<String> rawLines, BlockType type)
+	private class GroupPart
 	{
-		this.type = type;
+		final Line line;
 
-		if (rawLines == null || rawLines.isEmpty())
-			throw new ApplicationCodingException("block with no lines is not allowed");
+		final Block owningBlock;
 
-		for (int i = dimension.getFirst(); i <= dimension.getLast(); i++) {
-			final String raw = rawLines.get(i);
-			lines.add(new Line(i, raw));
-		}
-	}
-
-	private Block(final List<Line> lines, BlockType type)
-	{
-		this.type = type;
-		this.lines = lines;
-	}
-
-	/**
-	 * Every line of this block is moved to an own Block instance. This instance becomes the head of
-	 * the resulting list of Block Elements. No sorting is applied!
-	 */
-	public void explode()
-	{
-		List<Line> tmp = lines;
-
-		lines = new ArrayList<Line>();
-		lines.add(tmp.get(0));
-
-		final Block startingBlock = this;
-		final Block endBlock = persuing;
-		Block previous = this;
-		for (int i = 1; i < tmp.size(); i++) {
-			final List<Line> newLine = new ArrayList<Line>();
-			newLine.add(tmp.get(i));
-			final Block newBlock = new Block(newLine, type);
-
-			if (i == 1) { // start
-				newBlock.concat(startingBlock, null);
-			} else if (i == tmp.size() - 1) { // end
-				newBlock.concat(previous, endBlock);
-			} else {
-				newBlock.concat(previous, null);
+		GroupPart(final Block exploded) throws ApplicationCodingException
+		{
+			List<Line> lines = exploded.getLines();
+			if (lines.size() != 1) {
+				throw new ApplicationCodingException("it is not allowed for a group part to have more than one line");
 			}
 
-			previous = newBlock;
-		}
-	}
-
-	/**
-	 * Merges two blocks resulting in one single block. Only blocks of same type can be merged.
-	 * 
-	 * @param mergeThis
-	 *            this block is going to be merged into this block. His persuing block will be
-	 *            attached to this block as persuing block.
-	 */
-	public void merge(final Block mergeThis)
-	{
-		if (type.equals(mergeThis.getType()) == false)
-			throw new ApplicationCodingException("Blocks of different types cannot be merged!");
-
-		Block preceding = mergeThis.getPreceding();
-		if (preceding != null)
-			preceding.concat(preceding.preceding, mergeThis.persuing);
-
-		this.getLines().addAll(mergeThis.getLines());
-	}
-
-	public void concat(Block preceding, Block persuing)
-	{
-		// 0 0 0 1 0 0 0 2 0 0 3 : imagine you want to concat block 1 with 2 and
-		// 3. In this case the two blocks between 2 and 3 are not connected
-		// anymore to other blocks. so thats why we check if the two blocks as
-		// params a conntected to each other, to prevent inconsistent state.
-		if (preceding != null && persuing != null && persuing.getPreceding() != null
-				&& persuing.getPreceding() != preceding)
-			throw new ApplicationCodingException(
-					"trying to concat block with two blocks that are not connected to each other");
-
-		// remove old connections or refresh them
-		if (this.preceding != null && this.persuing != null) {
-			this.preceding.persuing = this.persuing;
-			this.persuing.preceding = this.preceding;
-		} else if (this.preceding != null) {
-			this.preceding.persuing = null;
-		} else if (this.persuing != null) {
-			this.persuing.preceding = null;
+			line = lines.get(0);
+			owningBlock = exploded;
 		}
 
-		// now attach this block to the given blocks
-		this.preceding = preceding;
-		if (preceding != null)
-			preceding.persuing = this;
-
-		this.persuing = persuing;
-		if (persuing != null)
-			persuing.preceding = this;
-	}
-
-	public void detach()
-	{
-		if (preceding != null && persuing != null) {
-			preceding.concat(null, persuing);
-		} else if (preceding != null) {
-			preceding.persuing = null;
-		} else if (persuing != null) {
-			persuing.preceding = null;
+		String key()
+		{
+			return StringUtils.substringBefore(line.getLine(), "=");
 		}
 
-		preceding = null;
-		persuing = null;
-	}
-
-	/**
-	 * @return the lines
-	 */
-	public List<Line> getLines()
-	{
-		return lines;
-	}
-
-	/**
-	 * @return the type
-	 */
-	public BlockType getType()
-	{
-		return type;
-	}
-
-	/**
-	 * @return the preceding
-	 */
-	public Block getPreceding()
-	{
-		return preceding;
-	}
-
-	/**
-	 * @return the persuing
-	 */
-	public Block getPersuing()
-	{
-		return persuing;
-	}
-
-	static enum BlockType
-	{
-		COMMENT, KEYVALUE, BLANK, ;
-	}
-}
-
-class Line
-{
-	/**
-	 * actually without a use
-	 * 
-	 * TODO check if it is really necessary.
-	 */
-	private final int pos;
-
-	private final String line;
-
-	/**
-	 * @param pos
-	 * @param line
-	 */
-	public Line(int pos, String line)
-	{
-		super();
-		this.pos = pos;
-		this.line = line;
-	}
-
-	/**
-	 * @return the pos
-	 */
-	public int getPos()
-	{
-		return pos;
-	}
-
-	/**
-	 * @return the line
-	 */
-	public String getLine()
-	{
-		return line;
-	}
-
-}
-
-/**
- * Describes the positioning of a Block in a Property-File. That means: gives you information about
- * the start- and end-line.
- * 
- * @author Daniel
- * 
- */
-class BlockDimension implements Comparable<BlockDimension>
-{
-	private final Integer first;
-
-	private final Integer last;
-
-	/**
-	 * @param first
-	 *            linenumber this block starts from
-	 * @param last
-	 *            linenumber this block ends
-	 */
-	public BlockDimension(Integer first, Integer last)
-	{
-		super();
-
-		if (last < first) {
-			throw new ApplicationCodingException("last is not allowed to be lower then first");
+		String groupingKeyPart()
+		{
+			final String[] keyParts = keyParts();
+			if (keyParts.length == 1) {
+				return null;
+			}
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < keyParts.length; i++) {
+				sb.append(keyParts[i]);
+				if (i < keyParts.length - 1) {
+					sb.append(".");
+				}
+			}
+			return sb.toString();
 		}
 
-		this.first = first;
-		this.last = last;
-	}
-
-	/**
-	 * @return the first
-	 */
-	public Integer getFirst()
-	{
-		return first;
-	}
-
-	/**
-	 * @return the last
-	 */
-	public Integer getLast()
-	{
-		return last;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((first == null) ? 0 : first.hashCode());
-		result = prime * result + ((last == null) ? 0 : last.hashCode());
-		return result;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		BlockDimension other = (BlockDimension) obj;
-		if (first == null) {
-			if (other.first != null)
-				return false;
-		} else if (!first.equals(other.first))
-			return false;
-		if (last == null) {
-			if (other.last != null)
-				return false;
-		} else if (!last.equals(other.last))
-			return false;
-		return true;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString()
-	{
-		StringBuilder builder = new StringBuilder();
-		builder.append("BlockDimension [first=").append(first).append(", last=").append(last).append("]");
-		return builder.toString();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(BlockDimension arg0)
-	{
-		if (arg0.first > last)
-			return -1;
-
-		if (arg0.last < first)
-			return 1;
-		return 0;
-	}
-}
-
-class BlockIterator implements ListIterator<Block>
-{
-	private Block actualBlock;
-
-	public BlockIterator(final Block actualBlock)
-	{
-		this.actualBlock = actualBlock;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#hasNext()
-	 */
-	@Override
-	public boolean hasNext()
-	{
-		boolean result = actualBlock != null
-				&& (actualBlock.getPersuing() != null || (actualBlock.getPreceding() == null && actualBlock
-						.getPersuing() == null));
-		if (actualBlock == null || (result == false && actualBlock == null)) {
-			return false;
+		String[] keyParts()
+		{
+			return I18nNode.i18nKeySplit(line.getLine());
 		}
-		return true;
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#next()
-	 */
-	@Override
-	public Block next()
-	{
-		Block next = actualBlock;
-		actualBlock = actualBlock.getPersuing();
-		return next;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#hasPrevious()
-	 */
-	@Override
-	public boolean hasPrevious()
-	{
-		if (actualBlock != null && actualBlock.getPreceding() != null)
-			return true;
-		return false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#previous()
-	 */
-	@Override
-	public Block previous()
-	{
-		Block previous = actualBlock.getPreceding();
-		actualBlock = previous;
-		return previous;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#nextIndex()
-	 */
-	@Override
-	public int nextIndex()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#previousIndex()
-	 */
-	@Override
-	public int previousIndex()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#remove()
-	 */
-	@Override
-	public void remove()
-	{
-		throw new UnsupportedOperationException("remove on Block Iterator is not supported");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#set(java.lang.Object)
-	 */
-	@Override
-	public void set(Block e)
-	{
-		throw new UnsupportedOperationException("set on Block Iterator is not supported");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.ListIterator#add(java.lang.Object)
-	 */
-	@Override
-	public void add(Block e)
-	{
-		throw new UnsupportedOperationException("add on Block Iterator is not supported");
+		Integer keyLength()
+		{
+			return keyParts().length;
+		}
 	}
 }

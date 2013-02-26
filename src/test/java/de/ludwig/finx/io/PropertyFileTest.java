@@ -9,7 +9,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.ludwig.finx.Language;
-import de.ludwig.finx.io.Block.BlockType;
 
 /**
  * @author Daniel

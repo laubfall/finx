@@ -148,4 +148,26 @@ public class I18nNodeTest
 		Assert.assertNotNull(flatten);
 		Assert.assertEquals(4, flatten.size());
 	}
+
+	@Test
+	public void keySplit()
+	{
+		String[] split = I18nNode.i18nKeySplit("de.ludwig");
+		Assert.assertNotNull(split);
+		Assert.assertEquals(2, split.length);
+		Assert.assertEquals("de", split[0]);
+		Assert.assertEquals("ludwig", split[1]);
+
+		split = I18nNode.i18nKeySplit("de");
+		Assert.assertNotNull(split);
+		Assert.assertEquals(1, split.length);
+		Assert.assertEquals("de", split[0]);
+
+		split = I18nNode.i18nKeySplit("de.ludwig.test");
+		Assert.assertNotNull(split);
+		Assert.assertEquals(3, split.length);
+		Assert.assertEquals("de", split[0]);
+		Assert.assertEquals("ludwig", split[1]);
+		Assert.assertEquals("test", split[2]);
+	}
 }
