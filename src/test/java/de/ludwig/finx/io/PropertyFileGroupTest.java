@@ -39,10 +39,19 @@ public class PropertyFileGroupTest
 		PropertiesWriter.keyGrouping.change("1");
 		pf.grouping();
 
-		final List<String> filedata = pf.filedata();
+		List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
 		// one empty line, because we have two groups (a... and b...)
 		Assert.assertEquals(cntLinesInFile + 1, filedata.size());
+
+		PropertiesWriter.keyGroupSpace.change("2");
+		pf.grouping();
+
+		filedata = pf.filedata();
+		Assert.assertNotNull(filedata);
+		// two empty lines, because we have two groups (a... and b...) but two empty-lines are
+		// wanted as space
+		Assert.assertEquals(cntLinesInFile + 2, filedata.size());
 	}
 
 	@Test
@@ -54,8 +63,8 @@ public class PropertyFileGroupTest
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
-		// one empty line, because we have two groups (a... and b...)
-		Assert.assertEquals(cntLinesInFile + 7, filedata.size());
+		// five empty lines, because we have six groups
+		Assert.assertEquals(cntLinesInFile + 5, filedata.size());
 	}
 
 	@Test
@@ -67,8 +76,8 @@ public class PropertyFileGroupTest
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
-		// one empty line, because we have two groups (a... and b...)
-		Assert.assertEquals(cntLinesInFile + 16, filedata.size());
+		// seven empty lines, because we have eight groups
+		Assert.assertEquals(cntLinesInFile + 7, filedata.size());
 	}
 
 	@Test
@@ -80,7 +89,20 @@ public class PropertyFileGroupTest
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
-		// one empty line, because we have two groups (a... and b...)
-		Assert.assertEquals(cntLinesInFile + 20, filedata.size());
+		// eight empty lines, because we have nine groups
+		Assert.assertEquals(cntLinesInFile + 8, filedata.size());
+	}
+
+	@Test
+	public void keyGroupingLongerThenLongestKey() throws FileNotFoundException, IOException
+	{
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
+		PropertiesWriter.keyGrouping.change("10");
+		pf.grouping();
+
+		final List<String> filedata = pf.filedata();
+		Assert.assertNotNull(filedata);
+		// eight empty lines, because we have nine groups
+		Assert.assertEquals(cntLinesInFile + 8, filedata.size());
 	}
 }

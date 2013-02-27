@@ -1,17 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.ludwig.finx.settings;
 
 import java.io.File;
 
 import junit.framework.Assert;
+
 import org.junit.Test;
 
 import de.ludwig.finx.io.PropertiesWriter;
-import de.ludwig.finx.settings.AppSettings;
-import de.ludwig.finx.settings.SettingsDaoImpl;
 
 /**
  * 
@@ -39,6 +34,10 @@ public class SettingsDaoImplTest
 	@Test
 	public void inject()
 	{
+		// because other tests can change the settings of PropertiesWriter we need to reset all
+		// settings
+		SettingsDaoImpl.instance().init(PropertiesWriter.class);
+
 		Assert.assertNotNull(PropertiesWriter.preservePropertyLayout);
 		Assert.assertFalse(PropertiesWriter.preservePropertyLayout.isDirty());
 

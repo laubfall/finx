@@ -76,8 +76,8 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 			break;
 		case ISO2KEY:
 			Map<String, String> value2 = value(node, key);
-			for (String iso2 : node.getExistingLanguages()) {
-				node.update(value2.get(iso2), key, Language.language(iso2));
+			for (Language iso2 : node.getExistingLanguages()) {
+				node.update(value2.get(iso2.language()), key, iso2);
 			}
 			break;
 		case KEY:
@@ -88,8 +88,8 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 			break;
 		case ISO2TEXT:
 			final Map<String, String> value = value(node, key);
-			for (String iso2 : node.getExistingLanguages()) {
-				node.update(value.get(iso2), key, Language.language(iso2));
+			for (Language iso2 : node.getExistingLanguages()) {
+				node.update(value.get(iso2.language()), key, iso2);
 			}
 			break;
 		default:
@@ -103,28 +103,28 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 		switch (type)
 		{
 		case EMPTY:
-			for (String iso2 : node.getExistingLanguages()) {
-				result.put(iso2, "");
+			for (Language iso2 : node.getExistingLanguages()) {
+				result.put(iso2.language(), "");
 			}
 			break;
 		case ISO2KEY:
-			for (String iso2 : node.getExistingLanguages()) {
-				result.put(iso2, iso2 + "_" + key);
+			for (Language iso2 : node.getExistingLanguages()) {
+				result.put(iso2.language(), iso2.language() + "_" + key);
 			}
 			break;
 		case KEY:
-			for (String iso2 : node.getExistingLanguages()) {
-				result.put(iso2, key);
+			for (Language iso2 : node.getExistingLanguages()) {
+				result.put(iso2.language(), key);
 			}
 			break;
 		case TEXT:
-			for (String iso2 : node.getExistingLanguages()) {
-				result.put(iso2, userDefinedText);
+			for (Language iso2 : node.getExistingLanguages()) {
+				result.put(iso2.language(), userDefinedText);
 			}
 			break;
 		case ISO2TEXT:
-			for (String iso2 : node.getExistingLanguages()) {
-				result.put(iso2, iso2 + "_" + userDefinedText);
+			for (Language iso2 : node.getExistingLanguages()) {
+				result.put(iso2.language(), iso2 + "_" + userDefinedText);
 			}
 			break;
 		default:

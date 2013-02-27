@@ -54,8 +54,11 @@ public class PropertyFile implements Iterable<Block>
 	 */
 	public PropertyFile(final File i18nRes, final Language language) throws FileNotFoundException, IOException
 	{
-		if (i18nRes != null && i18nRes.exists())
-			process(IOUtils.readLines(new FileInputStream(i18nRes)));
+		if (i18nRes != null && i18nRes.exists()) {
+			try (FileInputStream fis = new FileInputStream(i18nRes)) {
+				process(IOUtils.readLines(fis));
+			}
+		}
 		this.language = language;
 	}
 
@@ -633,7 +636,7 @@ public class PropertyFile implements Iterable<Block>
 		 */
 		String groupingKeyPart()
 		{
-			return partOfKey(keyLength());
+			return partOfKey(keyLength() - 1);
 		}
 
 		String partOfKey(final int partCnt)

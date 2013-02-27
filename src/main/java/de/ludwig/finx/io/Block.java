@@ -54,14 +54,20 @@ class Block
 	 * Every line of this block is moved to an own Block instance. This instance becomes the head of
 	 * the resulting list of Block Elements. No sorting is applied!
 	 */
-	public void explode()
+	public final void explode()
 	{
+		if (lines.isEmpty() || lines.size() == 1) {
+			return;
+		}
+
 		List<Line> tmp = lines;
 
 		lines = new ArrayList<Line>();
 		lines.add(tmp.get(0));
 
 		final Block startingBlock = this;
+		if (persuing != null)
+			persuing.splitBefore();
 		final Block endBlock = persuing;
 		Block previous = this;
 		for (int i = 1; i < tmp.size(); i++) {
@@ -69,7 +75,7 @@ class Block
 			newLine.add(tmp.get(i));
 			final Block newBlock = new Block(newLine, type);
 
-			if (i == 1) { // start
+			if (i == 1 && tmp.size() > 2) { // start
 				newBlock.concat(startingBlock, null);
 			} else if (i == tmp.size() - 1) { // end
 				newBlock.concat(previous, endBlock);
@@ -147,6 +153,20 @@ class Block
 	public final void insertBefore(Block beforeThis)
 	{
 		concat(beforeThis.preceding, beforeThis);
+	}
+
+	public final Block splitAfter()
+	{
+		Block after = persuing;
+		persuing = null;
+		return after;
+	}
+
+	public final Block splitBefore()
+	{
+		Block before = preceding;
+		preceding = null;
+		return before;
 	}
 
 	/**

@@ -180,7 +180,7 @@ public class RootNode
 	 * @return the definedLanguages
 	 */
 	@SuppressWarnings("unchecked")
-	public Set<String> getExistingLanguages()
+	public Set<Language> getExistingLanguages()
 	{
 		return UnmodifiableSet.decorate(existingLanguages);
 	}
