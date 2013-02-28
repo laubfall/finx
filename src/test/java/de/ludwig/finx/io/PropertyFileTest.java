@@ -19,7 +19,8 @@ public class PropertyFileTest extends BasePropertyFileTest
 	@Test
 	public void readKeyValue() throws IOException
 	{
-		propertyFileHandle = I18nFileCreator.start().addKeyValue("de.ludwig", "test").addKeyValue("de.luwdig.sub", "test").end();
+		propertyFileHandle = I18nFileCreator.start().addKeyValue("de.ludwig", "test")
+				.addKeyValue("de.luwdig.sub", "test").end();
 
 		PropertyFile pf = new PropertyFile(propertyFileHandle, new Language(Locale.GERMANY));
 		Block startingBlock = pf.getStartingBlock();
@@ -30,8 +31,8 @@ public class PropertyFileTest extends BasePropertyFileTest
 	@Test
 	public void readComment() throws FileNotFoundException, IOException
 	{
-		propertyFileHandle = I18nFileCreator.start().addSimpleComment("a comment").addSimpleComment(" a Comment with space")
-				.addSimpleComment("!!!").end();
+		propertyFileHandle = I18nFileCreator.start().addSimpleComment("a comment")
+				.addSimpleComment(" a Comment with space").addSimpleComment("!!!").end();
 
 		PropertyFile pf = new PropertyFile(propertyFileHandle, new Language(Locale.GERMANY));
 		Block startingBlock = pf.getStartingBlock();
@@ -68,8 +69,8 @@ public class PropertyFileTest extends BasePropertyFileTest
 	@Test
 	public void readMerged() throws FileNotFoundException, IOException
 	{
-		propertyFileHandle = I18nFileCreator.start().addSimpleComment("test comment").addKeyValue("de.ludwig", "some value")
-				.addEmptyLine(1, 2).end();
+		propertyFileHandle = I18nFileCreator.start().addSimpleComment("test comment")
+				.addKeyValue("de.ludwig", "some value").addEmptyLine(1, 2).end();
 
 		final PropertyFile pf = new PropertyFile(propertyFileHandle, new Language(Locale.GERMANY));
 		final Iterator<Block> iterator = pf.iterator();
@@ -98,8 +99,8 @@ public class PropertyFileTest extends BasePropertyFileTest
 	@Test
 	public void explode() throws FileNotFoundException, IOException
 	{
-		propertyFileHandle = I18nFileCreator.start().addKeyValue("de.ludwig", "test").addKeyValue("de.ludwig.2", "blah")
-				.addKeyValue("de.ludwig.3", "blub").end();
+		propertyFileHandle = I18nFileCreator.start().addKeyValue("de.ludwig", "test")
+				.addKeyValue("de.ludwig.2", "blah").addKeyValue("de.ludwig.3", "blub").end();
 		final PropertyFile pf = new PropertyFile(propertyFileHandle, new Language(Locale.GERMANY));
 		Assert.assertNotNull(pf.getStartingBlock());
 		Assert.assertNull(pf.getStartingBlock().getPersuing());
@@ -132,8 +133,8 @@ public class PropertyFileTest extends BasePropertyFileTest
 	@Test
 	public void merge() throws FileNotFoundException, IOException
 	{
-		propertyFileHandle = I18nFileCreator.start().addKeyValue("de.ludwig", "test").addKeyValue("de.ludwig.2", "blah")
-				.addKeyValue("de.ludwig.3", "blub").end();
+		propertyFileHandle = I18nFileCreator.start().addKeyValue("de.ludwig", "test")
+				.addKeyValue("de.ludwig.2", "blah").addKeyValue("de.ludwig.3", "blub").end();
 		final PropertyFile pf = new PropertyFile(propertyFileHandle, new Language(Locale.GERMANY));
 		Assert.assertNotNull(pf.getStartingBlock());
 
@@ -145,5 +146,42 @@ public class PropertyFileTest extends BasePropertyFileTest
 		startingBlock.merge(startingBlock.getPersuing());
 		Assert.assertTrue(startingBlock.getLines().size() == 3);
 		Assert.assertNull(startingBlock.getPersuing());
+	}
+
+	@Test
+	public void isCommentBlock() throws FileNotFoundException, IOException
+	{
+		PropertiesWriter.attachCommentsWithEmptyLineCount.change("0");
+		Block k1 = new Block(BlockType.KEYVALUE, "de=1");
+		Block c1 = new Block(BlockType.COMMENT, "# hello", "# hello2", "# hello3");
+		c1.insertBefore(k1);
+		Block commentAttached = PropertyFile.isCommentAttached(k1);
+		Assert.assertNotNull(commentAttached);
+		Assert.assertTrue(commentAttached == c1);
+
+		commentAttached = null;
+		commentAttached = PropertyFile.isCommentAttached(c1);
+		Assert.assertTrue(commentAttached != null);
+		Assert.assertTrue(commentAttached == k1);
+
+		c1.detach();
+		Block e1 = new Block(BlockType.BLANK, "");
+		e1.concat(c1, k1);
+		commentAttached = null;
+		commentAttached = PropertyFile.isCommentAttached(k1);
+		Assert.assertNull(commentAttached);
+		commentAttached = PropertyFile.isCommentAttached(c1);
+		Assert.assertNull(commentAttached);
+		commentAttached = PropertyFile.isCommentAttached(e1);
+		Assert.assertNull(commentAttached);
+
+		PropertiesWriter.attachCommentsWithEmptyLineCount.change("1");
+		commentAttached = null;
+		commentAttached = PropertyFile.isCommentAttached(k1);
+		Assert.assertNotNull(commentAttached);
+		commentAttached = PropertyFile.isCommentAttached(c1);
+		Assert.assertNotNull(commentAttached);
+		commentAttached = PropertyFile.isCommentAttached(e1);
+		Assert.assertNull(commentAttached);
 	}
 }

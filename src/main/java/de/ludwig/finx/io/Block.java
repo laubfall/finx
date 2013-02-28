@@ -1,6 +1,7 @@
 package de.ludwig.finx.io;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import de.ludwig.finx.ApplicationCodingException;
@@ -42,6 +43,11 @@ class Block
 			final String raw = rawLines.get(i);
 			lines.add(new Line(i, raw));
 		}
+	}
+
+	public Block(BlockType type, String... lines)
+	{
+		this(new BlockDimension(0, lines.length - 1), Arrays.asList(lines), type);
 	}
 
 	private Block(final List<Line> lines, BlockType type)

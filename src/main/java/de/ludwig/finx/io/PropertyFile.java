@@ -176,30 +176,33 @@ public class PropertyFile implements Iterable<Block>
 
 		startingBlock = null;
 		final List<Block> mergedKeyValueBlocks = new ArrayList<>();
+		// next we merge all key-value-Blocks to one block that represents the group defined by the
+		// grouping key
 		for (String gk : groupingKeys) {
 			final List<GroupPart> groupParts = keyGroups.get(gk);
 			LOG.debug(String.format("GroupParts for groupingKey %s : %d ", gk, groupParts.size()));
 
-			Block first = null;
+			Block mergeBlock = null;
 			for (int i = 0; i < groupParts.size(); i++) {
 				GroupPart next = groupParts.get(i);
 				next.owningBlock.detach();
-				if (first == null) {
-					first = next.owningBlock;
+				if (mergeBlock == null) {
+					mergeBlock = next.owningBlock;
 				}
 
 				if (i < groupParts.size() - 1) {
 					GroupPart next2 = groupParts.get(i + 1);
 					next2.owningBlock.detach();
-					first.insertBefore(next2.owningBlock);
-					first.merge(next2.owningBlock);
-				} else {
-					mergedKeyValueBlocks.add(first);
-					first = null;
+					mergeBlock.insertBefore(next2.owningBlock);
+					mergeBlock.merge(next2.owningBlock);
+				} else { // the last line of the current grouped block
+					mergedKeyValueBlocks.add(mergeBlock);
+					mergeBlock = null;
 				}
 			}
 		}
 
+		// in a last step all resulting blocks are connected to each other
 		startingBlock = null;
 		Block lastBlockInGroup = null;
 		final Iterator<Block> mergedBlocksIterator = mergedKeyValueBlocks.iterator();
@@ -219,6 +222,60 @@ public class PropertyFile implements Iterable<Block>
 				lastBlockInGroup = empty;
 			}
 		}
+	}
+
+	/**
+	 * 
+	 * @param block
+	 *            check this block if it is attached as a comment to a key-value-block or if it has
+	 *            an attached comment if it is a key-value-Block
+	 * @return the block where a comment is attachted to otherwise null
+	 */
+	public static final Block isCommentAttached(final Block block)
+	{
+		final Integer emptyLineCnt = PropertiesWriter.attachCommentsWithEmptyLineCount.setting();
+
+		if (block.getType().equals(BlockType.COMMENT)) {
+			int cntAgainstEmptyLineCnt = 0;
+			Block tmp = block.getPersuing();
+			while (tmp != null && cntAgainstEmptyLineCnt <= emptyLineCnt) {
+				switch (tmp.getType())
+				{
+				case BLANK:
+					if (cntAgainstEmptyLineCnt > emptyLineCnt)
+						return null;
+					cntAgainstEmptyLineCnt++;
+					break;
+				case COMMENT:
+					return null;
+				case KEYVALUE:
+					return tmp;
+				}
+				tmp = tmp.getPersuing();
+			}
+		}
+
+		if (block.getType().equals(BlockType.KEYVALUE)) {
+			int cntAgainstEmptyLineCnt = 0;
+			Block tmp = block.getPreceding();
+			while (tmp != null && cntAgainstEmptyLineCnt <= emptyLineCnt) {
+				switch (tmp.getType())
+				{
+				case BLANK:
+					if (cntAgainstEmptyLineCnt > emptyLineCnt)
+						return null;
+					cntAgainstEmptyLineCnt++;
+					break;
+				case COMMENT:
+					return tmp;
+				case KEYVALUE:
+					return null;
+				}
+				tmp = tmp.getPreceding();
+			}
+		}
+
+		return null;
 	}
 
 	private Map<String, List<GroupPart>> groupLower(final Collection<Integer> lengths,
@@ -440,55 +497,6 @@ public class PropertyFile implements Iterable<Block>
 				checkAgainst = checkAgainst.getPersuing();
 			}
 		}
-	}
-
-	/**
-	 * 
-	 * @param block
-	 *            check this block if it is attached as a comment to a key-value-block or if it has
-	 *            an attached comment if it is a key-value-Block
-	 * @return the block where a comment is attachted to otherwise null
-	 */
-	private Block isCommentAttached(final Block block)
-	{
-		final Integer emptyLineCnt = PropertiesWriter.attachCommentsWithEmptyLineCount.setting();
-
-		if (block.getType().equals(BlockType.COMMENT)) {
-			Block tmp = block.getPersuing();
-			while (tmp != null) {
-				switch (tmp.getType())
-				{
-				case BLANK:
-				case COMMENT:
-				case KEYVALUE:
-
-				default:
-					break;
-				}
-			}
-		}
-
-		if (block.getType().equals(BlockType.KEYVALUE)) {
-			int cntAgainstEmptyLineCnt = 0;
-			Block tmp = block.getPreceding();
-			while (tmp != null) {
-				switch (tmp.getType())
-				{
-				default:
-					tmp = tmp.getPreceding();
-				case BLANK:
-					if (cntAgainstEmptyLineCnt > emptyLineCnt)
-						return null;
-					cntAgainstEmptyLineCnt++;
-				case COMMENT:
-					return block;
-				case KEYVALUE:
-					return null;
-				}
-			}
-		}
-
-		return null;
 	}
 
 	/**

@@ -14,26 +14,38 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import de.ludwig.finx.Language;
 
 /**
+ * Test that uses PropertyFileGroupTest/test02.properties as Input
+ * 
  * @author Daniel
  * 
  */
-public class PropertyFileGroupTest
+public class PropertyFileGroup2Test
 {
 	private File file;
 
 	private int cntLinesInFile;
 
-	public PropertyFileGroupTest() throws URISyntaxException, IOException
+	public PropertyFileGroup2Test() throws URISyntaxException, IOException
 	{
-		URL resource = getClass().getClassLoader().getResource("PropertyFileGroupTest/test01.properties");
+		URL resource = getClass().getClassLoader().getResource("PropertyFileGroupTest/test02.properties");
 		file = new File(resource.toURI());
 		PropertiesWriter.keyGroupSpace.change("1");
-		cntLinesInFile = FileUtils.readLines(file).size();
+		List<String> lines = FileUtils.readLines(file);
+		int nonEmptyCnt = 0;
+		for (String l : lines) {
+			if (StringUtils.isBlank(l))
+				continue;
+
+			nonEmptyCnt++;
+		}
+
+		cntLinesInFile = nonEmptyCnt;
 	}
 
 	@Test
@@ -121,6 +133,8 @@ public class PropertyFileGroupTest
 		try (FileInputStream fis = new FileInputStream(testData)) {
 			final List<String> testDataLines = IOUtils.readLines(fis);
 			for (final String tl : testDataLines) {
+				if (StringUtils.isBlank(tl))
+					continue;
 				String find = (String) CollectionUtils.find(fileData, new Predicate() {
 					@Override
 					public boolean evaluate(Object object)
