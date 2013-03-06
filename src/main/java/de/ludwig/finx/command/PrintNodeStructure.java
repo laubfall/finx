@@ -26,8 +26,8 @@ public class PrintNodeStructure implements Command<Void>
 		final RootNode root = PropertyFileHandling.instance().nodeStructureFromFiles();
 
 		log.info("Existing Languages: ");
-		for (String language : root.getExistingLanguages()) {
-			log.info(language);
+		for (Language language : root.getExistingLanguages()) {
+			log.info(language.language());
 		}
 
 		if (StringUtils.isBlank(payload)) {

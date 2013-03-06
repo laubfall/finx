@@ -32,8 +32,8 @@ public class PropertiesWriter
 
 	/**
 	 * Defines the level of grouping of I18nNodes in the Property-File. 0 means no grouping, all
-	 * I18nNodes are printed after each other. 1 means all I18nNodes with equal keyparts are grouped
-	 * (that means followed by an empty line) and so on
+	 * I18nNodes are printed after each other. 1 means all I18nNodes with a first equal keypart are
+	 * grouped (that means followed by an empty line) and so on
 	 */
 	public static UpdatableSetting<Integer> keyGrouping;
 

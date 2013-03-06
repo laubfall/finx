@@ -36,8 +36,7 @@ public class I18nFileCreator
 
 	public I18nFileCreator addMultilineComment(String... commentLines)
 	{
-		for (String comment : commentLines)
-		{
+		for (String comment : commentLines) {
 			lines.add("# " + comment);
 		}
 
@@ -53,13 +52,11 @@ public class I18nFileCreator
 	public I18nFileCreator addEmptyLine(int lines, int blanks)
 	{
 		String str = "";
-		for (int i = 0; i < blanks; i++)
-		{
+		for (int i = 0; i < blanks; i++) {
 			str += " ";
 		}
 
-		for (int i = 0; i < lines; i++)
-		{
+		for (int i = 0; i < lines; i++) {
 			this.lines.add(str);
 		}
 		return creator;
@@ -74,12 +71,10 @@ public class I18nFileCreator
 	public File end()
 	{
 		File result = null;
-		try
-		{
+		try {
 			result = File.createTempFile("i18nFileCreator", "properties");
 			FileUtils.writeLines(result, lines);
-		} catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 
