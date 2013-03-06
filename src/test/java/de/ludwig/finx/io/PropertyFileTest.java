@@ -166,7 +166,7 @@ public class PropertyFileTest extends BasePropertyFileTest
 
 		c1.detach();
 		Block e1 = new Block(BlockType.BLANK, "");
-		e1.concat(c1, k1);
+		e1.insert(c1, k1);
 		commentAttached = null;
 		commentAttached = PropertyFile.isCommentAttached(k1);
 		Assert.assertNull(commentAttached);

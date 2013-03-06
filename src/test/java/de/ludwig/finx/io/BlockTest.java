@@ -6,6 +6,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.ludwig.finx.ApplicationCodingException;
+
 /**
  * @author Daniel
  * 
@@ -13,16 +15,16 @@ import org.junit.Test;
 public class BlockTest
 {
 	@Test
-	public void concat()
+	public void insert()
 	{
 		final Block b1 = new EmptyBlock(1);
 		final Block b2 = new EmptyBlock(1);
 		final Block b3 = new EmptyBlock(1);
 		final Block b4 = new EmptyBlock(1);
 
-		b1.concat(null, b2);
-		b2.concat(b1, b3);
-		b4.concat(b3, null);
+		b1.insert(null, b2);
+		b2.insert(b1, b3);
+		b4.insert(b3, null);
 
 		Assert.assertNotNull(b1.getPersuing());
 		Assert.assertNull(b1.getPreceding());
@@ -52,9 +54,9 @@ public class BlockTest
 		final Block b3 = new EmptyBlock(1);
 		final Block b4 = new EmptyBlock(1);
 
-		b1.concat(null, b2);
-		b2.concat(b1, b3);
-		b4.concat(b3, null);
+		b1.insert(null, b2);
+		b2.insert(b1, b3);
+		b4.insert(b3, null);
 
 		b1.insertAfter(b2);
 		Assert.assertNull(b2.getPreceding());
@@ -82,9 +84,9 @@ public class BlockTest
 		final Block b3 = new EmptyBlock(1);
 		final Block b4 = new EmptyBlock(1);
 
-		b1.concat(null, b2);
-		b2.concat(b1, b3);
-		b4.concat(b3, null);
+		b1.insert(null, b2);
+		b2.insert(b1, b3);
+		b4.insert(b3, null);
 
 		b3.insertBefore(b2);
 		Assert.assertNotNull(b3.getPersuing());
@@ -192,5 +194,126 @@ public class BlockTest
 		Assert.assertEquals(1, lines2.size());
 		Assert.assertNotNull(b1b.getPersuing());
 		Assert.assertEquals(BlockType.BLANK, b1b.getPersuing().getType());
+	}
+
+	@Test
+	public void detachUp()
+	{
+		final Block[] b = createBlockChain();
+
+		Block detachUp = b[3].detachUp(b[1]);
+		Assert.assertNotNull(detachUp);
+		Assert.assertTrue(detachUp.getPersuing() == b[4]);
+		Assert.assertTrue(b[0] == detachUp);
+		Assert.assertNull(b[3].getPersuing());
+		Assert.assertNull(b[1].getPreceding());
+	}
+
+	@Test
+	public void detachUpNoPreceding()
+	{
+		final Block[] b = createBlockChain();
+		Block detachUp = b[1].detachUp(b[0]);
+		Assert.assertNotNull(detachUp);
+		Assert.assertTrue(detachUp == b[2]);
+		Assert.assertTrue(detachUp.head() == detachUp);
+		Assert.assertTrue(detachUp.tail() == b[4]);
+	}
+
+	@Test
+	public void detachDown()
+	{
+		final Block[] b = createBlockChain();
+
+		Block detachDown = b[1].detachDown(b[3]);
+		Assert.assertNotNull(detachDown);
+		Assert.assertTrue(detachDown.getPersuing() == b[4]);
+		Assert.assertTrue(b[0] == detachDown);
+		Assert.assertNull(b[3].getPersuing());
+		Assert.assertNull(b[1].getPreceding());
+	}
+
+	@Test
+	public void detachDownNoPreceding()
+	{
+		final Block[] b = createBlockChain();
+		Block detachDown = b[3].detachDown(b[4]);
+		Assert.assertNotNull(detachDown);
+		Assert.assertTrue(detachDown == b[2]);
+		Assert.assertTrue(detachDown.head() == b[0]);
+		Assert.assertTrue(detachDown.tail() == b[2]);
+	}
+
+	@Test
+	public void detachFailure()
+	{
+		final Block[] b = createBlockChain();
+		try {
+			b[1].detachUp(b[3]);
+			Assert.fail();
+		} catch (ApplicationCodingException e) {
+			// noop
+		}
+
+		try {
+			b[3].detachDown(b[1]);
+			Assert.fail();
+		} catch (ApplicationCodingException e) {
+			// noop
+		}
+
+		try {
+			b[2].detachDown(b[2]);
+			Assert.fail();
+		} catch (ApplicationCodingException e) {
+			// noop
+		}
+	}
+
+	@Test
+	public void head()
+	{
+		final Block[] b = createBlockChain();
+		Block head = b[4].head();
+		Assert.assertNotNull(head);
+		Assert.assertTrue(head == b[0]);
+
+		head = b[2].head();
+		Assert.assertNotNull(head);
+		Assert.assertTrue(head == b[0]);
+
+		head = b[0].head();
+		Assert.assertNotNull(head);
+		Assert.assertTrue(head == b[0]);
+	}
+
+	@Test
+	public void tail()
+	{
+		final Block[] b = createBlockChain();
+		Block tail = b[0].tail();
+		Assert.assertNotNull(tail);
+		Assert.assertTrue(tail == b[4]);
+
+		tail = b[2].tail();
+		Assert.assertNotNull(tail);
+		Assert.assertTrue(tail == b[4]);
+
+		tail = b[4].tail();
+		Assert.assertNotNull(tail);
+		Assert.assertTrue(tail == b[4]);
+	}
+
+	/**
+	 * @return
+	 */
+	private Block[] createBlockChain()
+	{
+		final Block b[] = new Block[] { new Block(BlockType.KEYVALUE, ""), new EmptyBlock(1),
+				new Block(BlockType.KEYVALUE, ""), new EmptyBlock(1), new Block(BlockType.KEYVALUE, "") };
+
+		b[1].insert(b[0], b[2]);
+		b[3].insert(b[2], b[4]);
+		return b;
 	}
 }
