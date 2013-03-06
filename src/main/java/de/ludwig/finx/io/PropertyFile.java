@@ -28,6 +28,12 @@ import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
  */
 public class PropertyFile implements Iterable<Block>
 {
+	/**
+	 * The first Block in that property File.
+	 * 
+	 * Be careful if you change the preceding Block of this one! Then you haven to change the
+	 * startingBlock!
+	 */
 	private Block startingBlock;
 
 	/**
@@ -95,6 +101,8 @@ public class PropertyFile implements Iterable<Block>
 	 */
 	public final void insert(final I18nNode insertThis)
 	{
+		// TODO check if the key already exists.
+
 		final PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
 
 		if (startingBlock == null) {
@@ -109,7 +117,7 @@ public class PropertyFile implements Iterable<Block>
 			insertPreserveModeNone();
 			break;
 		case NONSTRICT:
-			insertPreserveModeNonstrict();
+			insertPreserveModeNonstrict(null);
 			break;
 		case STRICT:
 			insertPreserveModeStrict(insertThis);
@@ -142,11 +150,43 @@ public class PropertyFile implements Iterable<Block>
 
 	}
 
-	private void insertPreserveModeNonstrict()
+	/**
+	 * In NonStrict Mode new keys are added at that point where there natural ordering matches most.
+	 * 
+	 * @param nodeToInsert
+	 */
+	private void insertPreserveModeNonstrict(I18nNode nodeToInsert)
 	{
+		final Iterator<Block> blockIterator = iterator();
+		while (blockIterator.hasNext()) {
+			final Block next = blockIterator.next();
+			if (next.getType().equals(BlockType.KEYVALUE) == false)
+				continue;
 
+			// if there is no new block we create one
+			if (blockIterator.hasNext() == false) {
+				next.concat(null, new Block(nodeToInsert.keyValue(language), BlockType.KEYVALUE));
+				break;
+			}
+		}
+
+		final List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
+		if (keyValueBlocks == null || keyValueBlocks.isEmpty()) {
+			// TODO funktioniert nicht wenn wir mehrere Blöcke haben
+			startingBlock.concat(null, new Block(nodeToInsert.keyValue(language), BlockType.KEYVALUE));
+		} else {
+			int smallestCompare = 0;
+			for (Block b : keyValueBlocks) {
+				List<Line> lines = b.getLines();
+			}
+		}
 	}
 
+	/**
+	 * In Strict Mode new keys are added at the bottom of the file
+	 * 
+	 * @param nodeToInsert
+	 */
 	private void insertPreserveModeStrict(I18nNode nodeToInsert)
 	{
 		final Iterator<Block> blockIterator = iterator();
@@ -159,9 +199,7 @@ public class PropertyFile implements Iterable<Block>
 			if (last.getType().equals(BlockType.KEYVALUE)) {
 				last.getLines().add(new Line(0, nodeToInsert.keyValue(language)));
 			} else {
-				final List<String> rawLines = new ArrayList<>();
-				rawLines.add(nodeToInsert.keyValue(language));
-				Block newKeyValueBlock = new Block(new BlockDimension(0, 0), rawLines, BlockType.KEYVALUE);
+				Block newKeyValueBlock = new Block(nodeToInsert.keyValue(language), BlockType.KEYVALUE);
 				last.concat(null, newKeyValueBlock);
 			}
 
@@ -525,6 +563,17 @@ class Block
 			final String raw = rawLines.get(i);
 			lines.add(new Line(i, raw));
 		}
+	}
+
+	public Block(final String rawLine, BlockType type)
+	{
+		this(new BlockDimension(0, 0), new ArrayList<String>() {
+			private static final long serialVersionUID = 1L;
+
+			{
+				add(rawLine);
+			}
+		}, type);
 	}
 
 	private Block(final List<Line> lines, BlockType type)
