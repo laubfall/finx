@@ -10,9 +10,9 @@ import org.apache.log4j.Logger;
 import de.ludwig.finx.ApplicationCodingException;
 
 /**
- * This class provide methods to handle all relevant Propertyfile handling
- * operations in a highlevel manner. Such operations can be: - Setup
- * PropertiesReader - Reading Property files - Writing Propertyfiles
+ * This class provide methods to handle all relevant Propertyfile handling operations in a highlevel
+ * manner. Such operations can be: - Setup PropertiesReader - Reading Property files - Writing
+ * Propertyfiles
  * 
  * @author Daniel
  * 
@@ -26,22 +26,20 @@ public class PropertyFileHandling
 	private PropertiesReader propReader;
 
 	/**
-	 * cache of the {@link RootNode} structure. Actually this is not a very nice
-	 * solution. If the property files are changed by another application the
-	 * nodes will differ from the content of the property files -> TODO
-	 * monitoring of the property files maybe!?
+	 * cache of the {@link RootNode} structure. Actually this is not a very nice solution. If the
+	 * property files are changed by another application the nodes will differ from the content of
+	 * the property files -> TODO monitoring of the property files maybe!?
 	 */
 	private RootNode ramNodes;
 
 	private PropertyFileHandling()
 	{
-		
+
 	}
 
 	public static synchronized PropertyFileHandling instance()
 	{
-		if (INSTANCE == null)
-		{
+		if (INSTANCE == null) {
 			INSTANCE = new PropertyFileHandling();
 		}
 
@@ -50,13 +48,12 @@ public class PropertyFileHandling
 
 	public void setupPropertiesReader(File propertyFileDir)
 	{
-		propReader = new PropertiesReader(propertyFileDir);
+		propReader = new PropertiesReader(propertyFileDir, null, null);
 	}
 
 	public RootNode nodeStructureFromFiles()
 	{
-		if (propReader == null)
-		{
+		if (propReader == null) {
 			throw new ApplicationCodingException("The propertyfile reader is not initialized");
 		}
 
@@ -80,8 +77,7 @@ public class PropertyFileHandling
 	 */
 	public RootNode actualFileStructure()
 	{
-		if (propReader == null)
-		{
+		if (propReader == null) {
 			throw new ApplicationCodingException("The propertyfile reader is not initialized");
 		}
 
@@ -95,6 +91,6 @@ public class PropertyFileHandling
 	 */
 	public void nodeStructureToFiles(final RootNode nodeStructure)
 	{
-		
+
 	}
 }

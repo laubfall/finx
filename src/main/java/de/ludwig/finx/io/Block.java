@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
+
 import de.ludwig.finx.ApplicationCodingException;
 
 /**
@@ -22,7 +24,7 @@ class Block
 
 	private Block preceding;
 
-	private Block persuing;
+	private Block pursuing;
 
 	/**
 	 * 
@@ -47,6 +49,7 @@ class Block
 
 	public Block(BlockType type, String... lines)
 	{
+		// TODO does not work if lines is not set (varg!)
 		this(new BlockDimension(0, lines.length - 1), Arrays.asList(lines), type);
 	}
 
@@ -72,9 +75,10 @@ class Block
 		lines.add(tmp.get(0));
 
 		final Block startingBlock = this;
-		if (persuing != null)
-			persuing.splitBefore();
-		final Block endBlock = persuing;
+		Block endBlock = null;
+		if (pursuing != null)
+			endBlock = splitAfter();
+
 		Block previous = this;
 		for (int i = 1; i < tmp.size(); i++) {
 			final List<Line> newLine = new ArrayList<Line>();
@@ -82,11 +86,11 @@ class Block
 			final Block newBlock = new Block(newLine, type);
 
 			if (i == 1 && tmp.size() > 2) { // start
-				newBlock.concat(startingBlock, null);
+				newBlock.insert(startingBlock, null);
 			} else if (i == tmp.size() - 1) { // end
-				newBlock.concat(previous, endBlock);
+				newBlock.insert(previous, endBlock);
 			} else {
-				newBlock.concat(previous, null);
+				newBlock.insert(previous, null);
 			}
 
 			previous = newBlock;
@@ -97,30 +101,29 @@ class Block
 	 * Merges two blocks resulting in one single block. Only blocks of same type can be merged.
 	 * 
 	 * @param mergeThis
-	 *            this block is going to be merged into this block. His persuing block will be
-	 *            attached to this block as persuing block.
+	 *            this block is going to be merged into this block. To do this, the block is
+	 *            detached, and his lines are put into the collection of lines of this block
 	 */
-	public void merge(final Block mergeThis)
+	public final void merge(final Block mergeThis)
 	{
 		if (type.equals(mergeThis.getType()) == false)
 			throw new ApplicationCodingException("Blocks of different types cannot be merged!");
 
-		Block preceding = mergeThis.getPreceding();
-		if (preceding != null)
-			preceding.concat(preceding.preceding, mergeThis.persuing);
+		mergeThis.detach();
 
 		this.getLines().addAll(mergeThis.getLines());
 	}
 
 	/**
-	 * Concats this block to the given blocks
+	 * Inserts this block to the given blocks. Insertion can only be successful if the two blocks
+	 * where we want to insert this block between are connected to each other.
 	 * 
 	 * @param preceding
 	 *            The block before this block. If null this block will not have a preceding block!
 	 * @param persuing
 	 *            The block after this block. If null this block will not have a persuing block!
 	 */
-	public final void concat(Block preceding, Block persuing)
+	public final void insert(Block preceding, Block persuing)
 	{
 		// 0 0 0 1 0 0 0 2 0 0 3 : imagine you want to concat block 1 with 2 and
 		// 3. In this case the two blocks between 2 and 3 are not connected
@@ -132,65 +135,220 @@ class Block
 					"trying to concat block with two blocks that are not connected to each other");
 
 		// remove old connections or refresh them
-		if (this.preceding != null && this.persuing != null) {
-			this.preceding.persuing = this.persuing;
-			this.persuing.preceding = this.preceding;
+		if (this.preceding != null && this.pursuing != null) {
+			this.preceding.pursuing = this.pursuing;
+			this.pursuing.preceding = this.preceding;
 		} else if (this.preceding != null) {
-			this.preceding.persuing = null;
-		} else if (this.persuing != null) {
-			this.persuing.preceding = null;
+			this.preceding.pursuing = null;
+		} else if (this.pursuing != null) {
+			this.pursuing.preceding = null;
 		}
 
 		// now attach this block to the given blocks
 		this.preceding = preceding;
-		if (preceding != null)
-			preceding.persuing = this;
+		if (preceding != null) {
+			preceding.pursuing = this;
+		}
 
-		this.persuing = persuing;
-		if (persuing != null)
+		this.pursuing = persuing;
+		if (persuing != null) {
 			persuing.preceding = this;
+		}
 	}
 
+	// 0 0 0 0 1 2 0 0 - 3 -
 	public final void insertAfter(Block afterThis)
 	{
-		concat(afterThis, afterThis.persuing);
+		// if (preceding == afterThis) {
+		// return;
+		// }
+		// if (afterThis.persuing == null && afterThis.preceding == null) {
+		// afterThis.persuing = this;
+		// if (this.preceding != null) {
+		// this.preceding.persuing = afterThis;
+		// }
+		// afterThis.preceding = this.preceding;
+		// this.preceding = afterThis;
+		// return;
+		// }
+		insert(afterThis, afterThis.pursuing);
 	}
 
+	// 0 0 0 0 1 2 0 0 - 3 -
 	public final void insertBefore(Block beforeThis)
 	{
-		concat(beforeThis.preceding, beforeThis);
+		// don't insert it if it already is in the right position
+		if (pursuing == beforeThis) {
+			return;
+		}
+		if (beforeThis.preceding == null && beforeThis.pursuing == null) {
+			beforeThis.preceding = this;
+			beforeThis.pursuing = this.pursuing;
+			if (this.pursuing != null) {
+				this.pursuing.preceding = beforeThis;
+			}
+			this.pursuing = beforeThis;
+			return;
+		}
+
+		insert(beforeThis.preceding, beforeThis);
 	}
 
 	public final Block splitAfter()
 	{
-		Block after = persuing;
-		persuing = null;
+		if (pursuing == null)
+			return null;
+		Block after = pursuing;
+		pursuing = null;
+		after.preceding = null;
 		return after;
 	}
 
+	/**
+	 * 
+	 * Splits the chain of block before this block. That means that the connection between this
+	 * block and its preceding block will be decoupled.
+	 * 
+	 * @return the block before this block, the preceding one. Null if there is no preceding block.
+	 */
 	public final Block splitBefore()
 	{
+		if (preceding == null)
+			return null;
 		Block before = preceding;
 		preceding = null;
+		before.pursuing = null;
 		return before;
+	}
+
+	public final Block head()
+	{
+		Block head = preceding;
+		Block result = null;
+		while (head != null) {
+			result = head;
+			head = head.preceding;
+		}
+		return result == null ? this : result;
+	}
+
+	public final Block tail()
+	{
+		Block tail = pursuing;
+		Block result = null;
+		while (tail != null) {
+			result = tail;
+			tail = tail.pursuing;
+		}
+		return result == null ? this : result;
 	}
 
 	/**
 	 * remove this block from the chain of block where it belongs to and concats (if necessary) the
 	 * preceding and persuing blocks of this one.
+	 * 
+	 * @return the block we detached this block from.
 	 */
-	public void detach()
+	public final Block detach()
 	{
-		if (preceding != null && persuing != null) {
-			preceding.concat(null, persuing);
+		Block returnThis = null;
+		if (preceding != null && pursuing != null) {
+			preceding.insert(null, pursuing);
+			returnThis = preceding;
 		} else if (preceding != null) {
-			preceding.persuing = null;
-		} else if (persuing != null) {
-			persuing.preceding = null;
+			preceding.pursuing = null;
+			returnThis = preceding;
+		} else if (pursuing != null) {
+			pursuing.preceding = null;
+			returnThis = pursuing;
 		}
 
 		preceding = null;
-		persuing = null;
+		pursuing = null;
+		return returnThis;
+	}
+
+	public final Block detachUp(final Block upperBound)
+	{
+		Validate.notNull(upperBound);
+		Block prec = preceding;
+		if (prec == null) {
+			throw new ApplicationCodingException("no preceding block, cannot detach to upperbound");
+		}
+		boolean detached = false;
+		Block resultingChain = null;
+		while (prec != null) {
+			if (prec == upperBound) {
+				final Block headBlock = prec.splitBefore();
+				final Block tailBlock = this.splitAfter();
+				resultingChain = stitch(headBlock, tailBlock);
+				detached = true;
+				break;
+			}
+			prec = prec.preceding;
+		}
+
+		if (detached == false) {
+			throw new ApplicationCodingException("upperbound not found in block hierarchy");
+		}
+
+		return resultingChain;
+	}
+
+	public final Block detachDown(final Block lowerBound)
+	{
+		Validate.notNull(lowerBound);
+		Block pers = pursuing;
+		if (pers == null) {
+			throw new ApplicationCodingException("no persuing block, cannot detach to lowerbound");
+		}
+		boolean detached = false;
+		Block resultingChain = null;
+		while (pers != null) {
+			if (pers == lowerBound) {
+				final Block tailBlock = pers.splitAfter();
+				final Block headBlock = this.splitBefore();
+				// headBlock.insert(headBlock.preceding, tailBlock);
+				resultingChain = stitch(headBlock, tailBlock);
+				detached = true;
+				break;
+			}
+			pers = pers.pursuing;
+		}
+
+		if (detached == false) {
+			throw new ApplicationCodingException("lowerbound not found in block hierarchy");
+		}
+
+		return resultingChain;
+	}
+
+	/**
+	 * Null-safe Method that concats two Blocks together.
+	 * 
+	 * This method is private because it does not check if it is possible / save to insert the
+	 * preceding block of param headBlock between headBlock and tailBlock.
+	 * 
+	 * @param headBlock
+	 *            Optional.
+	 * @param tailBlock
+	 *            Optional.
+	 * @return the first block in the resulting chain. It is only the tailBlock param if the
+	 *         headBlock param is null.
+	 */
+	private Block stitch(final Block headBlock, final Block tailBlock)
+	{
+		if (headBlock == null && tailBlock != null) {
+			return tailBlock;
+		} else if (headBlock != null && tailBlock == null) {
+			return headBlock;
+		} else if (headBlock == null && tailBlock == null) {
+			throw new ApplicationCodingException("both blocks are null, unable to stitch null-values together");
+		}
+
+		headBlock.insert(headBlock.preceding, tailBlock);
+
+		return headBlock;
 	}
 
 	/**
@@ -220,8 +378,8 @@ class Block
 	/**
 	 * @return the persuing
 	 */
-	public Block getPersuing()
+	public Block getPursuing()
 	{
-		return persuing;
+		return pursuing;
 	}
 }

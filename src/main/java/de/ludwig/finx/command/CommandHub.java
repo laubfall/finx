@@ -17,22 +17,24 @@ import org.apache.log4j.Logger;
  * @author Daniel
  * 
  */
-public class CommandHub {
-	
+public class CommandHub
+{
+
 	/**
-	 * put to the end of a command name (seperated by whitespace) execution will trigger
-	 * displaying of {@link Command#help()}
+	 * put to the end of a command name (seperated by whitespace) execution will trigger displaying
+	 * of {@link Command#help()}
 	 */
 	public static final String SHOW_COMMAND_HELP_MARKER = "-?";
-	
+
 	/**
 	 * holds all known Commands, that means Commands that are available for the user.
 	 */
 	private static List<Command<?>> knownCommands = new ArrayList<>();
-	
-	private static Logger log = Logger.getLogger(CommandHub.class);
-	
-	public static void addCommand(final Command<?> cmd) {
+
+	private static Logger LOG = Logger.getLogger(CommandHub.class);
+
+	public static void addCommand(final Command<?> cmd)
+	{
 		knownCommands.add(cmd);
 	}
 
@@ -40,18 +42,17 @@ public class CommandHub {
 	 * Calls the wanted Command and triggers execution of it.
 	 * 
 	 * @param fullCommandLineArgument
-	 *            Name of the command and some payload (optional) e.g.:
-	 *            mycommand somepayload For additional help type: mycommand -?
-	 *            this triggers
-	 * @return Everything that the Command wants to return. Null if there is
-	 *         nothing to return.
+	 *            Name of the command and some payload (optional) e.g.: mycommand somepayload For
+	 *            additional help type: mycommand -? this triggers
+	 * @return Everything that the Command wants to return. Null if there is nothing to return.
 	 */
-	public static Object execute(final String fullCommandLineArgument) throws CommandException {
-		
-		if(showHelp(fullCommandLineArgument)) {
+	public static Object execute(final String fullCommandLineArgument) throws CommandException
+	{
+
+		if (showHelp(fullCommandLineArgument)) {
 			return null;
 		}
-		
+
 		final int firstEmptySpace = fullCommandLineArgument.indexOf(" ");
 		String payload = null;
 		String cmdStripped = fullCommandLineArgument;
@@ -60,24 +61,24 @@ public class CommandHub {
 			payload = payload.trim();
 			cmdStripped = fullCommandLineArgument.substring(0, firstEmptySpace);
 		}
-		
+
 		final String fCmdOnly = cmdStripped;
-		Command<?> cmd = (Command<?>) CollectionUtils.find(knownCommands,
-				new Predicate() {
-					public boolean evaluate(Object object) {
-						Command<?> c = (Command<?>) object;
-						return c.name().equals(fCmdOnly);
-					}
-				});
+		Command<?> cmd = (Command<?>) CollectionUtils.find(knownCommands, new Predicate() {
+			public boolean evaluate(Object object)
+			{
+				Command<?> c = (Command<?>) object;
+				return c.name().equals(fCmdOnly);
+			}
+		});
 
 		if (cmd == null)
 			throw new CommandException("Command not found: " + fullCommandLineArgument);
 
-		
 		return cmd.execute(payload);
 	}
 
-	private static boolean showHelp(final String cmdName) {
+	private static boolean showHelp(final String cmdName)
+	{
 		if (cmdName.endsWith(SHOW_COMMAND_HELP_MARKER) == false) {
 			return false;
 		}
@@ -90,11 +91,12 @@ public class CommandHub {
 		} finally {
 			knownCommands.remove(pch);
 		}
-		
+
 		return true;
 	}
 
-	public static List<Command<?>> getKnownCommands() {
+	public static List<Command<?>> getKnownCommands()
+	{
 		return knownCommands;
 	}
 }

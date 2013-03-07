@@ -1,5 +1,8 @@
 package de.ludwig.finx.command;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -12,7 +15,7 @@ import de.ludwig.finx.io.RootNode;
  * @author Daniel
  * 
  */
-public class PrintNodeStructure implements Command<Void>
+public class PrintNodeStructure implements Command<Void>, Stackable
 {
 	private Logger log = Logger.getLogger(PrintNodeStructure.class);
 
@@ -64,6 +67,31 @@ public class PrintNodeStructure implements Command<Void>
 	{
 		return "This Command show the complete structure of the current node-tree for the wanted language. usage: "
 				+ name() + " [languageIso2].";
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ludwig.finx.command.Stackable#runTheseCmdsBefore()
+	 */
+	@Override
+	public List<Command<?>> runTheseCmdsBefore()
+	{
+		final List<Command<?>> coms = new ArrayList<>();
+		// coms.
+		return coms;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ludwig.finx.command.Stackable#beforeExecute(java.util.List)
+	 */
+	@Override
+	public void beforeExecute(List<Object> payload)
+	{
+		// TODO Auto-generated method stub
+
 	}
 
 }

@@ -11,8 +11,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,7 +20,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import de.ludwig.finx.ApplicationCodingException;
@@ -37,9 +34,9 @@ public class SettingsDaoImpl
 
 	private static SettingsDaoImpl settingsDao;
 
-	private AppSettings settings;
+	// private AppSettings settings;
 
-	private static final Logger log = Logger.getLogger(SettingsDaoImpl.class);
+	private static final Logger LOG = Logger.getLogger(SettingsDaoImpl.class);
 
 	/**
 	 * Setting Value Type to Setting Mapping. In this map application finds the Value Type that is
@@ -78,31 +75,6 @@ public class SettingsDaoImpl
 		}
 
 		return settingsDao;
-	}
-
-	@Deprecated
-	public AppSettings loadSettings()
-	{
-		if (settings != null)
-			return settings;
-
-		final CodeSource cs = getClass().getProtectionDomain().getCodeSource();
-		final URL locationOfCode = cs.getLocation();
-
-		log.debug("Source-Verzeichnis " + locationOfCode.getPath());
-
-		try {
-			File settingDir = new File(locationOfCode.toURI());
-			File fileSettings = new File(settingDir, SETTINGS_FILENAME);
-			settings = loadSettings(fileSettings);
-			return settings;
-		} catch (URISyntaxException ex) {
-			log.error("Pfad für Settings-Datei fehlerhaft", ex);
-			throw new ApplicationCodingException(ex);
-		} catch (IOException ex) {
-			log.error("IO-Fehler beim Einlesen der Settings-Datei", ex);
-			throw new ApplicationCodingException(ex);
-		}
 	}
 
 	/**
@@ -186,37 +158,10 @@ public class SettingsDaoImpl
 		} catch (IllegalArgumentException e) {
 			throw new ApplicationCodingException("IllegalArgumentException during setting update", e);
 		} catch (IllegalAccessException e) {
-			throw new ApplicationCodingException("ApplicationCodingException during setting update", e);
+			throw new ApplicationCodingException("IllegalAccessException during setting update", e);
 		} catch (InstantiationException e) {
 			throw new ApplicationCodingException("InstantiationException during setting update", e);
 		}
-	}
-
-	private AppSettings loadSettings(File settings) throws FileNotFoundException, IOException
-	{
-		AppSettings as = new AppSettings();
-
-		Properties p = new Properties();
-		p.load(new FileInputStream(settings));
-		final String ownSettings = p.getProperty(AppSettingNames.APP_SETTING_OWNSETTINGS_LOCATION.settingName());
-		if (StringUtils.isBlank(ownSettings) == false) {
-			return loadSettings(new File(settings.getParent(), ownSettings));
-		}
-
-		for (AppSettingNames ase : AppSettingNames.values()) {
-			try {
-				AbstractSetting<?> setting = ase.settingType().newInstance();
-				setting.initialize(p.getProperty(ase.settingName()));
-				as.addNewSetting(ase, setting);
-
-			} catch (InstantiationException e) {
-				throw new ApplicationCodingException("unable to initiate setting", e);
-			} catch (IllegalAccessException e) {
-				throw new ApplicationCodingException("unable to access settings class", e);
-			}
-		}
-
-		return as;
 	}
 
 	/**
@@ -259,11 +204,11 @@ public class SettingsDaoImpl
 		return result;
 	}
 
-	private class SettingTypeRegistryKey
-	{
-		public SettingTypeRegistryKey(final ParameterizedType pType)
-		{
-
-		}
-	}
+	// private class SettingTypeRegistryKey
+	// {
+	// public SettingTypeRegistryKey(final ParameterizedType pType)
+	// {
+	//
+	// }
+	// }
 }

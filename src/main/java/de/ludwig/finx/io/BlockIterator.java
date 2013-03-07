@@ -20,8 +20,8 @@ class BlockIterator implements ListIterator<Block>
 	public boolean hasNext()
 	{
 		boolean result = actualBlock != null
-				&& (actualBlock.getPersuing() != null || (actualBlock.getPreceding() == null && actualBlock
-						.getPersuing() == null));
+				&& (actualBlock.getPursuing() != null || (actualBlock.getPreceding() == null && actualBlock
+						.getPursuing() == null));
 		if (actualBlock == null || (result == false && actualBlock == null)) {
 			return false;
 		}
@@ -37,7 +37,7 @@ class BlockIterator implements ListIterator<Block>
 	public Block next()
 	{
 		Block next = actualBlock;
-		actualBlock = actualBlock.getPersuing();
+		actualBlock = actualBlock.getPursuing();
 		return next;
 	}
 

@@ -8,6 +8,9 @@ i18nPropertiesLocation=C:\\Users\\Daniel\\Documents\\NetBeansProjects\\I18n-Test
 i18nDefaultValue=TEXT:TRANSLATE ME!!!
 fileExtensions=java,html,htm
 
+# Project-Settings
+projectSaveDir=/Users/Daniel/Desktop
+
 # pretty-print settings for I18n-Property-Files
 keyGrouping=0
 keyGroupSpace=0

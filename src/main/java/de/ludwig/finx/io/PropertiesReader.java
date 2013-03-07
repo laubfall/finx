@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.Language;
-import de.ludwig.finx.settings.AppSettings;
 
 /**
  * Low-Level read-only Access to Property-Files
@@ -24,11 +23,20 @@ import de.ludwig.finx.settings.AppSettings;
  */
 public class PropertiesReader
 {
-	private File[] propertiesfiles;
 	private static final Logger log = Logger.getLogger(PropertiesReader.class);
 
-	PropertiesReader(final File propertieFilesDir)
+	private File[] propertiesfiles;
+
+	private String i18nPropFilePostFix;
+
+	private String i18nPropFilePreFix;
+
+	public PropertiesReader(final File propertieFilesDir, final String i18nPropFilePostFix,
+			final String i18nPropFilePreFix)
 	{
+		this.i18nPropFilePostFix = i18nPropFilePostFix;
+		this.i18nPropFilePreFix = i18nPropFilePreFix;
+
 		if (propertieFilesDir.isDirectory() == false) {
 			throw new ApplicationCodingException("This is not a directory: " + propertieFilesDir.getAbsolutePath());
 		}
@@ -44,8 +52,7 @@ public class PropertiesReader
 				}
 
 				final String filename = pathname.getName();
-				String localInfo = StringUtils.substringBetween(filename, AppSettings.i18nPropFilePostFix.setting(),
-						AppSettings.i18nPropFilePreFix.setting());
+				String localInfo = StringUtils.substringBetween(filename, i18nPropFilePostFix, i18nPropFilePreFix);
 				if (StringUtils.isBlank(localInfo)) {
 					log.debug("Unable to locate Locale-Info in Filename " + filename + " . Ignoring this file!");
 					return false;
@@ -55,14 +62,14 @@ public class PropertiesReader
 			}
 		});
 
-		log.debug(String.format("PropertiesReader initialized, %1$d Propertie-Files found", propertiesfiles.length));
+		log.debug(String.format("PropertiesReader initialized, %1$d Property-Files found", propertiesfiles.length));
 	}
 
 	/**
 	 * 
 	 * @return
 	 */
-	RootNode createNodeView()
+	public RootNode createNodeView()
 	{
 		final Map<Locale, Properties> langProperties = new HashMap<Locale, Properties>();
 
@@ -74,6 +81,7 @@ public class PropertiesReader
 				langProperties.put(localeFromFileName, p);
 			} catch (IOException ex) {
 				log.error("io-error while loading Properties-file", ex);
+				throw new ApplicationCodingException("unable to create node-structure from properties-file");
 			}
 		}
 
@@ -96,8 +104,7 @@ public class PropertiesReader
 
 	private Locale localeFromFileName(String filename)
 	{
-		String localInfo = StringUtils.substringBetween(filename, AppSettings.i18nPropFilePostFix.setting(),
-				AppSettings.i18nPropFilePreFix.setting());
+		String localInfo = StringUtils.substringBetween(filename, i18nPropFilePostFix, i18nPropFilePreFix);
 		if (localInfo.contains("_") == false) {
 			return new Locale(localInfo);
 		}

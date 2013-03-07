@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -149,11 +151,20 @@ public class PropertyFile implements Iterable<Block>
 		if (keyValueBlocks.isEmpty())
 			return;
 
+		// this needs to be done early, because during this method we modify the starting-block
+		// what effects every iteration over all blocks in this PropertyFile-Object
+		final List<Block> commentBlocksNotAttached = commentBlocksNotAttached();
+
+		LOG.debug(String.format("processing %d key-value-blocks", keyValueBlocks.size()));
+
 		for (Block kv : keyValueBlocks) {
 			kv.explode();
 		}
 
 		keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
+
+		LOG.debug(String.format("key-value-Blocks were splittet into %d key-value-Block with one line",
+				keyValueBlocks.size()));
 
 		// key: key length (that means the number of key-parts)
 		final Map<Integer, List<GroupPart>> keyLengthGrouped = new HashMap<>();
@@ -184,35 +195,64 @@ public class PropertyFile implements Iterable<Block>
 			final List<GroupPart> groupParts = keyGroups.get(gk);
 			LOG.debug(String.format("GroupParts for groupingKey %s : %d ", gk, groupParts.size()));
 
-			Block mergeBlock = null;
+			Block mergeBlock = new Block(BlockType.KEYVALUE, "");
 			for (int i = 0; i < groupParts.size(); i++) {
-				GroupPart next = groupParts.get(i);
-				next.owningBlock.detach();
-				if (mergeBlock == null) {
-					mergeBlock = next.owningBlock;
-				}
+				GroupPart actual = groupParts.get(i);
+				Block b = new Block(BlockType.KEYVALUE, actual.line.getLine());
+				mergeBlock.insertBefore(b);
+				mergeBlock.merge(b);
+				// final Block actB = actual.owningBlock;
+				// Block commentAttached = isCommentAttached(actB);
+				// if (mergeBlock == null) {
+				// mergeBlock = actB;
+				// }
+				//
+				// if (i < groupParts.size() - 1) {
+				// GroupPart next = groupParts.get(i + 1);
+				// Block nextBlock = next.owningBlock;
+				// commentAttached = isCommentAttached(nextBlock);
+				// if (commentAttached == null) {
+				// nextBlock.detach();
+				// mergeBlock.insertBefore(nextBlock);
+				// mergeBlock.merge(nextBlock);
+				// } else {
+				// nextBlock.detachUp(commentAttached);
+				// mergeBlock.insertBefore(commentAttached);
+				// mergedKeyValueBlocks.add(mergeBlock);
+				// mergeBlock = nextBlock;
+				// }
+				//
+				// } else { // the last line of the current grouped block
+				// mergedKeyValueBlocks.add(mergeBlock);
+				// mergeBlock = null;
+				// }
+			}
 
-				if (i < groupParts.size() - 1) {
-					GroupPart next2 = groupParts.get(i + 1);
-					next2.owningBlock.detach();
-					mergeBlock.insertBefore(next2.owningBlock);
-					mergeBlock.merge(next2.owningBlock);
-				} else { // the last line of the current grouped block
-					mergedKeyValueBlocks.add(mergeBlock);
-					mergeBlock = null;
-				}
+			mergedKeyValueBlocks.add(mergeBlock);
+		}
+
+		startingBlock = null;
+		// comments that are not attached to any key-Value-Block are added to this PropertyFile now.
+		final Iterator<Block> cbnaIter = commentBlocksNotAttached.iterator();
+		while (cbnaIter.hasNext()) {
+			Block current = cbnaIter.next();
+			if (startingBlock == null) {
+				startingBlock = current;
+			}
+			current.detach();
+			if (cbnaIter.hasNext()) {
+				Block next = cbnaIter.next();
+				next.detach();
+				current.merge(next);
 			}
 		}
 
 		// in a last step all resulting blocks are connected to each other
-		startingBlock = null;
 		Block lastBlockInGroup = null;
 		final Iterator<Block> mergedBlocksIterator = mergedKeyValueBlocks.iterator();
+		LOG.debug(String.format("%d key-value-block were created", mergedKeyValueBlocks.size()));
 		while (mergedBlocksIterator.hasNext()) {
-			Block b = mergedBlocksIterator.next();
-			if (startingBlock == null) {
-				startingBlock = b;
-			}
+			Block b = mergedBlocksIterator.next().head();
 
 			if (lastBlockInGroup != null) {
 				b.insertAfter(lastBlockInGroup);
@@ -224,14 +264,29 @@ public class PropertyFile implements Iterable<Block>
 				lastBlockInGroup = empty;
 			}
 		}
+
+		if (startingBlock == null) {
+			startingBlock = lastBlockInGroup.head();
+		} else {
+			startingBlock.insertBefore(lastBlockInGroup.head());
+		}
 	}
 
 	/**
+	 * This method checks if a specific Block has a comment attached or, if the block is of Type
+	 * {@link BlockType#COMMENT}, if it is attached to a key-value-Block. Attached means that a
+	 * Block with comments comes first before a Block with key-Value-Pairs. By default no empty
+	 * lines (Blocks) are allowed between these two blocks, otherwise the comment is not attached.
+	 * This behaviour is dependent of the Setting
+	 * {@link PropertiesWriter#attachCommentsWithEmptyLineCount}
 	 * 
 	 * @param block
 	 *            check this block if it is attached as a comment to a key-value-block or if it has
-	 *            an attached comment if it is a key-value-Block
-	 * @return the block where a comment is attachted to otherwise null
+	 *            an attached comment if it is a key-value-Block.
+	 * @return if the block param is of type {@link BlockType#KEYVALUE} and it has a comment
+	 *         attached, this method returns the comment-block. If the block param is of type
+	 *         {@link BlockType#COMMENT} and this block is attached to a key-value-Block the
+	 *         key-value-Block is returned. In all other cases the return value is null.
 	 */
 	public static final Block isCommentAttached(final Block block)
 	{
@@ -239,7 +294,7 @@ public class PropertyFile implements Iterable<Block>
 
 		if (block.getType().equals(BlockType.COMMENT)) {
 			int cntAgainstEmptyLineCnt = 0;
-			Block tmp = block.getPersuing();
+			Block tmp = block.getPursuing();
 			while (tmp != null && cntAgainstEmptyLineCnt <= emptyLineCnt) {
 				switch (tmp.getType())
 				{
@@ -253,7 +308,7 @@ public class PropertyFile implements Iterable<Block>
 				case KEYVALUE:
 					return tmp;
 				}
-				tmp = tmp.getPersuing();
+				tmp = tmp.getPursuing();
 			}
 		}
 
@@ -371,9 +426,10 @@ public class PropertyFile implements Iterable<Block>
 			if (last.getType().equals(BlockType.KEYVALUE)) {
 				last.getLines().add(new Line(0, nodeToInsert.keyValue(language)));
 			} else {
-				// Block newKeyValueBlock = new Block(nodeToInsert.keyValue(language),
-				// BlockType.KEYVALUE);
-				// last.concat(null, newKeyValueBlock);
+				final List<String> rawLines = new ArrayList<>();
+				rawLines.add(nodeToInsert.keyValue(language));
+				Block newKeyValueBlock = new Block(new BlockDimension(0, 0), rawLines, BlockType.KEYVALUE);
+				last.insert(null, newKeyValueBlock);
 			}
 
 			break;
@@ -446,11 +502,11 @@ public class PropertyFile implements Iterable<Block>
 			}
 
 			if (i + 1 < blocks.size() && i > 0) {
-				block.concat(blocks.get(i - 1), blocks.get(i + 1));
+				block.insert(blocks.get(i - 1), blocks.get(i + 1));
 			} else if (i + 1 == blocks.size() && i > 0) {
-				block.concat(blocks.get(i - 1), null);
+				block.insert(blocks.get(i - 1), null);
 			} else if (i + 1 < blocks.size() && i == 0) {
-				block.concat(null, blocks.get(i + 1));
+				block.insert(null, blocks.get(i + 1));
 			}
 		}
 
@@ -508,20 +564,20 @@ public class PropertyFile implements Iterable<Block>
 					Block next = listIterator.next();
 					if (next == checkAgainst) {
 						keyValue.detach();
-						checkAgainst.concat(keyValue, checkAgainst.getPersuing());
+						checkAgainst.insert(keyValue, checkAgainst.getPursuing());
 					}
 					listIterator.previous();
 					break;
 				}
 
 				if (checkAgainst.getType().equals(BlockType.BLANK)) {
-					if (checkAgainst.getPersuing() == null) {
+					if (checkAgainst.getPursuing() == null) {
 						keyValue.detach();
-						checkAgainst.concat(checkAgainst.getPreceding(), keyValue);
+						checkAgainst.insert(checkAgainst.getPreceding(), keyValue);
 						break;
 					}
 
-					checkAgainst = checkAgainst.getPersuing();
+					checkAgainst = checkAgainst.getPursuing();
 					continue;
 				}
 
@@ -529,7 +585,7 @@ public class PropertyFile implements Iterable<Block>
 
 				}
 
-				checkAgainst = checkAgainst.getPersuing();
+				checkAgainst = checkAgainst.getPursuing();
 			}
 		}
 	}
@@ -628,6 +684,21 @@ public class PropertyFile implements Iterable<Block>
 			blocks.add(next);
 		}
 		return blocks;
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<Block> commentBlocksNotAttached()
+	{
+		final List<Block> comments = blocksOfType(BlockType.COMMENT);
+		return (List<Block>) CollectionUtils.select(comments, new Predicate() {
+
+			@Override
+			public boolean evaluate(Object object)
+			{
+				final Block b = (Block) object;
+				return isCommentAttached(b) == null;
+			}
+		});
 	}
 
 	/**

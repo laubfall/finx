@@ -8,7 +8,7 @@ package de.ludwig.finx.settings;
  * most simple case a setting is not more than a String.
  * 
  * Implementations of this class are responsible to convert the stored string value. For example
- * convert a String that represents a Filesystem-Path to a file Object.
+ * convert a String that represents a Filesystem-Path to a Object of type File.
  * 
  * @author Daniel
  * 

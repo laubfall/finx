@@ -80,18 +80,18 @@ public class PropertyFileTest extends BasePropertyFileTest
 		Assert.assertEquals(3, pf.size());
 
 		Assert.assertNull(startingBlock.getPreceding());
-		Assert.assertNotNull(startingBlock.getPersuing());
+		Assert.assertNotNull(startingBlock.getPursuing());
 		Assert.assertEquals(BlockType.COMMENT, startingBlock.getType());
 
 		Assert.assertTrue(iterator.hasNext());
 		startingBlock = iterator.next();
 		Assert.assertNotNull(startingBlock.getPreceding());
-		Assert.assertNotNull(startingBlock.getPersuing());
+		Assert.assertNotNull(startingBlock.getPursuing());
 		Assert.assertEquals(BlockType.KEYVALUE, startingBlock.getType());
 
 		Assert.assertTrue(iterator.hasNext());
 		startingBlock = iterator.next();
-		Assert.assertNull(startingBlock.getPersuing());
+		Assert.assertNull(startingBlock.getPursuing());
 		Assert.assertNotNull(startingBlock.getPreceding());
 		Assert.assertEquals(BlockType.BLANK, startingBlock.getType());
 	}
@@ -103,7 +103,7 @@ public class PropertyFileTest extends BasePropertyFileTest
 				.addKeyValue("de.ludwig.2", "blah").addKeyValue("de.ludwig.3", "blub").end();
 		final PropertyFile pf = new PropertyFile(propertyFileHandle, new Language(Locale.GERMANY));
 		Assert.assertNotNull(pf.getStartingBlock());
-		Assert.assertNull(pf.getStartingBlock().getPersuing());
+		Assert.assertNull(pf.getStartingBlock().getPursuing());
 
 		final Block startingBlock = pf.getStartingBlock();
 		Assert.assertTrue(startingBlock.getLines().size() == 3);
@@ -111,22 +111,22 @@ public class PropertyFileTest extends BasePropertyFileTest
 		startingBlock.explode();
 		Assert.assertTrue(startingBlock.getLines().size() == 1);
 
-		Block persuing = startingBlock.getPersuing();
+		Block persuing = startingBlock.getPursuing();
 		Assert.assertNotNull(persuing);
 		Assert.assertTrue(persuing.getLines().size() == 1);
 		Line line = persuing.getLines().get(0);
 		Assert.assertNotNull(line.getLine());
 		Assert.assertTrue(line.getLine().startsWith("de.ludwig.2"));
-		Assert.assertNotNull(persuing.getPersuing());
+		Assert.assertNotNull(persuing.getPursuing());
 		Assert.assertNotNull(persuing.getPreceding());
 
-		persuing = persuing.getPersuing();
+		persuing = persuing.getPursuing();
 		Assert.assertNotNull(persuing);
 		Assert.assertTrue(persuing.getLines().size() == 1);
 		line = persuing.getLines().get(0);
 		Assert.assertNotNull(line.getLine());
 		Assert.assertTrue(line.getLine().startsWith("de.ludwig.3"));
-		Assert.assertNull(persuing.getPersuing());
+		Assert.assertNull(persuing.getPursuing());
 		Assert.assertNotNull(persuing.getPreceding());
 	}
 
@@ -140,12 +140,12 @@ public class PropertyFileTest extends BasePropertyFileTest
 
 		pf.getStartingBlock().explode();
 		Block startingBlock = pf.getStartingBlock();
-		startingBlock.merge(startingBlock.getPersuing());
+		startingBlock.merge(startingBlock.getPursuing());
 		Assert.assertTrue(startingBlock.getLines().size() == 2);
-		Assert.assertNotNull(startingBlock.getPersuing());
-		startingBlock.merge(startingBlock.getPersuing());
+		Assert.assertNotNull(startingBlock.getPursuing());
+		startingBlock.merge(startingBlock.getPursuing());
 		Assert.assertTrue(startingBlock.getLines().size() == 3);
-		Assert.assertNull(startingBlock.getPersuing());
+		Assert.assertNull(startingBlock.getPursuing());
 	}
 
 	@Test
@@ -166,7 +166,7 @@ public class PropertyFileTest extends BasePropertyFileTest
 
 		c1.detach();
 		Block e1 = new Block(BlockType.BLANK, "");
-		e1.concat(c1, k1);
+		e1.insert(c1, k1);
 		commentAttached = null;
 		commentAttached = PropertyFile.isCommentAttached(k1);
 		Assert.assertNull(commentAttached);
