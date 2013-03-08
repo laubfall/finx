@@ -20,23 +20,21 @@ import org.junit.Test;
 import de.ludwig.finx.Language;
 
 /**
- * Test that uses PropertyFileGroupTest/test03.properties as Input
- * 
  * @author Daniel
  * 
  */
-public class PropertyFileGroup3Test
+public class PropertyFileGroup4Test
 {
-	private File test03;
+	private File file;
 
 	private int cntLinesInFile;
 
-	public PropertyFileGroup3Test() throws URISyntaxException, IOException
+	public PropertyFileGroup4Test() throws URISyntaxException, IOException
 	{
-		URL resource = getClass().getClassLoader().getResource("PropertyFileGroupTest/test03.properties");
-		test03 = new File(resource.toURI());
+		URL resource = getClass().getClassLoader().getResource("PropertyFileGroupTest/test04.properties");
+		file = new File(resource.toURI());
 		PropertiesWriter.keyGroupSpace.change("1");
-		List<String> lines = FileUtils.readLines(test03);
+		List<String> lines = FileUtils.readLines(file);
 		int nonEmptyCnt = 0;
 		for (String l : lines) {
 			if (StringUtils.isBlank(l))
@@ -51,7 +49,7 @@ public class PropertyFileGroup3Test
 	@Test
 	public void grouping1() throws FileNotFoundException, IOException
 	{
-		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("1");
 		pf.grouping();
 
@@ -68,13 +66,13 @@ public class PropertyFileGroup3Test
 		// two empty lines, because we have two groups (a... and b...) but two empty-lines are
 		// wanted as space
 		Assert.assertEquals(cntLinesInFile + 2, filedata.size());
-		assertContent(filedata, test03);
+		assertContent(filedata, file);
 	}
 
 	@Test
 	public void grouping2() throws FileNotFoundException, IOException
 	{
-		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("2");
 		pf.grouping();
 
@@ -82,13 +80,13 @@ public class PropertyFileGroup3Test
 		Assert.assertNotNull(filedata);
 		// five empty lines, because we have six groups
 		Assert.assertEquals(cntLinesInFile + 5, filedata.size());
-		assertContent(filedata, test03);
+		assertContent(filedata, file);
 	}
 
 	@Test
 	public void grouping3() throws FileNotFoundException, IOException
 	{
-		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("3");
 		pf.grouping();
 
@@ -96,13 +94,13 @@ public class PropertyFileGroup3Test
 		Assert.assertNotNull(filedata);
 		// seven empty lines, because we have eight groups
 		Assert.assertEquals(cntLinesInFile + 7, filedata.size());
-		assertContent(filedata, test03);
+		assertContent(filedata, file);
 	}
 
 	@Test
 	public void grouping4() throws FileNotFoundException, IOException
 	{
-		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("4");
 		pf.grouping();
 
@@ -110,13 +108,13 @@ public class PropertyFileGroup3Test
 		Assert.assertNotNull(filedata);
 		// eight empty lines, because we have nine groups
 		Assert.assertEquals(cntLinesInFile + 8, filedata.size());
-		assertContent(filedata, test03);
+		assertContent(filedata, file);
 	}
 
 	@Test
 	public void keyGroupingLongerThenLongestKey() throws FileNotFoundException, IOException
 	{
-		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
+		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("10");
 		pf.grouping();
 
@@ -124,7 +122,7 @@ public class PropertyFileGroup3Test
 		Assert.assertNotNull(filedata);
 		// eight empty lines, because we have nine groups
 		Assert.assertEquals(cntLinesInFile + 8, filedata.size());
-		assertContent(filedata, test03);
+		assertContent(filedata, file);
 	}
 
 	public static void assertContent(final List<String> fileData, final File testData) throws FileNotFoundException,

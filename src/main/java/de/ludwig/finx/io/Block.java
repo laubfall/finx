@@ -29,8 +29,8 @@ class Block
 	/**
 	 * 
 	 * @param dimension
-	 *            TODO that does not seems very usefull. Why not save the dimension at this object?
-	 *            Other question, is it really necessary?
+	 *            actually this is only used by {@link PropertyFile} for processing the
+	 *            Properties-File
 	 * @param rawLines
 	 * @param type
 	 */
@@ -53,7 +53,7 @@ class Block
 		this(new BlockDimension(0, lines.length - 1), Arrays.asList(lines), type);
 	}
 
-	private Block(final List<Line> lines, BlockType type)
+	public Block(final List<Line> lines, BlockType type)
 	{
 		this.type = type;
 		this.lines = lines;
@@ -156,25 +156,38 @@ class Block
 		}
 	}
 
-	// 0 0 0 0 1 2 0 0 - 3 -
-	public final void insertAfter(Block afterThis)
+	public final void concatTailToHead(final Block head)
 	{
-		// if (preceding == afterThis) {
-		// return;
-		// }
-		// if (afterThis.persuing == null && afterThis.preceding == null) {
-		// afterThis.persuing = this;
-		// if (this.preceding != null) {
-		// this.preceding.persuing = afterThis;
-		// }
-		// afterThis.preceding = this.preceding;
-		// this.preceding = afterThis;
-		// return;
-		// }
-		insert(afterThis, afterThis.pursuing);
+		Block tail = this.tail();
+		Block realHead = head.head();
+		tail.pursuing = realHead;
+		realHead.preceding = tail;
 	}
 
 	// 0 0 0 0 1 2 0 0 - 3 -
+	public final void insertAfter(Block afterThis)
+	{
+		if (preceding == afterThis) {
+			return;
+		}
+		if (afterThis.pursuing == null && afterThis.preceding == null) {
+			afterThis.pursuing = this;
+			if (this.preceding != null) {
+				this.preceding.pursuing = afterThis;
+			}
+			afterThis.preceding = this.preceding;
+			this.preceding = afterThis;
+			return;
+		}
+		insert(afterThis, afterThis.pursuing);
+	}
+
+	/**
+	 * WARNING: this method does not work as expected if you put in a block that is attached to
+	 * other blocks! the chain of blocks gets broken!
+	 * 
+	 * @param beforeThis
+	 */
 	public final void insertBefore(Block beforeThis)
 	{
 		// don't insert it if it already is in the right position
@@ -191,6 +204,9 @@ class Block
 			return;
 		}
 
+		// TODO this is the dangerous call if beforeThis is only attached to one side either
+		// preceding or pursuing. The side that is not connected will destroy the block-chain of
+		// this-block
 		insert(beforeThis.preceding, beforeThis);
 	}
 

@@ -195,37 +195,26 @@ public class PropertyFile implements Iterable<Block>
 			final List<GroupPart> groupParts = keyGroups.get(gk);
 			LOG.debug(String.format("GroupParts for groupingKey %s : %d ", gk, groupParts.size()));
 
-			Block mergeBlock = new Block(BlockType.KEYVALUE, "");
+			Block mergeBlock = null;
 			for (int i = 0; i < groupParts.size(); i++) {
 				GroupPart actual = groupParts.get(i);
-				Block b = new Block(BlockType.KEYVALUE, actual.line.getLine());
-				mergeBlock.insertBefore(b);
-				mergeBlock.merge(b);
-				// final Block actB = actual.owningBlock;
-				// Block commentAttached = isCommentAttached(actB);
-				// if (mergeBlock == null) {
-				// mergeBlock = actB;
-				// }
-				//
-				// if (i < groupParts.size() - 1) {
-				// GroupPart next = groupParts.get(i + 1);
-				// Block nextBlock = next.owningBlock;
-				// commentAttached = isCommentAttached(nextBlock);
-				// if (commentAttached == null) {
-				// nextBlock.detach();
-				// mergeBlock.insertBefore(nextBlock);
-				// mergeBlock.merge(nextBlock);
-				// } else {
-				// nextBlock.detachUp(commentAttached);
-				// mergeBlock.insertBefore(commentAttached);
-				// mergedKeyValueBlocks.add(mergeBlock);
-				// mergeBlock = nextBlock;
-				// }
-				//
-				// } else { // the last line of the current grouped block
-				// mergedKeyValueBlocks.add(mergeBlock);
-				// mergeBlock = null;
-				// }
+				final Block b = new Block(BlockType.KEYVALUE, actual.line.getLine());
+				final Block commentAttached = isCommentAttached(actual.owningBlock);
+				if (commentAttached != null) {
+					final Block comment = new Block(commentAttached.getLines(), BlockType.COMMENT);
+					b.insertAfter(comment);
+				}
+
+				if (mergeBlock == null) {
+					mergeBlock = b;
+				} else {
+					if (commentAttached == null) {
+						mergeBlock.concatTailToHead(b);
+						mergeBlock.merge(b);
+					} else {
+						mergeBlock.concatTailToHead(b);
+					}
+				}
 			}
 
 			mergedKeyValueBlocks.add(mergeBlock);
@@ -255,7 +244,8 @@ public class PropertyFile implements Iterable<Block>
 			Block b = mergedBlocksIterator.next().head();
 
 			if (lastBlockInGroup != null) {
-				b.insertAfter(lastBlockInGroup);
+				// b.insertAfter(lastBlockInGroup);
+				lastBlockInGroup.concatTailToHead(b);
 			}
 
 			if (mergedBlocksIterator.hasNext()) {
