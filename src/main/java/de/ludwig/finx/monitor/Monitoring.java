@@ -12,14 +12,14 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import de.ludwig.finx.io.PropertyFileHandling;
 import de.ludwig.finx.scanner.I18nKey;
 import de.ludwig.finx.scanner.I18nScanner;
 import de.ludwig.finx.settings.AppSettings;
 import de.ludwig.finx.settings.ListSetting;
 
 /**
- * This class provides basic methods to handle all monitoring relevant programm
- * logic
+ * This class provides basic methods to handle all monitoring relevant programm logic
  * 
  * @author Daniel
  */
@@ -34,7 +34,7 @@ public class Monitoring
 
 	private static final Logger log = Logger.getLogger(Monitoring.class);
 
-	private Monitoring()
+	public Monitoring()
 	{
 		fm = new FileMonitor(100);
 		changeListeners = new HashSet<FileI18nChangesListener>();
@@ -49,9 +49,9 @@ public class Monitoring
 		return INSTANCE;
 	}
 
-	public void addScanner(final I18nScanner scannerToAdd)
+	public void addScanner(final I18nScanner scannerToAdd, PropertyFileHandling pfh)
 	{
-		FileI18nChangesListener i18nChangeListener = new FileI18nChangesListener(scannerToAdd);
+		FileI18nChangesListener i18nChangeListener = new FileI18nChangesListener(scannerToAdd, pfh);
 		fm.addListener(i18nChangeListener);
 		changeListeners.add(i18nChangeListener);
 	}

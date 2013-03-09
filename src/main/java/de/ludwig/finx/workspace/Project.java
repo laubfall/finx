@@ -53,7 +53,7 @@ public class Project implements Serializable
 					propertiesDir.getAbsolutePath()));
 		}
 
-		final WorkingSet ws = new WorkingSet(propertiesDir);
+		final WorkingSet ws = new WorkingSet(propertiesDir, sourceFiles);
 		workingSets.add(ws);
 		return ws;
 	}
@@ -96,5 +96,13 @@ public class Project implements Serializable
 	public String getSaveFileName()
 	{
 		return this.saveFileName;
+	}
+
+	/**
+	 * @return the workingSets
+	 */
+	public Set<WorkingSet> getWorkingSets()
+	{
+		return workingSets;
 	}
 }

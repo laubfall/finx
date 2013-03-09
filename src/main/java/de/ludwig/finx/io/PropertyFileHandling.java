@@ -32,11 +32,12 @@ public class PropertyFileHandling
 	 */
 	private RootNode ramNodes;
 
-	private PropertyFileHandling()
+	public PropertyFileHandling()
 	{
 
 	}
 
+	@Deprecated
 	public static synchronized PropertyFileHandling instance()
 	{
 		if (INSTANCE == null) {
@@ -46,9 +47,9 @@ public class PropertyFileHandling
 		return INSTANCE;
 	}
 
-	public void setupPropertiesReader(File propertyFileDir)
+	public void setupPropertiesReader(File propertyFileDir, String postFix, String preFix)
 	{
-		propReader = new PropertiesReader(propertyFileDir, null, null);
+		propReader = new PropertiesReader(propertyFileDir, postFix, preFix);
 	}
 
 	public RootNode nodeStructureFromFiles()

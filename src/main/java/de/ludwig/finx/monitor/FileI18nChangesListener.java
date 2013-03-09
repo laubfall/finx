@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.ludwig.finx.monitor;
 
 import java.io.File;
@@ -27,9 +23,12 @@ public class FileI18nChangesListener implements FileListener
 
 	private I18nScanner detector;
 
-	public FileI18nChangesListener(final I18nScanner detector)
+	private PropertyFileHandling pfh;
+
+	public FileI18nChangesListener(final I18nScanner detector, PropertyFileHandling pfh)
 	{
 		this.detector = detector;
+		this.pfh = pfh;
 	}
 
 	/**
@@ -47,7 +46,6 @@ public class FileI18nChangesListener implements FileListener
 
 		final Set<I18nKey> keys = detector.keys(file);
 		LOG.debug(String.format("%d i18n-keys found in changed file %s", keys.size(), file.getName()));
-
 		final RootNode nodes = PropertyFileHandling.instance().nodeStructureFromFiles();
 		for (final I18nKey k : keys) {
 			final I18nNode existingNode = nodes.findNode(k.getI18nKey());

@@ -208,11 +208,9 @@ public class PropertyFile implements Iterable<Block>
 				if (mergeBlock == null) {
 					mergeBlock = b;
 				} else {
-					if (commentAttached == null) {
-						mergeBlock.concatTailToHead(b);
+					mergeBlock.concatTailToHead(b);
+					if (commentAttached != null) {
 						mergeBlock.merge(b);
-					} else {
-						mergeBlock.concatTailToHead(b);
 					}
 				}
 			}

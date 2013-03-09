@@ -14,11 +14,11 @@ import org.apache.log4j.Logger;
 /**
  * Class for monitoring changes in disk files. Usage:
  * 
- * 1. Implement the FileListener interface. 2. Create a FileMonitor instance. 3.
- * Add the file(s)/directory(ies) to listen for.
+ * 1. Implement the FileListener interface. 2. Create a FileMonitor instance. 3. Add the
+ * file(s)/directory(ies) to listen for.
  * 
- * fileChanged() will be called when a monitored file is created, deleted or its
- * modified time changes.
+ * fileChanged() will be called when a monitored file is created, deleted or its modified time
+ * changes.
  * 
  * @author <a href="mailto:info@geosoft.no">GeoSoft</a>
  */
@@ -33,12 +33,11 @@ public class FileMonitor
 	private long pollingInterval;
 
 	/**
-	 * Indicates that the monitor has started but not if there is any timer
-	 * running (actuallly if the monitor has been started a timer should also
-	 * running)
+	 * Indicates that the monitor has started but not if there is any timer running (actuallly if
+	 * the monitor has been started a timer should also running)
 	 * 
-	 * This information can be necessary if other services needs to know if the
-	 * monitor is running to continue their work.
+	 * This information can be necessary if other services needs to know if the monitor is running
+	 * to continue their work.
 	 */
 	private boolean started;
 
@@ -94,12 +93,11 @@ public class FileMonitor
 	}
 
 	/**
-	 * Add file to listen for. File may be any java.io.File (including a
-	 * directory) and may well be a non-existing file in the case where the
-	 * creating of the file is to be trepped.
+	 * Add file to listen for. File may be any java.io.File (including a directory) and may well be
+	 * a non-existing file in the case where the creating of the file is to be trepped.
 	 * <p>
-	 * More than one file can be listened for. When the specified file is
-	 * created, modified or deleted, listeners are notified.
+	 * More than one file can be listened for. When the specified file is created, modified or
+	 * deleted, listeners are notified.
 	 * 
 	 * @param file
 	 *            File to listen for.
@@ -152,9 +150,8 @@ public class FileMonitor
 	}
 
 	/**
-	 * This is the timer thread which is executed every n milliseconds according
-	 * to the setting of the file monitor. It investigates the file in question
-	 * and notify listeners if changed.
+	 * This is the timer thread which is executed every n milliseconds according to the setting of
+	 * the file monitor. It investigates the file in question and notify listeners if changed.
 	 */
 	private class FileMonitorNotifier extends TimerTask
 	{
