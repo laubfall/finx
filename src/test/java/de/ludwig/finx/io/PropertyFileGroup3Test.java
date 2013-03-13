@@ -25,7 +25,7 @@ import de.ludwig.finx.Language;
  * @author Daniel
  * 
  */
-public class PropertyFileGroup3Test
+public class PropertyFileGroup3Test extends BasePropertyFileGroupTest
 {
 	private File test03;
 
@@ -53,7 +53,7 @@ public class PropertyFileGroup3Test
 	{
 		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
 		PropertiesWriter.keyGrouping.change("1");
-		pf.grouping();
+		callGrouping(pf);
 
 		List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -61,7 +61,7 @@ public class PropertyFileGroup3Test
 		Assert.assertEquals(cntLinesInFile + 1, filedata.size());
 
 		PropertiesWriter.keyGroupSpace.change("2");
-		pf.grouping();
+		callGrouping(pf);
 
 		filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -76,7 +76,7 @@ public class PropertyFileGroup3Test
 	{
 		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
 		PropertiesWriter.keyGrouping.change("2");
-		pf.grouping();
+		callGrouping(pf);
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -90,7 +90,7 @@ public class PropertyFileGroup3Test
 	{
 		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
 		PropertiesWriter.keyGrouping.change("3");
-		pf.grouping();
+		callGrouping(pf);
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -104,7 +104,7 @@ public class PropertyFileGroup3Test
 	{
 		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
 		PropertiesWriter.keyGrouping.change("4");
-		pf.grouping();
+		callGrouping(pf);
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -118,7 +118,7 @@ public class PropertyFileGroup3Test
 	{
 		final PropertyFile pf = new PropertyFile(test03, new Language("de"));
 		PropertiesWriter.keyGrouping.change("10");
-		pf.grouping();
+		callGrouping(pf);
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);

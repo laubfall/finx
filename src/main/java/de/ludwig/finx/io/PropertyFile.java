@@ -26,6 +26,10 @@ import org.apache.log4j.Logger;
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.Language;
 import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
+import de.ludwig.finx.settings.Setting;
+import de.ludwig.finx.settings.SettingsChangedListener;
+import de.ludwig.finx.settings.SettingsDaoImpl;
+import de.ludwig.finx.settings.UpdatableSetting;
 
 /**
  * A programmatic representation of an I18n-Properties-File
@@ -33,7 +37,7 @@ import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
  * @author Daniel
  * 
  */
-public class PropertyFile implements Iterable<Block>
+public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 {
 	private static final Logger LOG = Logger.getLogger(PropertyFile.class);
 
@@ -43,6 +47,24 @@ public class PropertyFile implements Iterable<Block>
 	 * required to get the correct values of I18n-Nodes
 	 */
 	private Language language;
+
+	/**
+	 * For a full description of the meanings of the different kind of modes see
+	 * {@link PropertyPreserveMode}
+	 */
+	public static UpdatableSetting<PropertyPreserveMode> preservePropertyLayout;
+
+	static {
+		SettingsDaoImpl.instance().init(PropertyFile.class);
+	}
+
+	/**
+	 * Flag that indicates that this PropertyFile Instance / its content was formatted as specified
+	 * by the application, if the flag is true. It is used by various formatting methods that
+	 * assumes that this instance is already formatted as the application specified, because these
+	 * methods build up there strategy on this assumption.
+	 */
+	private boolean applicationStyleFormat = false;
 
 	/**
 	 * 
@@ -100,15 +122,16 @@ public class PropertyFile implements Iterable<Block>
 	 * {@link I18nNode}) the given I18nNode with respect to all relevant Prettyprint-Settings e.g.:
 	 * PropertiesWriter#preservePropertyLayout
 	 * 
+	 * If there is already a key-value-Pair with the key to be inserted, then the value is going to
+	 * be updated.
+	 * 
 	 * Regarding the value of the key-value-Pair it has to be said, that it is dependent of the
 	 * language of this object which value will be retrieved of the {@link I18nNode}.
 	 * 
 	 * @param insertThis
 	 */
-	public final void insert(final I18nNode insertThis)
+	public final void insertOrUpdate(final I18nNode insertThis)
 	{
-		// TODO check if the key already exists.
-
 		final PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
 
 		if (startingBlock == null) {
@@ -116,19 +139,26 @@ public class PropertyFile implements Iterable<Block>
 			return;
 		}
 
-		final PropertyPreserveMode preserveMode = PropertiesWriter.preservePropertyLayout.setting();
+		if (update(insertThis)) {
+			return;
+		}
+
+		final PropertyPreserveMode preserveMode = PropertyFile.preservePropertyLayout.setting();
 		switch (preserveMode)
 		{
 		case NONE:
-			insertPreserveModeNone();
+			insertPreserveModeNone(insertThis);
 			break;
 		case NONSTRICT:
-			insertPreserveModeNonstrict(null);
+			insertPreserveModeNonStrict(insertThis);
+			applicationStyleFormat = false;
 			break;
 		case STRICT:
 			insertPreserveModeStrict(insertThis);
+			applicationStyleFormat = false;
 			break;
 		}
+
 	}
 
 	/**
@@ -139,125 +169,6 @@ public class PropertyFile implements Iterable<Block>
 	public final void remove(final I18nNode removeThis)
 	{
 
-	}
-
-	/**
-	 * group all keyValues as specified by {@link PropertiesWriter#keyGrouping} and
-	 * {@link PropertiesWriter#keyGroupSpace}
-	 */
-	public final void grouping()
-	{
-		List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
-		if (keyValueBlocks.isEmpty())
-			return;
-
-		// this needs to be done early, because during this method we modify the starting-block
-		// what effects every iteration over all blocks in this PropertyFile-Object
-		final List<Block> commentBlocksNotAttached = commentBlocksNotAttached();
-
-		LOG.debug(String.format("processing %d key-value-blocks", keyValueBlocks.size()));
-
-		for (Block kv : keyValueBlocks) {
-			kv.explode();
-		}
-
-		keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
-
-		LOG.debug(String.format("key-value-Blocks were splittet into %d key-value-Block with one line",
-				keyValueBlocks.size()));
-
-		// key: key length (that means the number of key-parts)
-		final Map<Integer, List<GroupPart>> keyLengthGrouped = new HashMap<>();
-		for (Block exp : keyValueBlocks) {
-			final GroupPart gp = new GroupPart(exp);
-			Integer keyLength = gp.keyLength();
-			if (keyLengthGrouped.containsKey(keyLength) == false) {
-				keyLengthGrouped.put(keyLength, new ArrayList<GroupPart>());
-			}
-
-			keyLengthGrouped.get(keyLength).add(gp);
-		}
-
-		// final Integer keyGrouping = PropertiesWriter.keyGrouping.setting();
-		final Set<Integer> keyLengths = keyLengthGrouped.keySet();
-
-		Map<String, List<GroupPart>> keyGroups = new HashMap<>();
-		keyGroups.putAll(groupLower(keyLengths, keyLengthGrouped));
-
-		final Set<String> groupingKeys = keyGroups.keySet();
-		LOG.debug("grouping keys: " + groupingKeys);
-
-		startingBlock = null;
-		final List<Block> mergedKeyValueBlocks = new ArrayList<>();
-		// next we merge all key-value-Blocks to one block that represents the group defined by the
-		// grouping key
-		for (String gk : groupingKeys) {
-			final List<GroupPart> groupParts = keyGroups.get(gk);
-			LOG.debug(String.format("GroupParts for groupingKey %s : %d ", gk, groupParts.size()));
-
-			Block mergeBlock = null;
-			for (int i = 0; i < groupParts.size(); i++) {
-				GroupPart actual = groupParts.get(i);
-				final Block b = new Block(BlockType.KEYVALUE, actual.line.getLine());
-				final Block commentAttached = isCommentAttached(actual.owningBlock);
-				if (commentAttached != null) {
-					final Block comment = new Block(commentAttached.getLines(), BlockType.COMMENT);
-					b.insertAfter(comment);
-				}
-
-				if (mergeBlock == null) {
-					mergeBlock = b;
-				} else {
-					mergeBlock.concatTailToHead(b);
-					if (commentAttached != null) {
-						mergeBlock.merge(b);
-					}
-				}
-			}
-
-			mergedKeyValueBlocks.add(mergeBlock);
-		}
-
-		startingBlock = null;
-		// comments that are not attached to any key-Value-Block are added to this PropertyFile now.
-		final Iterator<Block> cbnaIter = commentBlocksNotAttached.iterator();
-		while (cbnaIter.hasNext()) {
-			Block current = cbnaIter.next();
-			if (startingBlock == null) {
-				startingBlock = current;
-			}
-			current.detach();
-			if (cbnaIter.hasNext()) {
-				Block next = cbnaIter.next();
-				next.detach();
-				current.merge(next);
-			}
-		}
-
-		// in a last step all resulting blocks are connected to each other
-		Block lastBlockInGroup = null;
-		final Iterator<Block> mergedBlocksIterator = mergedKeyValueBlocks.iterator();
-		LOG.debug(String.format("%d key-value-block were created", mergedKeyValueBlocks.size()));
-		while (mergedBlocksIterator.hasNext()) {
-			Block b = mergedBlocksIterator.next().head();
-
-			if (lastBlockInGroup != null) {
-				// b.insertAfter(lastBlockInGroup);
-				lastBlockInGroup.concatTailToHead(b);
-			}
-
-			if (mergedBlocksIterator.hasNext()) {
-				Block empty = new EmptyBlock(PropertiesWriter.keyGroupSpace.setting());
-				empty.insertAfter(b);
-				lastBlockInGroup = empty;
-			}
-		}
-
-		if (startingBlock == null) {
-			startingBlock = lastBlockInGroup.head();
-		} else {
-			startingBlock.insertBefore(lastBlockInGroup.head());
-		}
 	}
 
 	/**
@@ -323,14 +234,133 @@ public class PropertyFile implements Iterable<Block>
 		return null;
 	}
 
-	private Map<String, List<GroupPart>> groupLower(final Collection<Integer> lengths,
-			Map<Integer, List<GroupPart>> keyLengthGrouped)
+	/**
+	 * group all keyValues as specified by {@link PropertiesWriter#keyGrouping} and
+	 * {@link PropertiesWriter#keyGroupSpace}
+	 */
+	private void grouping()
 	{
-		final Map<String, List<GroupPart>> result = new HashMap<>();
+		List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
+		if (keyValueBlocks.isEmpty())
+			return;
+
+		// this needs to be done early, because during this method we modify the starting-block
+		// what effects every iteration over all blocks in this PropertyFile-Object
+		final List<Block> commentBlocksNotAttached = commentBlocksNotAttached();
+
+		LOG.debug(String.format("processing %d key-value-blocks", keyValueBlocks.size()));
+
+		for (Block kv : keyValueBlocks) {
+			kv.explode();
+		}
+
+		keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
+
+		LOG.debug(String.format("key-value-Blocks were splittet into %d key-value-Block with one line",
+				keyValueBlocks.size()));
+
+		// key: key length (that means the number of key-parts)
+		final Map<Integer, List<KeyValueGroupPart>> keyLengthGrouped = new HashMap<>();
+		for (Block exp : keyValueBlocks) {
+			final KeyValueGroupPart gp = new KeyValueGroupPart(exp);
+			Integer keyLength = gp.keyLength();
+			if (keyLengthGrouped.containsKey(keyLength) == false) {
+				keyLengthGrouped.put(keyLength, new ArrayList<KeyValueGroupPart>());
+			}
+
+			keyLengthGrouped.get(keyLength).add(gp);
+		}
+
+		final Set<Integer> keyLengths = keyLengthGrouped.keySet();
+
+		Map<String, List<KeyValueGroupPart>> keyGroups = new HashMap<>();
+		keyGroups.putAll(groupLower(keyLengths, keyLengthGrouped));
+
+		final Set<String> groupingKeys = keyGroups.keySet();
+		LOG.debug("grouping keys: " + groupingKeys);
+
+		startingBlock = null;
+		final List<Block> mergedKeyValueBlocks = new ArrayList<>();
+		// next we merge all key-value-Blocks to one block that represents the group defined by the
+		// grouping key
+		for (String gk : groupingKeys) {
+			final List<KeyValueGroupPart> groupParts = keyGroups.get(gk);
+			LOG.debug(String.format("GroupParts for groupingKey %s : %d ", gk, groupParts.size()));
+
+			Block mergeBlock = null;
+			for (int i = 0; i < groupParts.size(); i++) {
+				KeyValueGroupPart actual = groupParts.get(i);
+				final Block b = new Block(BlockType.KEYVALUE, actual.line.getLine());
+				final Block commentAttached = isCommentAttached(actual.owningBlock);
+				if (commentAttached != null) {
+					final Block comment = new Block(commentAttached.getLines(), BlockType.COMMENT);
+					b.insertAfter(comment);
+				}
+
+				if (mergeBlock == null) {
+					mergeBlock = b;
+				} else {
+					mergeBlock.concatTailToHead(b);
+					if (commentAttached == null) {
+						mergeBlock.merge(b);
+					}
+				}
+			}
+
+			mergedKeyValueBlocks.add(mergeBlock);
+		}
+
+		startingBlock = null;
+		// comments that are not attached to any key-Value-Block are added to this PropertyFile now.
+		final Iterator<Block> cbnaIter = commentBlocksNotAttached.iterator();
+		while (cbnaIter.hasNext()) {
+			Block current = cbnaIter.next();
+			if (startingBlock == null) {
+				startingBlock = current;
+			}
+			current.detach();
+			if (cbnaIter.hasNext()) {
+				Block next = cbnaIter.next();
+				next.detach();
+				current.merge(next);
+			}
+		}
+
+		// in a last step all resulting blocks are connected to each other
+		Block lastBlockInGroup = null;
+		final Iterator<Block> mergedBlocksIterator = mergedKeyValueBlocks.iterator();
+		LOG.debug(String.format("%d key-value-block were created", mergedKeyValueBlocks.size()));
+		while (mergedBlocksIterator.hasNext()) {
+			Block b = mergedBlocksIterator.next().head();
+
+			if (lastBlockInGroup != null) {
+				lastBlockInGroup.concatTailToHead(b);
+			}
+
+			if (mergedBlocksIterator.hasNext()) {
+				Block empty = new EmptyBlock(PropertiesWriter.keyGroupSpace.setting());
+				empty.insertAfter(b);
+				lastBlockInGroup = empty;
+			} else {
+				lastBlockInGroup = b;
+			}
+		}
+
+		if (startingBlock == null) {
+			startingBlock = lastBlockInGroup.head();
+		} else {
+			startingBlock.insertBefore(lastBlockInGroup.head());
+		}
+	}
+
+	private Map<String, List<KeyValueGroupPart>> groupLower(final Collection<Integer> lengths,
+			Map<Integer, List<KeyValueGroupPart>> keyLengthGrouped)
+	{
+		final Map<String, List<KeyValueGroupPart>> result = new HashMap<>();
 		final Integer keyGrouping = PropertiesWriter.keyGrouping.setting();
 		for (Integer len : lengths) {
-			final List<GroupPart> parts = keyLengthGrouped.get(len);
-			for (final GroupPart l : parts) {
+			final List<KeyValueGroupPart> parts = keyLengthGrouped.get(len);
+			for (final KeyValueGroupPart l : parts) {
 
 				String groupingKeyPart;
 				if (len <= keyGrouping) {
@@ -339,7 +369,7 @@ public class PropertyFile implements Iterable<Block>
 					groupingKeyPart = l.partOfKey(keyGrouping);
 				}
 				if (groupingKeyPart == null) {
-					result.put(l.key(), new ArrayList<GroupPart>() {
+					result.put(l.key(), new ArrayList<KeyValueGroupPart>() {
 						private static final long serialVersionUID = 1L;
 
 						{
@@ -349,7 +379,7 @@ public class PropertyFile implements Iterable<Block>
 					continue;
 				}
 				if (result.containsKey(groupingKeyPart) == false) {
-					result.put(groupingKeyPart, new ArrayList<GroupPart>());
+					result.put(groupingKeyPart, new ArrayList<KeyValueGroupPart>());
 				}
 
 				result.get(groupingKeyPart).add(l);
@@ -358,43 +388,85 @@ public class PropertyFile implements Iterable<Block>
 		return result;
 	}
 
-	private void insertPreserveModeNone()
+	private void insertPreserveModeNone(I18nNode nodeToInsert)
 	{
+		// take care about the fact that we can only proceed in some meaningful manner if the
+		// pf was formated in the "fink way" before.
+		if (applicationStyleFormat == false) {
+			startingBlock.concatTailToHead(new Block(BlockType.KEYVALUE, nodeToInsert.keyValue(language)));
+			applicationFormat();
+			return;
+		}
 
+		// after this point every operation expects that this PropertyFile-Instance is formatted in
+		// "Finx-Style"
+		final List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
+		final KeyValueLineInfo kvliNew = new KeyValueLineInfo();
+		kvliNew.line = new Line(0, nodeToInsert.keyValue(language));
+		Block matchedBlock = null;
+		final Integer keyGrouping = PropertiesWriter.keyGrouping.setting();
+		blocks: for (final Block b : keyValueBlocks) {
+			for (Line l : b.getLines()) {
+				final KeyValueLineInfo kvliExisting = new KeyValueLineInfo();
+				kvliExisting.line = l;
+
+				if (kvliNew.partOfKey(keyGrouping).equals(kvliExisting.groupingKeyPart())) {
+					matchedBlock = b;
+					break blocks;
+				} else {
+					continue blocks;
+				}
+			}
+		}
+
+		if (matchedBlock != null) {
+			matchedBlock.getLines().add(kvliNew.line);
+			matchedBlock.sortLines();
+		} else {
+			final Block empty = new EmptyBlock(PropertiesWriter.keyGroupSpace.setting());
+			empty.insertBefore(new Block(BlockType.KEYVALUE, kvliNew.line.getLine()));
+			startingBlock.concatTailToHead(empty);
+		}
 	}
 
 	/**
 	 * In NonStrict Mode new keys are added at that point where there natural ordering matches most.
+	 * The ordering is dependent of Setting {@link PropertiesWriter#keyOrder}
 	 * 
 	 * @param nodeToInsert
 	 */
-	private void insertPreserveModeNonstrict(I18nNode nodeToInsert)
+	private void insertPreserveModeNonStrict(I18nNode nodeToInsert)
 	{
-		final Iterator<Block> blockIterator = iterator();
-		while (blockIterator.hasNext()) {
-			final Block next = blockIterator.next();
-			if (next.getType().equals(BlockType.KEYVALUE) == false)
-				continue;
-
-			// if there is no new block we create one
-			if (blockIterator.hasNext() == false) {
-				// next.concat(null, new Block(nodeToInsert.keyValue(language),
-				// BlockType.KEYVALUE));
-				break;
-			}
-		}
-
+		PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
+		final String keyValue = nodeToInsert.keyValue(language);
 		final List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
-		if (keyValueBlocks == null || keyValueBlocks.isEmpty()) {
-			// TODO funktioniert nicht wenn wir mehrere Blöcke haben
-			// startingBlock.concat(null, new Block(nodeToInsert.keyValue(language),
-			// BlockType.KEYVALUE));
-		} else {
-			int smallestCompare = 0;
-			for (Block b : keyValueBlocks) {
-				List<Line> lines = b.getLines();
+		Integer smallestCompare = null;
+		Block smallestCompareBlock = null;
+		Line smallesCompareLine = null;
+		for (Block b : keyValueBlocks) {
+			List<Line> lines = b.getLines();
+			for (Line l : lines) {
+				final int compareTo = l.getLine().compareTo(keyValue);
+				if (smallestCompare == null) {
+					smallestCompare = compareTo;
+					// necessary because if DESC we are only interessted in values ge 0
+					if (keyOrder.equals(PropertyKeyOrder.DESC)) {
+						smallestCompare = Math.abs(smallestCompare);
+					}
+					smallestCompareBlock = b;
+					smallesCompareLine = l;
+				} else if ((keyOrder.equals(PropertyKeyOrder.ASC) && compareTo <= 0 && compareTo > smallestCompare)
+						|| (keyOrder.equals(PropertyKeyOrder.DESC) && compareTo >= 0 && compareTo < smallestCompare)) {
+					smallestCompare = compareTo;
+					smallestCompareBlock = b;
+					smallesCompareLine = l;
+				}
 			}
 		}
+
+		List<Line> lines = smallestCompareBlock.getLines();
+		int indexOf = lines.indexOf(smallesCompareLine);
+		lines.add(indexOf, new Line(indexOf, keyValue));
 	}
 
 	/**
@@ -434,13 +506,39 @@ public class PropertyFile implements Iterable<Block>
 			throw new ApplicationCodingException("cannot insert into empty because startingBlock already exists");
 		}
 
-		final List<String> rawLines = new ArrayList<>();
-		final List<I18nNode> flattened = insertThis.flatten();
-		PropertyKeyOrderSetting.sort(flattened, keyOrder);
-		for (I18nNode n : flattened) {
-			rawLines.add(n.keyValue(language));
+		startingBlock = new Block(BlockType.KEYVALUE, insertThis.keyValue(language));
+	}
+
+	/**
+	 * Looks
+	 * 
+	 * @param update
+	 */
+	private boolean update(final I18nNode update)
+	{
+		final List<Block> keyValues = blocksOfType(BlockType.KEYVALUE);
+		Line lineToUpdate = null;
+		Block referencedBlock = null;
+		outter: for (Block b : keyValues) {
+			final List<Line> lines = b.getLines();
+			for (Line l : lines) {
+				KeyValueGroupPart gp = new KeyValueGroupPart(new Block(BlockType.KEYVALUE, l.getLine()));
+				if (gp.key().equals(update.key())) {
+					lineToUpdate = l;
+					referencedBlock = b;
+					break outter;
+				}
+			}
 		}
-		startingBlock = new Block(new BlockDimension(0, flattened.size() - 1), rawLines, BlockType.KEYVALUE);
+
+		if (lineToUpdate != null) {
+			int index = referencedBlock.getLines().indexOf(lineToUpdate);
+			referencedBlock.getLines().add(index, new Line(0, update.keyValue(language)));
+			referencedBlock.getLines().remove(lineToUpdate);
+			return true;
+		}
+
+		return false;
 	}
 
 	private void process(final List<String> lines)
@@ -498,11 +596,12 @@ public class PropertyFile implements Iterable<Block>
 			}
 		}
 
-		preFormat();
+		applicationFormat();
 	}
 
 	/**
-	 * ordering means to order all blocks of type {@link BlockType#KEYVALUE}
+	 * 
+	 * ordering means to order all lines of blocks of type {@link BlockType#KEYVALUE}
 	 */
 	private void sort()
 	{
@@ -581,15 +680,22 @@ public class PropertyFile implements Iterable<Block>
 	/**
 	 * If Finx shall take care about the formatting of the properties file this method do any
 	 * necessary formatting before further changes are made.
+	 * 
+	 * This method does nothing if {@link PropertyPreserveMode} is not
+	 * {@link PropertyPreserveMode#NONE}
 	 */
-	private void preFormat()
+	private void applicationFormat()
 	{
-		if (PropertiesWriter.preservePropertyLayout.setting().equals(PropertyPreserveMode.NONE) == false) {
+		if (PropertyFile.preservePropertyLayout.setting().equals(PropertyPreserveMode.NONE) == false) {
 			return;
 		}
 
+		LOG.debug("PropertyFile should be formatted as specified by application");
+
 		sort();
 		grouping();
+
+		applicationStyleFormat = true;
 	}
 
 	private List<BlockDimension> keyValueBlocks(final List<String> rawPropertyLines)
@@ -708,22 +814,9 @@ public class PropertyFile implements Iterable<Block>
 		return new BlockIterator(startingBlock);
 	}
 
-	private class GroupPart
+	private class KeyValueLineInfo
 	{
-		final Line line;
-
-		final Block owningBlock;
-
-		GroupPart(final Block exploded) throws ApplicationCodingException
-		{
-			List<Line> lines = exploded.getLines();
-			if (lines.size() != 1) {
-				throw new ApplicationCodingException("it is not allowed for a group part to have more than one line");
-			}
-
-			line = lines.get(0);
-			owningBlock = exploded;
-		}
+		Line line;
 
 		String key()
 		{
@@ -766,5 +859,34 @@ public class PropertyFile implements Iterable<Block>
 		{
 			return keyParts().length;
 		}
+	}
+
+	private class KeyValueGroupPart extends KeyValueLineInfo
+	{
+		final Block owningBlock;
+
+		KeyValueGroupPart(final Block exploded) throws ApplicationCodingException
+		{
+			List<Line> lines = exploded.getLines();
+			if (lines.size() != 1) {
+				throw new ApplicationCodingException("it is not allowed for a group part to have more than one line");
+			}
+
+			line = lines.get(0);
+			owningBlock = exploded;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ludwig.finx.settings.SettingsChangedListener#settingChanged(java.lang.String,
+	 * de.ludwig.finx.settings.UpdatableSetting)
+	 */
+	@Override
+	public void settingChanged(String settingName, Setting<?> oldSetting)
+	{
+		// TODO Auto-generated method stub
+
 	}
 }

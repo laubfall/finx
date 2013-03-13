@@ -2,11 +2,13 @@ package de.ludwig.finx.io;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 
 import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
 
 /**
  * A Block object represents one or more lines inside a property file that are of one type (s.
@@ -337,6 +339,17 @@ class Block
 		}
 
 		return resultingChain;
+	}
+
+	public final void sortLines()
+	{
+		final PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
+		if (keyOrder.equals(PropertyKeyOrder.ASC)) {
+			Collections.sort(lines);
+		} else if (keyOrder.equals(PropertyKeyOrder.DESC)) {
+			Collections.sort(lines);
+			Collections.reverse(lines);
+		}
 	}
 
 	/**

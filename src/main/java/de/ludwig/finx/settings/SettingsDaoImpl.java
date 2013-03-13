@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -34,8 +36,6 @@ public class SettingsDaoImpl
 
 	private static SettingsDaoImpl settingsDao;
 
-	// private AppSettings settings;
-
 	private static final Logger LOG = Logger.getLogger(SettingsDaoImpl.class);
 
 	/**
@@ -44,7 +44,14 @@ public class SettingsDaoImpl
 	 */
 	private Map<Class<?>, Class<? extends AbstractSetting<?>>> settingRegistry = new HashMap<Class<?>, Class<? extends AbstractSetting<?>>>();
 
+	/**
+	 * key: name of the settings-field. value: class where the setting is present
+	 */
 	private Map<String, Class<?>> settingNameRegistry = new HashMap<String, Class<?>>();
+
+	private Map<Class<?>, List<WeakReference<SettingsChangedListener>>> settingsChangedRegistry = new HashMap<>();
+
+	private ReferenceQueue<SettingsChangedListener> refsToRemove = new ReferenceQueue<>();
 
 	final Properties p = new Properties();
 
@@ -93,11 +100,37 @@ public class SettingsDaoImpl
 
 	public void init(Class<?> settingHolderType)
 	{
-		// Field[] declaredFields = settingHolderType.getDeclaredFields();
 		for (Field f : settingFields(settingHolderType)) {
 			initSettingField(f, p.getProperty(f.getName()));
 			settingNameRegistry.put(f.getName(), settingHolderType);
 		}
+	}
+
+	/**
+	 * 
+	 * @param settingHolderType
+	 *            The class where the settings are present.
+	 * @param listener
+	 *            the listener hold as a weak-reference.
+	 */
+	public final void addListener(final Class<?> settingHolderType, final SettingsChangedListener listener)
+	{
+		if (settingNameRegistry.containsValue(settingHolderType) == false) {
+			// otherwise we do not find any listeners if there is a change on a settings-field
+			throw new ApplicationCodingException(String.format("class %s is not registered as a setting-holder",
+					settingHolderType.getName()));
+		}
+
+		if (settingsChangedRegistry.containsKey(settingHolderType) == false) {
+			settingsChangedRegistry.put(settingHolderType, new ArrayList<WeakReference<SettingsChangedListener>>());
+		}
+
+		settingsChangedRegistry.get(settingHolderType).add(
+				new WeakReference<SettingsChangedListener>(listener, refsToRemove));
+		LOG.debug(String.format("added %s as settings-changed-listener", listener.getClass()));
+
+		while (refsToRemove.poll() != null)
+			;
 	}
 
 	private Set<Field> settingFields(final Class<?> settingHolder)
@@ -119,7 +152,6 @@ public class SettingsDaoImpl
 	 * 
 	 * @param settingField
 	 * @param initialValue
-	 *            TODO
 	 * 
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
@@ -148,9 +180,24 @@ public class SettingsDaoImpl
 						@Override
 						public Object invoke(Object arg0, Method arg1, Object[] arg2) throws Throwable
 						{
-							if (UpdatableSetting.class.isAssignableFrom(arg1.getDeclaringClass())) {
+							final Class<?> decClass = arg1.getDeclaringClass();
+							if (UpdatableSetting.class.isAssignableFrom(decClass)) {
 								setting.setDirty(true);
+								Class<?> fieldDecClass = settingField.getDeclaringClass();
+								final List<WeakReference<SettingsChangedListener>> list = settingsChangedRegistry
+										.get(fieldDecClass);
+								if (list != null) {
+									for (WeakReference<SettingsChangedListener> wr : list) {
+										final SettingsChangedListener settingsChangedListener = wr.get();
+										if (settingsChangedListener == null)
+											continue;
+
+										settingsChangedListener.settingChanged(settingField.getName(),
+												(Setting<?>) arg0);
+									}
+								}
 							}
+
 							return arg1.invoke(setting, arg2);
 						}
 					});

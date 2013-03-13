@@ -150,6 +150,16 @@ public class I18nNodeTest
 	}
 
 	@Test
+	public void flattenToNonEmpty()
+	{
+		Language lang = Language.language("de");
+		I18nNode node = I18nNode.create("de.ludwig.test", lang, "testval");
+		List<I18nNode> flattenToNonEmpty = node.flattenToNonEmpty(lang);
+		Assert.assertNotNull(flattenToNonEmpty);
+		Assert.assertEquals(1, flattenToNonEmpty.size());
+	}
+
+	@Test
 	public void keySplit()
 	{
 		String[] split = I18nNode.i18nKeySplit("de.ludwig");

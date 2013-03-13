@@ -9,7 +9,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.ludwig.finx.settings.AppSettings;
-import de.ludwig.finx.settings.SettingsDaoImpl;
 
 /**
  * 
@@ -22,16 +21,10 @@ public class PropertiesReaderTest
 	@Test
 	public void testCreateNodeView() throws URISyntaxException
 	{
-		File i18nPropertiesLocation = AppSettings.i18nPropertiesLocation.setting();
 		URL resource = getClass().getResource("/PropertiesReaderTest/");
 		File file = new File(resource.toURI());
-		SettingsDaoImpl.instance().changeSetting("i18nPropertiesLocation", file.getAbsolutePath());
 
-		i18nPropertiesLocation = AppSettings.i18nPropertiesLocation.setting();
-		Assert.assertNotNull(i18nPropertiesLocation);
-		Assert.assertTrue(i18nPropertiesLocation.exists());
-
-		PropertiesReader pr = new PropertiesReader(i18nPropertiesLocation, AppSettings.i18nPropFilePostFix.setting(),
+		PropertiesReader pr = new PropertiesReader(file, AppSettings.i18nPropFilePostFix.setting(),
 				AppSettings.i18nPropFilePreFix.setting());
 		RootNode root = pr.createNodeView();
 

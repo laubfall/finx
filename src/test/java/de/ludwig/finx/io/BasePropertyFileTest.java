@@ -4,11 +4,13 @@ import java.io.File;
 
 import org.junit.After;
 
+import de.ludwig.finx.SetttingsAwareTest;
+
 /**
  * @author Daniel
  * 
  */
-public abstract class BasePropertyFileTest
+public abstract class BasePropertyFileTest extends SetttingsAwareTest
 {
 	/**
 	 * subclasses can use this file object to create a properties-file for test purposes, without to

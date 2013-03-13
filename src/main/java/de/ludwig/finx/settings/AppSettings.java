@@ -23,14 +23,6 @@ public abstract class AppSettings
 	 */
 	public static UpdatableSetting<String> i18nPropFilePreFix;
 
-	/**
-	 * 
-	 * Verzeichnis in dem die Internationalisierungs-Dateien liegen.
-	 */
-	@Deprecated
-	// in future this setting is stored in a workingSet
-	public static UpdatableSetting<File> i18nPropertiesLocation;
-
 	public static UpdatableSetting<I18nDefaultValueSetting> i18nDefaultValue;
 
 	/**

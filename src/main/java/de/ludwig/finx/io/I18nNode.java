@@ -301,6 +301,22 @@ public class I18nNode
 		return flatten(this, new ArrayList<I18nNode>());
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<I18nNode> flattenToNonEmpty(final Language nonEmptyForThisLanguage)
+	{
+		List<I18nNode> flatten = flatten();
+		return (List<I18nNode>) CollectionUtils.select(flatten, new Predicate() {
+
+			@Override
+			public boolean evaluate(Object object)
+			{
+				final I18nNode n = (I18nNode) object;
+				String val = n.value(nonEmptyForThisLanguage);
+				return StringUtils.isEmpty(val) == false;
+			}
+		});
+	}
+
 	public String keyValue(final Language language)
 	{
 		return key() + "=" + value(language);
