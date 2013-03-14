@@ -47,9 +47,9 @@ public class PropertyFile implements Iterable<Block>
 	/**
 	 * 
 	 * @param i18nRes
-	 *            The I18n-Properties-File this object is based on. If it is null you start with an
-	 *            empty {@link PropertyFile} Object, otherwise the File is processed and its content
-	 *            is pushed to this object.
+	 *            Optional. The I18n-Properties-File this object is based on. If it is null you
+	 *            start with an empty {@link PropertyFile} Object, otherwise the File is processed
+	 *            and its content is pushed to this object.
 	 * @param language
 	 * @throws FileNotFoundException
 	 * @throws IOException
@@ -370,27 +370,14 @@ public class PropertyFile implements Iterable<Block>
 	 */
 	private void insertPreserveModeNonstrict(I18nNode nodeToInsert)
 	{
-		final Iterator<Block> blockIterator = iterator();
-		while (blockIterator.hasNext()) {
-			final Block next = blockIterator.next();
-			if (next.getType().equals(BlockType.KEYVALUE) == false)
-				continue;
-
-			// if there is no new block we create one
-			if (blockIterator.hasNext() == false) {
-				// next.concat(null, new Block(nodeToInsert.keyValue(language),
-				// BlockType.KEYVALUE));
-				break;
-			}
-		}
-
 		final List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
 		if (keyValueBlocks == null || keyValueBlocks.isEmpty()) {
-			// TODO funktioniert nicht wenn wir mehrere Blöcke haben
-			// startingBlock.concat(null, new Block(nodeToInsert.keyValue(language),
-			// BlockType.KEYVALUE));
+			final Block newKeyValueBlock = new Block(BlockType.KEYVALUE, nodeToInsert.keyValue(language));
+			startingBlock.concatTailToHead(newKeyValueBlock);
 		} else {
 			int smallestCompare = 0;
+			Block smallestComparedBlock = null;
+			Line smallestComparedLinde = null;
 			for (Block b : keyValueBlocks) {
 				List<Line> lines = b.getLines();
 			}
@@ -437,6 +424,9 @@ public class PropertyFile implements Iterable<Block>
 		final List<String> rawLines = new ArrayList<>();
 		final List<I18nNode> flattened = insertThis.flatten();
 		PropertyKeyOrderSetting.sort(flattened, keyOrder);
+
+		// TODO will man das hier wirklich? wäre das nicht besser wenn sich darum der Caller
+		// kümmert?
 		for (I18nNode n : flattened) {
 			rawLines.add(n.keyValue(language));
 		}
@@ -502,7 +492,8 @@ public class PropertyFile implements Iterable<Block>
 	}
 
 	/**
-	 * ordering means to order all blocks of type {@link BlockType#KEYVALUE}
+	 * ordering means to order all lines of blocks of type {@link BlockType#KEYVALUE}. It does not
+	 * order the block!
 	 */
 	private void sort()
 	{
