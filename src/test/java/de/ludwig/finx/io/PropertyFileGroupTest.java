@@ -22,7 +22,7 @@ import de.ludwig.finx.Language;
  * @author Daniel
  * 
  */
-public class PropertyFileGroupTest
+public class PropertyFileGroupTest extends BasePropertyFileGroupTest
 {
 	private File file;
 
@@ -41,7 +41,10 @@ public class PropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("1");
-		pf.grouping();
+		callGrouping(pf);
+
+		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
+		Assert.assertEquals(2, blocks.size());
 
 		List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -49,7 +52,7 @@ public class PropertyFileGroupTest
 		Assert.assertEquals(cntLinesInFile + 1, filedata.size());
 
 		PropertiesWriter.keyGroupSpace.change("2");
-		pf.grouping();
+		callGrouping(pf);
 
 		filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -64,7 +67,10 @@ public class PropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("2");
-		pf.grouping();
+		callGrouping(pf);
+
+		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
+		Assert.assertEquals(6, blocks.size());
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -78,7 +84,10 @@ public class PropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("3");
-		pf.grouping();
+		callGrouping(pf);
+
+		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
+		Assert.assertEquals(8, blocks.size());
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -92,7 +101,10 @@ public class PropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("4");
-		pf.grouping();
+		callGrouping(pf);
+
+		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
+		Assert.assertEquals(9, blocks.size());
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -106,7 +118,10 @@ public class PropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("10");
-		pf.grouping();
+		callGrouping(pf);
+
+		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
+		Assert.assertEquals(9, blocks.size());
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);

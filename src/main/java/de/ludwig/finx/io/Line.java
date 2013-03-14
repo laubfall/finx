@@ -1,6 +1,8 @@
 package de.ludwig.finx.io;
 
-class Line
+import org.apache.commons.lang3.StringUtils;
+
+class Line implements Comparable<Line>
 {
 	/**
 	 * actually without a use
@@ -19,7 +21,7 @@ class Line
 	{
 		super();
 		this.pos = pos;
-		this.line = line;
+		this.line = StringUtils.defaultString(line);
 	}
 
 	/**
@@ -47,6 +49,17 @@ class Line
 	public String toString()
 	{
 		return "Line [pos=" + pos + ", line=" + line + "]";
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(Line o)
+	{
+		return line.compareTo(o.getLine());
 	}
 
 }
