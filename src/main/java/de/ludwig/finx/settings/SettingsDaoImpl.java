@@ -146,6 +146,32 @@ public class SettingsDaoImpl
 		return settingFields;
 	}
 
+	private Class<? extends AbstractSetting<?>> settingClass(final Field settingField)
+	{
+		Type gt = settingField.getType();
+		if (gt.equals(UpdatableSetting.class) == false) {
+			// otherwise we not able to assign the proxy to this field
+			throw new ApplicationCodingException(String.format("setting field %s in class %s has to be of type %s",
+					settingField.getName(), settingField.getDeclaringClass().getName(),
+					UpdatableSetting.class.getName()));
+		}
+		final ParameterizedType genericType = (ParameterizedType) settingField.getGenericType();
+		final Type settingTypeValue = genericType.getActualTypeArguments()[0];
+		final Class<?> settingTypeValueClass = (Class<?>) settingTypeValue;
+
+		Class<? extends AbstractSetting<?>> settingClass = settingRegistry.get(settingTypeValueClass);
+		if (settingClass == null) {
+			final SettingType settingTypeAnno = settingTypeValueClass.getAnnotation(SettingType.class);
+			if (settingTypeAnno == null) {
+				throw new ApplicationCodingException(
+						"did not found a settingtype definition, use SettingType Annotation");
+			}
+
+			settingClass = settingTypeAnno.value();
+		}
+		return settingClass;
+	}
+
 	/**
 	 * Initializes a static field of Type {@link AbstractSetting} with the given value by the
 	 * settings-properties-file.
@@ -159,21 +185,25 @@ public class SettingsDaoImpl
 	private void initSettingField(final Field settingField, String initialValue)
 	{
 		try {
-			final ParameterizedType genericType = (ParameterizedType) settingField.getGenericType();
-			final Type settingTypeValue = genericType.getActualTypeArguments()[0];
-			final Class<?> settingTypeValueClass = (Class<?>) settingTypeValue;
-			Class<? extends AbstractSetting<?>> settingClass = settingRegistry.get(settingTypeValueClass);
-			if (settingClass == null) {
-				final SettingType settingTypeAnno = settingTypeValueClass.getAnnotation(SettingType.class);
-				if (settingTypeAnno == null) {
-					throw new ApplicationCodingException(
-							"did not found a settingtype definition, use SettingType Annotation");
-				}
+			// final ParameterizedType genericType = (ParameterizedType)
+			// settingField.getGenericType();
+			// final Type settingTypeValue = genericType.getActualTypeArguments()[0];
+			// final Class<?> settingTypeValueClass = (Class<?>) settingTypeValue;
+			//
+			// Class<? extends AbstractSetting<?>> settingClass =
+			// settingRegistry.get(settingTypeValueClass);
+			// if (settingClass == null) {
+			// final SettingType settingTypeAnno =
+			// settingTypeValueClass.getAnnotation(SettingType.class);
+			// if (settingTypeAnno == null) {
+			// throw new ApplicationCodingException(
+			// "did not found a settingtype definition, use SettingType Annotation");
+			// }
+			//
+			// settingClass = settingTypeAnno.value();
+			// }
 
-				settingClass = settingTypeAnno.value();
-			}
-
-			final AbstractSetting<?> setting = settingClass.newInstance();
+			final AbstractSetting<?> setting = settingClass(settingField).newInstance();
 			setting.initialize(initialValue);
 			final Object newProxyInstance = Proxy.newProxyInstance(settingField.getType().getClassLoader(),
 					new Class<?>[] { Modifieable.class, UpdatableSetting.class }, new InvocationHandler() {

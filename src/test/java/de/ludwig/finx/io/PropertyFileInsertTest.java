@@ -160,7 +160,7 @@ public class PropertyFileInsertTest extends BasePropertyFileTest
 
 		filedata = pf.filedata();
 		Assert.assertEquals(6, filedata.size());
-		Assert.assertTrue(StringUtils.startsWith(filedata.get(0), "de.ludwig"));
+		Assert.assertTrue(StringUtils.startsWith(filedata.get(0), "de.ludwig="));
 		Assert.assertTrue(StringUtils.startsWith(filedata.get(1), "de.ludwig.test="));
 		Assert.assertTrue(StringUtils.startsWith(filedata.get(2), "de.ludwig.test.sub"));
 	}
@@ -189,7 +189,7 @@ public class PropertyFileInsertTest extends BasePropertyFileTest
 
 		filedata = pf.filedata();
 		Assert.assertEquals(6, filedata.size());
-		Assert.assertTrue(StringUtils.startsWith(filedata.get(2), "de.ludwig"));
+		Assert.assertTrue(StringUtils.startsWith(filedata.get(2), "de.ludwig="));
 		Assert.assertTrue(StringUtils.startsWith(filedata.get(1), "de.ludwig.test="));
 		Assert.assertTrue(StringUtils.startsWith(filedata.get(0), "de.ludwig.test.sub"));
 	}
@@ -200,6 +200,7 @@ public class PropertyFileInsertTest extends BasePropertyFileTest
 		PropertyFile.preservePropertyLayout.change(PropertyPreserveMode.NONE.name());
 		PropertiesWriter.keyGrouping.change("1");
 		PropertiesWriter.keyGroupSpace.change("1");
+		PropertiesWriter.keyOrder.change(PropertyKeyOrder.DESC.name());
 
 		propertyFileHandle = I18nFileCreator.start().addKeyValue("de.ludwig", "1").addKeyValue("de.ludwig.test", "2")
 				.addKeyValue("com.ludwig", "3").addKeyValue("com.ludwig.test", "4").end();
@@ -213,7 +214,7 @@ public class PropertyFileInsertTest extends BasePropertyFileTest
 		List<String> filedata = pf.filedata();
 		Assert.assertEquals(7, filedata.size()); // new block so there has to be an additional empty
 													// line
-		Assert.assertTrue(StringUtils.startsWith(filedata.get(0), "de.ludwig"));
+		Assert.assertTrue(StringUtils.startsWith(filedata.get(0), "de.ludwig="));
 		Assert.assertTrue(StringUtils.startsWith(filedata.get(1), "de.ludwig.test="));
 		Assert.assertTrue(StringUtils.startsWith(filedata.get(6), "nl.ludwig.test.sub"));
 	}

@@ -11,13 +11,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +54,8 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	 */
 	public static UpdatableSetting<PropertyPreserveMode> preservePropertyLayout;
 
+	public static UpdatableSetting<BlockOrder> blockOrder;
+
 	static {
 		SettingsDaoImpl.instance().init(PropertyFile.class);
 	}
@@ -65,6 +67,8 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	 * methods build up there strategy on this assumption.
 	 */
 	private boolean applicationStyleFormat = false;
+
+	private List<BlockGroupInfo> groupingInfo = new ArrayList<>();
 
 	/**
 	 * 
@@ -110,6 +114,7 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 		final List<String> result = new ArrayList<String>();
 
 		for (final Block b : this) {
+			b.sortLines();
 			for (Line l : b.getLines()) {
 				result.add(l.getLine());
 			}
@@ -244,10 +249,6 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 		if (keyValueBlocks.isEmpty())
 			return;
 
-		// this needs to be done early, because during this method we modify the starting-block
-		// what effects every iteration over all blocks in this PropertyFile-Object
-		final List<Block> commentBlocksNotAttached = commentBlocksNotAttached();
-
 		LOG.debug(String.format("processing %d key-value-blocks", keyValueBlocks.size()));
 
 		for (Block kv : keyValueBlocks) {
@@ -279,7 +280,6 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 		final Set<String> groupingKeys = keyGroups.keySet();
 		LOG.debug("grouping keys: " + groupingKeys);
 
-		startingBlock = null;
 		final List<Block> mergedKeyValueBlocks = new ArrayList<>();
 		// next we merge all key-value-Blocks to one block that represents the group defined by the
 		// grouping key
@@ -307,12 +307,17 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 				}
 			}
 
+			groupingInfo.add(new BlockGroupInfo(gk, mergeBlock));
 			mergedKeyValueBlocks.add(mergeBlock);
 		}
 
-		startingBlock = null;
+		// this needs to be done early, because during this method we modify the starting-block
+		// what effects every iteration over all blocks in this PropertyFile-Object
+		final List<Block> commentBlocksNotAttached = commentBlocksNotAttached();
+
 		// comments that are not attached to any key-Value-Block are added to this PropertyFile now.
 		final Iterator<Block> cbnaIter = commentBlocksNotAttached.iterator();
+		startingBlock = null;
 		while (cbnaIter.hasNext()) {
 			Block current = cbnaIter.next();
 			if (startingBlock == null) {
@@ -390,6 +395,7 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 
 	private void insertPreserveModeNone(I18nNode nodeToInsert)
 	{
+		LOG.debug(String.format("insert node with key %s in mode NONE", nodeToInsert.key()));
 		// take care about the fact that we can only proceed in some meaningful manner if the
 		// pf was formated in the "fink way" before.
 		if (applicationStyleFormat == false) {
@@ -406,7 +412,7 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 		Block matchedBlock = null;
 		final Integer keyGrouping = PropertiesWriter.keyGrouping.setting();
 		blocks: for (final Block b : keyValueBlocks) {
-			for (Line l : b.getLines()) {
+			lines: for (Line l : b.getLines()) {
 				final KeyValueLineInfo kvliExisting = new KeyValueLineInfo();
 				kvliExisting.line = l;
 
@@ -414,14 +420,13 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 					matchedBlock = b;
 					break blocks;
 				} else {
-					continue blocks;
+					continue lines;
 				}
 			}
 		}
 
 		if (matchedBlock != null) {
 			matchedBlock.getLines().add(kvliNew.line);
-			matchedBlock.sortLines();
 		} else {
 			final Block empty = new EmptyBlock(PropertiesWriter.keyGroupSpace.setting());
 			empty.insertBefore(new Block(BlockType.KEYVALUE, kvliNew.line.getLine()));
@@ -437,6 +442,7 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	 */
 	private void insertPreserveModeNonStrict(I18nNode nodeToInsert)
 	{
+		LOG.debug(String.format("inserte node with key %s in mode NONSTRICT", nodeToInsert.key()));
 
 		PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
 		final String keyValue = nodeToInsert.keyValue(language);
@@ -477,6 +483,8 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	 */
 	private void insertPreserveModeStrict(I18nNode nodeToInsert)
 	{
+		LOG.debug(String.format("inserte node with key %s in mode STRICT", nodeToInsert.key()));
+
 		final Iterator<Block> blockIterator = iterator();
 		while (blockIterator.hasNext()) {
 			final Block last = blockIterator.next();
@@ -601,80 +609,53 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	}
 
 	/**
-	 * ordering means to order all lines of blocks of type {@link BlockType#KEYVALUE}
+	 * 
 	 */
-	private void sort()
+	private void blockSort()
 	{
-		List<Block> sortedByKeyValues = blocksOfType(BlockType.KEYVALUE);
-		Collections.sort(sortedByKeyValues, new Comparator<Block>() {
-			@Override
-			public int compare(Block o1, Block o2)
-			{
-				List<Line> lines1 = o1.getLines();
-				List<Line> lines2 = o2.getLines();
+		Collections.sort(groupingInfo, comparatorBySetting());
+		for (BlockGroupInfo bgi : groupingInfo) {
 
-				if (lines1.isEmpty() || lines1.size() != 1 || lines2.isEmpty() || lines2.size() != 1) {
-					throw new ApplicationCodingException("unable to sort block, blocks have to be exploded first");
-				}
-				PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
-				int res = lines1.get(0).getLine().compareTo(lines2.get(0).getLine());
-				switch (keyOrder)
-				{
-				case ASC:
-					return res;
-				case DESC:
-					return res * -1;
-				default:
-					return 0;
-				}
-			}
-		});
-
-		/**
-		 * position behalten: - aktueller Block ist der sortierte Block (/) - der aktuelle Block ist
-		 * der Block der in der Sortierung direkt nach dem sortierten Block folgt (/)
-		 * 
-		 * eins vorrücken: - aktueller Block ist ein Kommentar ohne Verbindung zu einem
-		 * Key-Value-Block - aktueller Block ist ein Kommmentar mit Verbindung zu einem
-		 * Key-Value-Block - aktueller Block ist ein Empty-Space-Block
-		 */
-		final ListIterator<Block> listIterator = sortedByKeyValues.listIterator();
-		while (listIterator.hasNext()) {
-			Block keyValue = listIterator.next();
-			Block checkAgainst = startingBlock;
-			while (checkAgainst != null) {
-				if (checkAgainst == keyValue) {
-					break;
-				}
-
-				if (listIterator.hasNext()) {
-					Block next = listIterator.next();
-					if (next == checkAgainst) {
-						keyValue.detach();
-						checkAgainst.insert(keyValue, checkAgainst.getPursuing());
-					}
-					listIterator.previous();
-					break;
-				}
-
-				if (checkAgainst.getType().equals(BlockType.BLANK)) {
-					if (checkAgainst.getPursuing() == null) {
-						keyValue.detach();
-						checkAgainst.insert(checkAgainst.getPreceding(), keyValue);
-						break;
-					}
-
-					checkAgainst = checkAgainst.getPursuing();
-					continue;
-				}
-
-				if (isCommentAttached(checkAgainst) != null) {
-
-				}
-
-				checkAgainst = checkAgainst.getPursuing();
-			}
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Comparator<BlockGroupInfo> comparatorBySetting()
+	{
+		final Comparator<BlockGroupInfo> keyNatural = new Comparator<BlockGroupInfo>() {
+
+			@Override
+			public int compare(BlockGroupInfo o1, BlockGroupInfo o2)
+			{
+				return o1.groupingKey.compareTo(o2.groupingKey);
+			}
+		};
+
+		final Comparator<BlockGroupInfo> keyLength = new Comparator<BlockGroupInfo>() {
+
+			@Override
+			public int compare(BlockGroupInfo o1, BlockGroupInfo o2)
+			{
+				Integer i1 = o1.groupingKey.length();
+				Integer i2 = o2.groupingKey.length();
+				return i1.compareTo(i2);
+			}
+		};
+
+		final BlockOrder order = blockOrder.setting();
+		switch (order)
+		{
+		case GROUPING_KEY_LENGTH_ASC:
+			return keyLength;
+		case GROUPING_KEY_LENGTH_DESC:
+			return ComparatorUtils.reversedComparator(keyLength);
+		case GROUPING_KEY_AND_LENGTH_ASC:
+			return keyNatural;
+		case GROUPING_KEY_AND_LENGTH_DESC:
+			return ComparatorUtils.reversedComparator(keyNatural);
+		}
+
+		return null;
 	}
 
 	/**
@@ -692,8 +673,9 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 
 		LOG.debug("PropertyFile is going to be formatted as specified by application");
 
-		sort();
 		grouping();
+		blockSort();
+		// buildBlockHierarchy();
 
 		applicationStyleFormat = true;
 	}
@@ -875,6 +857,25 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 			line = lines.get(0);
 			owningBlock = exploded;
 		}
+	}
+
+	private class BlockGroupInfo
+	{
+		private String groupingKey;
+
+		private Block groupBlock;
+
+		public BlockGroupInfo(String groupingKey, Block groupBlock)
+		{
+			if (groupBlock.getType().equals(BlockType.KEYVALUE) == false) {
+				throw new ApplicationCodingException(
+						"BlockGroupInfo Instance only possible for blocks of type KEYVALUE, was: "
+								+ groupBlock.getType());
+			}
+			this.groupingKey = groupingKey;
+			this.groupBlock = groupBlock;
+		}
+
 	}
 
 	/*

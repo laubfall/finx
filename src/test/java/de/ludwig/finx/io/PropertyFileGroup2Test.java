@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import de.ludwig.finx.Language;
+import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
 
 /**
  * Test that uses PropertyFileGroupTest/test02.properties as Input
@@ -91,6 +92,8 @@ public class PropertyFileGroup2Test extends BasePropertyFileGroupTest
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("3");
 		callGrouping(pf);
+
+		PropertiesWriter.keyOrder.change(PropertyKeyOrder.ASC.name());
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
