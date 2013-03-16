@@ -32,6 +32,10 @@ public class WorkspaceDao
 
 	}
 
+	/**
+	 * 
+	 * @return The project that is active at the moment. Can be null.
+	 */
 	public Project activeProject()
 	{
 		return activeProject;
@@ -40,7 +44,10 @@ public class WorkspaceDao
 	public void activateProject(final Project newActive)
 	{
 		Validate.notNull(newActive);
+		boolean wasNull = activeProject == null;
 		activeProject = newActive;
+		if (wasNull)
+			return; // don't do any unnecessary work
 
 		// terminate all monitorings of WorkingSets that do not belong to new active Project
 		final Collection<WorkingSetMonitoring> wsms = wsMonitorings.values();
@@ -53,11 +60,17 @@ public class WorkspaceDao
 		// create WorkingSetMonitorings for all WorkingSets of the project
 		final Set<WorkingSet> workingSets = newActive.getWorkingSets();
 		for (WorkingSet ws : workingSets) {
-			create(ws);
+			createMonitoring(ws);
 		}
 	}
 
-	public WorkingSetMonitoring create(final WorkingSet ws)
+	/**
+	 * Create monitoring for the given workingSet
+	 * 
+	 * @param ws
+	 * @return the monitoring object instance
+	 */
+	public WorkingSetMonitoring createMonitoring(final WorkingSet ws)
 	{
 		if (activeProject == null) {
 			throw new ApplicationException("there is no active project");

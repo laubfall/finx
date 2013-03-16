@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.ApplicationException;
 import de.ludwig.finx.Language;
+import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
 import de.ludwig.finx.settings.SettingsDaoImpl;
 import de.ludwig.finx.settings.UpdatableSetting;
 
@@ -44,7 +45,7 @@ public class PropertiesWriter
 	 * possible values: ASC, DESC, NONE
 	 * 
 	 */
-	public static UpdatableSetting<PropertyKeyOrderSetting> keyOrder;
+	public static UpdatableSetting<PropertyKeyOrder> keyOrder;
 
 	/**
 	 * sometimes key-value-pairs in property-files are commented, we can say a comment is attached

@@ -51,14 +51,14 @@ public class PropertyFileGroup5Test extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("1");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
 		Assert.assertEquals(cntLinesInFile, filedata.size());
 
 		PropertiesWriter.keyGroupSpace.change("2");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		filedata = pf.filedata();
 		Assert.assertNotNull(filedata);

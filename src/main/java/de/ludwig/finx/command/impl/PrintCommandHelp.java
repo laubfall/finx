@@ -1,11 +1,14 @@
 /**
  * 
  */
-package de.ludwig.finx.command;
+package de.ludwig.finx.command.impl;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
+
+import de.ludwig.finx.command.Command;
+import de.ludwig.finx.command.CommandHub;
 
 /**
  * @author Daniel

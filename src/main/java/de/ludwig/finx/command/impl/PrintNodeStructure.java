@@ -1,4 +1,4 @@
-package de.ludwig.finx.command;
+package de.ludwig.finx.command.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import de.ludwig.finx.Language;
+import de.ludwig.finx.command.Command;
+import de.ludwig.finx.command.CommandException;
+import de.ludwig.finx.command.Stackable;
 import de.ludwig.finx.io.PropertiesWriter;
 import de.ludwig.finx.io.PropertyFileHandling;
 import de.ludwig.finx.io.RootNode;

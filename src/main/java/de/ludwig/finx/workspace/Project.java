@@ -13,7 +13,7 @@ import org.apache.commons.lang3.Validate;
 import de.ludwig.finx.ApplicationCodingException;
 
 /**
- * The representation of a project of any type that has I18n-property-files
+ * The representation of a project of any type that has I18n-property-files.
  * 
  * @author Daniel
  * 
@@ -88,6 +88,13 @@ public class Project implements Serializable
 		this.name = name;
 	}
 
+	/**
+	 * Package protected to avoid modifications from classes that do not belong to this package.
+	 * This is necessary because this field plays a central role in how instances of Project are
+	 * persisted.
+	 * 
+	 * @param saveFileName
+	 */
 	final void setSaveFileName(String saveFileName)
 	{
 		this.saveFileName = saveFileName;

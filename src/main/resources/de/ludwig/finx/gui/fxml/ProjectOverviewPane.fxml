@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="378.0" prefWidth="179.0" xmlns:fx="http://javafx.com/fxml">
+  <children>
+    <Text fx:id="noProjectText" layoutX="55.0" layoutY="181.0" strokeType="OUTSIDE" strokeWidth="0.0" text="No Project!" />
+    <VBox fx:id="projectBox" prefHeight="378.0" prefWidth="179.0" visible="false" />
+  </children>
+</AnchorPane>

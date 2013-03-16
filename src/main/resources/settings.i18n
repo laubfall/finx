@@ -18,4 +18,4 @@ preservePropertyLayout=NONSTRICT
 keyOrder=ASC
 attachCommentsWithEmptyLineCount=0
 lineEnding=\n
-blockOrder=GROUPING_KEY_LENGTH_DESC
+blockOrder=GROUPING_KEY_LENGTH_ASC

@@ -1,9 +1,12 @@
 /**
  * 
  */
-package de.ludwig.finx.command;
+package de.ludwig.finx.command.impl;
 
 import java.util.List;
+
+import de.ludwig.finx.command.Command;
+import de.ludwig.finx.command.CommandHub;
 
 /**
  * @author Daniel

@@ -1,8 +1,10 @@
-package de.ludwig.finx.command;
+package de.ludwig.finx.command.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import de.ludwig.finx.command.Command;
+import de.ludwig.finx.command.CommandException;
 import de.ludwig.finx.settings.SettingsDaoImpl;
 
 /**

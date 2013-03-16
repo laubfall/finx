@@ -343,7 +343,7 @@ class Block
 
 	public final void sortLines()
 	{
-		final PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
+		final PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting();
 		if (keyOrder.equals(PropertyKeyOrder.ASC)) {
 			Collections.sort(lines);
 		} else if (keyOrder.equals(PropertyKeyOrder.DESC)) {

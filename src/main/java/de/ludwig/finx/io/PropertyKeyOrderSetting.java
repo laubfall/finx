@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import de.ludwig.finx.io.PropertyKeyOrderSetting.PropertyKeyOrder;
 import de.ludwig.finx.settings.AbstractSetting;
 import de.ludwig.finx.settings.SettingType;
 
@@ -11,8 +12,7 @@ import de.ludwig.finx.settings.SettingType;
  * @author Daniel
  * 
  */
-@SettingType(PropertyKeyOrderSetting.class)
-public class PropertyKeyOrderSetting extends AbstractSetting<PropertyKeyOrderSetting>
+public class PropertyKeyOrderSetting extends AbstractSetting<PropertyKeyOrder>
 {
 	private PropertyKeyOrder keyOrder;
 
@@ -22,9 +22,9 @@ public class PropertyKeyOrderSetting extends AbstractSetting<PropertyKeyOrderSet
 	 * @see de.ludwig.i18n.settings.Setting#setting()
 	 */
 	@Override
-	public PropertyKeyOrderSetting setting()
+	public PropertyKeyOrder setting()
 	{
-		return this;
+		return keyOrder;
 	}
 
 	/*
@@ -46,6 +46,7 @@ public class PropertyKeyOrderSetting extends AbstractSetting<PropertyKeyOrderSet
 		return keyOrder;
 	}
 
+	@SettingType(PropertyKeyOrderSetting.class)
 	enum PropertyKeyOrder
 	{
 		ASC, DESC, NONE, ;

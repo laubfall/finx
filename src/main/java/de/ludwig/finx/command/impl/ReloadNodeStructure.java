@@ -1,5 +1,7 @@
-package de.ludwig.finx.command;
+package de.ludwig.finx.command.impl;
 
+import de.ludwig.finx.command.Command;
+import de.ludwig.finx.command.CommandException;
 import de.ludwig.finx.io.PropertyFileHandling;
 
 /**

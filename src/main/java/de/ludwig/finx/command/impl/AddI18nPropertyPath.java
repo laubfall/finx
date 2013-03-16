@@ -1,8 +1,11 @@
-package de.ludwig.finx.command;
+package de.ludwig.finx.command.impl;
 
 import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
+
+import de.ludwig.finx.command.Command;
+import de.ludwig.finx.command.CommandException;
 
 /**
  * Command to add the path to the directory where all i18n-propertie-files are saved.

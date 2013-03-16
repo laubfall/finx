@@ -88,6 +88,71 @@ public class PropertyFileBlockSortTest extends SetttingsAwareTest
 
 			Assert.assertEquals("nl.ludwig.test=8", filedata.get(2));
 
+			Assert.assertEquals("com.ludwig=3", filedata.get(4));
+		} finally {
+			FileUtils.deleteQuietly(end);
+		}
+	}
+
+	@Test
+	public void blockSortKeyLengthAndNaturalOrderAsc() throws FileNotFoundException, IOException
+	{
+		PropertiesWriter.keyGrouping.change("1");
+		PropertiesWriter.keyGroupSpace.change("1");
+		PropertyFile.preservePropertyLayout.change(PropertyPreserveMode.NONE.name());
+		PropertyFile.blockOrder.change(BlockOrder.GROUPING_KEY_AND_LENGTH_ASC.name());
+
+		File end = null;
+		try {
+			end = I18nFileCreator.start().addKeyValue("a.b", "5").addKeyValue("a.c", "7").addKeyValue("bbb.b", "6")
+					.addKeyValue("bbb.c", "1").addKeyValue("bbb.d", "2").addKeyValue("cc.b", "3")
+					.addKeyValue("cc.c", "4").addKeyValue("cc.d", "8").addKeyValue("dd.c", "9")
+					.addKeyValue("dd.d", "10").end();
+
+			final PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMAN));
+			final List<String> filedata = pf.filedata();
+			Assert.assertNotNull(filedata);
+			Assert.assertEquals(13, filedata.size());
+
+			Assert.assertEquals("a.b=5", filedata.get(0));
+
+			Assert.assertEquals("cc.b=3", filedata.get(3));
+
+			Assert.assertEquals("dd.c=9", filedata.get(7));
+
+			Assert.assertEquals("bbb.d=2", filedata.get(12));
+		} finally {
+			FileUtils.deleteQuietly(end);
+		}
+	}
+
+	@Test
+	public void blockSortKeyLengthAndNaturalOrderDesc() throws FileNotFoundException, IOException
+	{
+		PropertiesWriter.keyGrouping.change("1");
+		PropertiesWriter.keyGroupSpace.change("1");
+		PropertyFile.preservePropertyLayout.change(PropertyPreserveMode.NONE.name());
+		PropertyFile.blockOrder.change(BlockOrder.GROUPING_KEY_AND_LENGTH_DESC.name());
+
+		File end = null;
+		try {
+			end = I18nFileCreator.start().addKeyValue("a.b", "5").addKeyValue("a.c", "7").addKeyValue("bbb.b", "6")
+					.addKeyValue("bbb.c", "1").addKeyValue("bbb.d", "2").addKeyValue("cc.b", "3")
+					.addKeyValue("cc.c", "4").addKeyValue("cc.d", "8").addKeyValue("dd.c", "9")
+					.addKeyValue("dd.d", "10").end();
+
+			final PropertyFile pf = new PropertyFile(end, new Language(Locale.GERMAN));
+			final List<String> filedata = pf.filedata();
+			Assert.assertNotNull(filedata);
+			Assert.assertEquals(13, filedata.size());
+
+			Assert.assertEquals("a.c=7", filedata.get(12));
+
+			Assert.assertEquals("cc.b=3", filedata.get(7));
+
+			Assert.assertEquals("dd.c=9", filedata.get(4));
+
+			Assert.assertEquals("bbb.b=6", filedata.get(0));
 		} finally {
 			FileUtils.deleteQuietly(end);
 		}

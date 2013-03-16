@@ -10,19 +10,19 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import de.ludwig.finx.command.AddI18nPropertyPath;
-import de.ludwig.finx.command.AddSimpleTagScanner;
-import de.ludwig.finx.command.AddSrcPath;
-import de.ludwig.finx.command.ChangeSettingCommand;
-import de.ludwig.finx.command.CmdPrintLatestChanges;
-import de.ludwig.finx.command.CmdShutdown;
 import de.ludwig.finx.command.CommandException;
 import de.ludwig.finx.command.CommandHub;
-import de.ludwig.finx.command.PrintNodeStructure;
-import de.ludwig.finx.command.ReloadNodeStructure;
-import de.ludwig.finx.command.ShowAppSettings;
-import de.ludwig.finx.command.ShowKnownCommands;
-import de.ludwig.finx.command.StartStopMonitoringCommand;
+import de.ludwig.finx.command.impl.AddI18nPropertyPath;
+import de.ludwig.finx.command.impl.AddSimpleTagScanner;
+import de.ludwig.finx.command.impl.AddSrcPath;
+import de.ludwig.finx.command.impl.ChangeSettingCommand;
+import de.ludwig.finx.command.impl.CmdPrintLatestChanges;
+import de.ludwig.finx.command.impl.CmdShutdown;
+import de.ludwig.finx.command.impl.PrintNodeStructure;
+import de.ludwig.finx.command.impl.ReloadNodeStructure;
+import de.ludwig.finx.command.impl.ShowAppSettings;
+import de.ludwig.finx.command.impl.ShowKnownCommands;
+import de.ludwig.finx.command.impl.StartStopMonitoringCommand;
 
 /**
  * Commandline-Anwendung für Finx

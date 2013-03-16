@@ -15,15 +15,16 @@ import de.ludwig.finx.SetttingsAwareTest;
 abstract class BasePropertyFileGroupTest extends SetttingsAwareTest
 {
 	/**
-	 * Shortcut for call of the private Method {@link PropertyFile#grouping}
+	 * Shortcut for call of the private Method {@link PropertyFile#applicationFormat}
 	 * 
 	 * @param pf
 	 *            The instance where we want to call the method on.
 	 */
-	public final void callGrouping(final PropertyFile pf)
+	public final void callApplicationFormat(final PropertyFile pf)
 	{
 		try {
-			Whitebox.invokeMethod(pf, "grouping");
+			PropertyFile.preservePropertyLayout.change(PropertyPreserveMode.NONE.name());
+			Whitebox.invokeMethod(pf, "applicationFormat");
 		} catch (Exception e) {
 			throw new RuntimeException("failed to call grouping", e);
 		}

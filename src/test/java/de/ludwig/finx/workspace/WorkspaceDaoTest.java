@@ -19,9 +19,9 @@ public class WorkspaceDaoTest
 		final WorkspaceDao workspaceDao = WorkspaceDao.instance();
 		workspaceDao.activateProject(p);
 		WorkingSet ws = p.addWorkingSet(new File("/"));
-		WorkingSetMonitoring create = workspaceDao.create(ws);
+		WorkingSetMonitoring create = workspaceDao.createMonitoring(ws);
 		Assert.assertNotNull(create);
-		WorkingSetMonitoring create2 = workspaceDao.create(ws);
+		WorkingSetMonitoring create2 = workspaceDao.createMonitoring(ws);
 		Assert.assertNotNull(create2);
 		Assert.assertTrue(create == create2);
 	}

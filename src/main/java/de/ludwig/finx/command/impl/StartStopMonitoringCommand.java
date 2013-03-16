@@ -1,7 +1,9 @@
-package de.ludwig.finx.command;
+package de.ludwig.finx.command.impl;
 
 import org.apache.commons.lang3.StringUtils;
 
+import de.ludwig.finx.command.Command;
+import de.ludwig.finx.command.CommandException;
 import de.ludwig.finx.monitor.Monitoring;
 
 /**

@@ -68,8 +68,6 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	 */
 	private boolean applicationStyleFormat = false;
 
-	private List<BlockGroupInfo> groupingInfo = new ArrayList<>();
-
 	/**
 	 * 
 	 * @param i18nRes
@@ -137,7 +135,7 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	 */
 	public final void insertOrUpdate(final I18nNode insertThis)
 	{
-		final PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
+		final PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting();
 
 		if (startingBlock == null) {
 			insertIntoEmpty(insertThis, keyOrder);
@@ -240,14 +238,43 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	}
 
 	/**
+	 * If Finx shall take care about the formatting of the properties file this method do any
+	 * necessary formatting before further changes are made.
+	 * 
+	 * This method does nothing if {@link PropertyPreserveMode} is not
+	 * {@link PropertyPreserveMode#NONE}
+	 */
+	private void applicationFormat()
+	{
+		if (PropertyFile.preservePropertyLayout.setting().equals(PropertyPreserveMode.NONE) == false) {
+			return;
+		}
+
+		LOG.debug("PropertyFile is going to be formatted as specified by application");
+
+		List<BlockGroupInfo> grouping = grouping();
+		blockSort(grouping);
+
+		final List<Block> sortedBlocks = new ArrayList<>();
+		for (BlockGroupInfo bgi : grouping) {
+			sortedBlocks.add(bgi.groupBlock);
+		}
+
+		buildBlockHierarchy(sortedBlocks);
+
+		applicationStyleFormat = true;
+	}
+
+	/**
 	 * group all keyValues as specified by {@link PropertiesWriter#keyGrouping} and
 	 * {@link PropertiesWriter#keyGroupSpace}
+	 * 
 	 */
-	private void grouping()
+	private List<BlockGroupInfo> grouping()
 	{
 		List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
 		if (keyValueBlocks.isEmpty())
-			return;
+			return new ArrayList<>();
 
 		LOG.debug(String.format("processing %d key-value-blocks", keyValueBlocks.size()));
 
@@ -280,7 +307,8 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 		final Set<String> groupingKeys = keyGroups.keySet();
 		LOG.debug("grouping keys: " + groupingKeys);
 
-		final List<Block> mergedKeyValueBlocks = new ArrayList<>();
+		List<BlockGroupInfo> groupingInfo = new ArrayList<>();
+		// final List<Block> mergedKeyValueBlocks = new ArrayList<>();
 		// next we merge all key-value-Blocks to one block that represents the group defined by the
 		// grouping key
 		for (String gk : groupingKeys) {
@@ -308,9 +336,26 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 			}
 
 			groupingInfo.add(new BlockGroupInfo(gk, mergeBlock));
-			mergedKeyValueBlocks.add(mergeBlock);
+			// mergedKeyValueBlocks.add(mergeBlock);
 		}
 
+		return groupingInfo;
+	}
+
+	/**
+	 * 
+	 * @param grouping
+	 */
+	private void blockSort(List<BlockGroupInfo> groupingInfo)
+	{
+		Comparator<BlockGroupInfo> comparator = comparatorBySetting();
+		if (comparator == null)
+			return;
+		Collections.sort(groupingInfo, comparator);
+	}
+
+	private void buildBlockHierarchy(List<Block> mergedKeyValueBlocks)
+	{
 		// this needs to be done early, because during this method we modify the starting-block
 		// what effects every iteration over all blocks in this PropertyFile-Object
 		final List<Block> commentBlocksNotAttached = commentBlocksNotAttached();
@@ -356,6 +401,47 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 		} else {
 			startingBlock.insertBefore(lastBlockInGroup.head());
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Comparator<BlockGroupInfo> comparatorBySetting()
+	{
+		final Comparator<BlockGroupInfo> keyNatural = new Comparator<BlockGroupInfo>() {
+
+			@Override
+			public int compare(BlockGroupInfo o1, BlockGroupInfo o2)
+			{
+				return o1.groupingKey.compareTo(o2.groupingKey);
+			}
+		};
+
+		final Comparator<BlockGroupInfo> keyLength = new Comparator<BlockGroupInfo>() {
+
+			@Override
+			public int compare(BlockGroupInfo o1, BlockGroupInfo o2)
+			{
+				Integer i1 = o1.groupingKey.length();
+				Integer i2 = o2.groupingKey.length();
+				return i1.compareTo(i2);
+			}
+		};
+
+		final BlockOrder order = blockOrder.setting();
+		switch (order)
+		{
+		case GROUPING_KEY_LENGTH_ASC:
+			return keyLength;
+		case GROUPING_KEY_LENGTH_DESC:
+			return ComparatorUtils.reversedComparator(keyLength);
+		case GROUPING_KEY_AND_LENGTH_ASC:
+			return ComparatorUtils.chainedComparator(keyLength, keyNatural);
+		case GROUPING_KEY_AND_LENGTH_DESC:
+			return ComparatorUtils.reversedComparator(ComparatorUtils.chainedComparator(keyLength, keyNatural));
+		case NONE:
+			return null;
+		}
+
+		return null;
 	}
 
 	private Map<String, List<KeyValueGroupPart>> groupLower(final Collection<Integer> lengths,
@@ -444,7 +530,7 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 	{
 		LOG.debug(String.format("inserte node with key %s in mode NONSTRICT", nodeToInsert.key()));
 
-		PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting().getKeyOrder();
+		PropertyKeyOrder keyOrder = PropertiesWriter.keyOrder.setting();
 		final String keyValue = nodeToInsert.keyValue(language);
 		final List<Block> keyValueBlocks = blocksOfType(BlockType.KEYVALUE);
 		Integer smallestCompare = null;
@@ -606,78 +692,6 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 		}
 
 		applicationFormat();
-	}
-
-	/**
-	 * 
-	 */
-	private void blockSort()
-	{
-		Collections.sort(groupingInfo, comparatorBySetting());
-		for (BlockGroupInfo bgi : groupingInfo) {
-
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private Comparator<BlockGroupInfo> comparatorBySetting()
-	{
-		final Comparator<BlockGroupInfo> keyNatural = new Comparator<BlockGroupInfo>() {
-
-			@Override
-			public int compare(BlockGroupInfo o1, BlockGroupInfo o2)
-			{
-				return o1.groupingKey.compareTo(o2.groupingKey);
-			}
-		};
-
-		final Comparator<BlockGroupInfo> keyLength = new Comparator<BlockGroupInfo>() {
-
-			@Override
-			public int compare(BlockGroupInfo o1, BlockGroupInfo o2)
-			{
-				Integer i1 = o1.groupingKey.length();
-				Integer i2 = o2.groupingKey.length();
-				return i1.compareTo(i2);
-			}
-		};
-
-		final BlockOrder order = blockOrder.setting();
-		switch (order)
-		{
-		case GROUPING_KEY_LENGTH_ASC:
-			return keyLength;
-		case GROUPING_KEY_LENGTH_DESC:
-			return ComparatorUtils.reversedComparator(keyLength);
-		case GROUPING_KEY_AND_LENGTH_ASC:
-			return keyNatural;
-		case GROUPING_KEY_AND_LENGTH_DESC:
-			return ComparatorUtils.reversedComparator(keyNatural);
-		}
-
-		return null;
-	}
-
-	/**
-	 * If Finx shall take care about the formatting of the properties file this method do any
-	 * necessary formatting before further changes are made.
-	 * 
-	 * This method does nothing if {@link PropertyPreserveMode} is not
-	 * {@link PropertyPreserveMode#NONE}
-	 */
-	private void applicationFormat()
-	{
-		if (PropertyFile.preservePropertyLayout.setting().equals(PropertyPreserveMode.NONE) == false) {
-			return;
-		}
-
-		LOG.debug("PropertyFile is going to be formatted as specified by application");
-
-		grouping();
-		blockSort();
-		// buildBlockHierarchy();
-
-		applicationStyleFormat = true;
 	}
 
 	private List<BlockDimension> keyValueBlocks(final List<String> rawPropertyLines)
@@ -859,6 +873,12 @@ public class PropertyFile implements Iterable<Block>, SettingsChangedListener
 		}
 	}
 
+	/**
+	 * Class to keep track of information that results out of the grouping process.
+	 * 
+	 * @author Daniel
+	 * 
+	 */
 	private class BlockGroupInfo
 	{
 		private String groupingKey;

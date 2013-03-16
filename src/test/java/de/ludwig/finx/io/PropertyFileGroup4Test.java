@@ -51,7 +51,7 @@ public class PropertyFileGroup4Test extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("1");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -59,7 +59,7 @@ public class PropertyFileGroup4Test extends BasePropertyFileGroupTest
 		Assert.assertEquals(cntLinesInFile + 1, filedata.size());
 
 		PropertiesWriter.keyGroupSpace.change("2");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -74,7 +74,7 @@ public class PropertyFileGroup4Test extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("2");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -88,7 +88,7 @@ public class PropertyFileGroup4Test extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("3");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -102,7 +102,7 @@ public class PropertyFileGroup4Test extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("4");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -116,7 +116,7 @@ public class PropertyFileGroup4Test extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("10");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		final List<String> filedata = pf.filedata();
 		Assert.assertNotNull(filedata);

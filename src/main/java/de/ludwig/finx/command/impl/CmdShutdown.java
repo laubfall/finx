@@ -1,7 +1,9 @@
 /**
  * 
  */
-package de.ludwig.finx.command;
+package de.ludwig.finx.command.impl;
+
+import de.ludwig.finx.command.Command;
 
 /**
  * @author Daniel

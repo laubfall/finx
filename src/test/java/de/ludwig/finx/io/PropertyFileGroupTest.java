@@ -41,7 +41,7 @@ public class PropertyFileGroupTest extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("1");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
 		Assert.assertEquals(2, blocks.size());
@@ -52,7 +52,7 @@ public class PropertyFileGroupTest extends BasePropertyFileGroupTest
 		Assert.assertEquals(cntLinesInFile + 1, filedata.size());
 
 		PropertiesWriter.keyGroupSpace.change("2");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		filedata = pf.filedata();
 		Assert.assertNotNull(filedata);
@@ -67,7 +67,7 @@ public class PropertyFileGroupTest extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("2");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
 		Assert.assertEquals(6, blocks.size());
@@ -84,7 +84,7 @@ public class PropertyFileGroupTest extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("3");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
 		Assert.assertEquals(8, blocks.size());
@@ -101,7 +101,7 @@ public class PropertyFileGroupTest extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("4");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
 		Assert.assertEquals(9, blocks.size());
@@ -118,7 +118,7 @@ public class PropertyFileGroupTest extends BasePropertyFileGroupTest
 	{
 		final PropertyFile pf = new PropertyFile(file, new Language("de"));
 		PropertiesWriter.keyGrouping.change("10");
-		callGrouping(pf);
+		callApplicationFormat(pf);
 
 		List<Block> blocks = callBlocksOfType(pf, BlockType.KEYVALUE);
 		Assert.assertEquals(9, blocks.size());

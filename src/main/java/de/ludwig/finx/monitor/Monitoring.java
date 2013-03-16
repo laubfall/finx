@@ -40,6 +40,7 @@ public class Monitoring
 		changeListeners = new HashSet<FileI18nChangesListener>();
 	}
 
+	@Deprecated
 	public static synchronized Monitoring instance()
 	{
 		if (INSTANCE == null) {
