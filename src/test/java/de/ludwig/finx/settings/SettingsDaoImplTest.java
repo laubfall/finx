@@ -1,9 +1,13 @@
 package de.ludwig.finx.settings;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import de.ludwig.finx.io.PropertyFile;
@@ -23,9 +27,26 @@ public class SettingsDaoImplTest
 	}
 
 	@Test
-	public void testSave()
+	public void testSave() throws IOException
 	{
+		final SettingsDaoImpl settingsDao = SettingsDaoImpl.instance();
+		final String userDir = System.getProperty("user.dir");
+		final File userSettings = new File(userDir, SettingsDaoImpl.USER_SETTINGS_FILENAME);
+		Assert.assertTrue(userSettings.exists());
 
+		AppSettings.i18nDefaultValue.change(I18nDefaultValueSetting.DefaultValueTypes.EMPTY.name());
+		settingsDao.saveSettings();
+
+		final List<String> lines = FileUtils.readLines(userSettings);
+		Assert.assertNotNull(lines);
+		Assert.assertFalse(lines.isEmpty());
+		Assert.assertEquals(2, lines.size());
+		Assert.assertTrue(StringUtils.startsWith(lines.get(0), "#")); // the store mechanism for
+																		// property-files store a
+																		// date in the first line
+		Assert.assertEquals("i18nDefaultValue=" + I18nDefaultValueSetting.DefaultValueTypes.EMPTY, lines.get(1));
+
+		FileUtils.deleteQuietly(userSettings);
 	}
 
 	/**

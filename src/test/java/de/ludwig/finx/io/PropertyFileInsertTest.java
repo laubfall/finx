@@ -38,12 +38,6 @@ public class PropertyFileInsertTest extends BasePropertyFileTest
 		List<Line> lines = startingBlock.getLines();
 		Assert.assertNotNull(lines);
 		Assert.assertEquals(3, lines.size());
-
-		// we expect the value in german language because the PropertyFile was constructed with a
-		// german locale
-		// Assert.assertEquals("de=", lines.get(0).getLine());
-		// Assert.assertEquals("de.ludwig=", lines.get(1).getLine());
-		// Assert.assertEquals("de.ludwig.sub=unter-knoten", lines.get(2).getLine());
 	}
 
 	/**

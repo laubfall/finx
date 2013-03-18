@@ -1,6 +1,3 @@
-# name of file with own settings in same directory. null if the user has not saved any settings
-ownsettings=
-
 # from this point on factorydefaults. These values will never changed through the application.
 i18nPropFilePostFix=P1.0.0.I18n_
 i18nPropFilePreFix=.properties

@@ -1,45 +1,32 @@
 package de.ludwig.finx.gui.controller;
 
 import java.io.File;
-import java.io.IOException;
 
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
-import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.gui.popup.AppSettingsPopup;
 
 /**
  * @author Daniel
  * 
  */
-public class AppLayout
+public class AppLayout extends BaseController
 {
-	private final Node content;
+	@FXML
+	private MenuItem openWorkspace;
 
 	@FXML
-	public MenuItem openWorkspace;
-
-	@FXML
-	public MenuItem menuItemClose;
+	private MenuItem menuItemClose;
 
 	public AppLayout()
 	{
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(
-					"/de/ludwig/finx/gui/fxml/AppLayoutAnchorPane.fxml"));
-			loader.setController(this);
-			content = (Node) loader.load();
-		} catch (IOException e) {
-			throw new ApplicationCodingException("Unable to load FXML", e);
-		}
-
+		super(AppLayout.class.getResource("/de/ludwig/finx/gui/fxml/AppLayoutAnchorPane.fxml"));
 		openWorkspace.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event)
@@ -49,12 +36,18 @@ public class AppLayout
 		});
 	}
 
-	public void openWorkspace(Event e)
+	private void openWorkspace(Event e)
 	{
 		FileChooser fc = new FileChooser();
 		fc.setTitle("select workspace");
 		File workspace = fc.showOpenDialog(null);
+	}
 
+	@FXML
+	private void editPreferences(ActionEvent e)
+	{
+		final AppSettingsPopup asp = new AppSettingsPopup();
+		asp.show();
 	}
 
 	/**
@@ -62,7 +55,7 @@ public class AppLayout
 	 */
 	public AnchorPane getContent()
 	{
-		return (AnchorPane) content;
+		return (AnchorPane) super.getContent();
 	}
 
 	public Group grouped()

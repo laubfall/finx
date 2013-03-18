@@ -15,7 +15,7 @@ import de.ludwig.finx.io.RootNode;
  * 
  */
 @SettingType(I18nDefaultValueSetting.class)
-public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultValueSetting>
+public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultValueSetting> implements UserStorable
 {
 	private DefaultValueTypes type;
 
@@ -57,6 +57,7 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 	public void initialize(String rawValue)
 	{
 		String type = rawValue;
+		userDefinedText = null;
 		if (rawValue.contains(":")) {
 			final StrTokenizer tokenizer = StrTokenizer.getCSVInstance(rawValue).setDelimiterChar(':');
 			String[] tokenArray = tokenizer.getTokenArray();
@@ -146,13 +147,25 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 		return type.name();
 	}
 
-	enum DefaultValueTypes
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ludwig.finx.settings.UserStorable#storeValue()
+	 */
+	@Override
+	public String storeValue()
+	{
+		final String udt = userDefinedText != null ? ":" + userDefinedText : "";
+		return type.name() + udt;
+	}
+
+	public static enum DefaultValueTypes
 	{
 		KEY, // use the key of the I18nNode
 		ISO2KEY, // use the language code and the key
 		EMPTY, // no text empty value
 		TEXT, // user defined text, delimiter is : between type and
-				// text
+				// text if you initialize the corresponding Setting-Type
 		ISO2TEXT, ;
 	}
 }

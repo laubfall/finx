@@ -1,5 +1,7 @@
 package de.ludwig.finx.settings;
 
+import de.ludwig.finx.ApplicationException;
+
 /**
  * Settings of this type can be changed during runtime.
  * 
@@ -17,6 +19,9 @@ public interface UpdatableSetting<R> extends Setting<R>
 	 * Parses the given parameter and updates the property;
 	 * 
 	 * @param newValue
+	 * @throws If
+	 *             the newValues cannot converted / deserialized into the setting that is going to
+	 *             be updated
 	 */
-	public void change(String newValue);
+	public void change(String newValue) throws ApplicationException;
 }
