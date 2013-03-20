@@ -3,7 +3,8 @@ package de.ludwig.finx.settings;
 import java.io.File;
 
 /**
- * The programmatic view on settings.i18n Properties File
+ * The programmatic view on settings.i18n Properties File. Stores settings that controlls the
+ * Application or used as default values for other components (e.g. WorkingSets)
  * 
  * @author Daniel
  */

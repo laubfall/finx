@@ -4,7 +4,6 @@ import java.io.File;
 
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.MenuItem;
@@ -16,26 +15,28 @@ import de.ludwig.finx.gui.popup.AppSettingsPopup;
  * @author Daniel
  * 
  */
-public class AppLayout extends BaseController
+public class AppLayoutAnchorPane extends BaseController
 {
-	@FXML
-	private MenuItem openWorkspace;
-
 	@FXML
 	private MenuItem menuItemClose;
 
-	public AppLayout()
+	// since this point: nested controllers:
+
+	/**
+	 * the include has the id projectOverviewPane. If you name this field like the id, you will run
+	 * into a ClassCastException or something similar because javafx tries to convert the
+	 * Root-Element of the included fxml into this field. But the field is a controller. To get the
+	 * controller of the included fxml simply attach "Controller" to the end of the fields name!
+	 */
+	@FXML
+	private ProjectOverviewPane projectOverviewPaneController;
+
+	public AppLayoutAnchorPane()
 	{
-		super(AppLayout.class.getResource("/de/ludwig/finx/gui/fxml/AppLayoutAnchorPane.fxml"));
-		openWorkspace.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event)
-			{
-				AppLayout.this.openWorkspace(event);
-			}
-		});
+		super(AppLayoutAnchorPane.class.getResource("/de/ludwig/finx/gui/fxml/AppLayoutAnchorPane.fxml"));
 	}
 
+	@FXML
 	private void openWorkspace(Event e)
 	{
 		FileChooser fc = new FileChooser();

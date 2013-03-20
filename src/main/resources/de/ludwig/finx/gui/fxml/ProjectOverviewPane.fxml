@@ -1,14 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import de.ludwig.finx.gui.controller.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
+<?scenebuilder-classpath-element ../../../../../../../../target/classes?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="378.0" prefWidth="179.0" xmlns:fx="http://javafx.com/fxml">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="396.0" prefWidth="203.0" xmlns:fx="http://javafx.com/fxml" fx:controller="de.ludwig.finx.gui.controller.ProjectOverviewPane">
   <children>
-    <Text fx:id="noProjectText" layoutX="55.0" layoutY="181.0" strokeType="OUTSIDE" strokeWidth="0.0" text="No Project!" />
-    <VBox fx:id="projectBox" prefHeight="378.0" prefWidth="179.0" visible="false" />
+    <VBox fx:id="projectBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <children>
+        <ToolBar minHeight="26.0" prefHeight="26.0">
+          <items>
+            <Button fx:id="newProject" graphicTextGap="14.0" minHeight="15.310546875" minWidth="25.0" mnemonicParsing="false" onAction="#addProject" prefHeight="15.310546875" prefWidth="25.0">
+              <graphic>
+                <ImageView fitHeight="9.0" fitWidth="9.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                    <Image url="@../icons/24x24_Add.png" preserveRatio="false" smooth="false" />
+                  </image>
+                </ImageView>
+              </graphic>
+            </Button>
+          </items>
+          <VBox.margin>
+            <Insets />
+          </VBox.margin>
+        </ToolBar>
+        <StackPane maxWidth="1.7976931348623157E308" prefHeight="150.0" VBox.vgrow="ALWAYS">
+          <children>
+            <VBox fx:id="noProjectVBox" alignment="CENTER" maxHeight="1.7976931348623157E308" prefWidth="100.0">
+              <children>
+                <Text fx:id="noProjectText" strokeType="OUTSIDE" strokeWidth="0.0" text="No Project!" />
+              </children>
+            </VBox>
+            <ScrollPane fx:id="projects" fitToWidth="true" maxWidth="1.7976931348623157E308" prefHeight="370.0" StackPane.alignment="TOP_LEFT">
+              <content>
+                <VBox fx:id="projectsBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+              </content>
+            </ScrollPane>
+          </children>
+        </StackPane>
+      </children>
+    </VBox>
   </children>
 </AnchorPane>

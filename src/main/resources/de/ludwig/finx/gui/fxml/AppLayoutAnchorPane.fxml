@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
+<?import java.net.*?>
 <?import java.util.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -40,9 +41,9 @@
                   <children>
                     <TitledPane animated="false" collapsible="false" maxHeight="1.7976931348623157E308" minWidth="246.0" prefWidth="246.0" text="Projekte" VBox.vgrow="ALWAYS">
                       <content>
-                        <VBox prefHeight="200.0" prefWidth="100.0">
+                        <VBox prefWidth="100.0">
                           <children>
-                            <fx:include source="ProjectOverviewPane.fxml" VBox.vgrow="ALWAYS" />
+                            <fx:include fx:id="projectOverviewPane" source="ProjectOverviewPane.fxml" maxHeight="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
                           </children>
                         </VBox>
                       </content>
@@ -69,8 +70,11 @@
             <Insets fx:id="x1" />
           </VBox.margin>
         </SplitPane>
-        <Pane fx:id="console" prefHeight="117.0" prefWidth="899.0" />
+        <Pane id="console" fx:id="messageLine" prefHeight="24.0" prefWidth="899.0" />
       </children>
     </VBox>
   </children>
+  <stylesheets>
+    <URL value="@../css/appLayoutAnchorPane.css" />
+  </stylesheets>
 </AnchorPane>

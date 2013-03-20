@@ -4,7 +4,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import de.ludwig.finx.gui.controller.AppSettings;
+import de.ludwig.finx.gui.controller.AppSettingsPane;
 
 /**
  * @author Daniel
@@ -12,7 +12,7 @@ import de.ludwig.finx.gui.controller.AppSettings;
  */
 public class AppSettingsPopup extends Stage
 {
-	private AppSettings as = new AppSettings(this);
+	private AppSettingsPane as = new AppSettingsPane(this);
 
 	public AppSettingsPopup()
 	{

@@ -159,6 +159,22 @@ public final class I18nDefaultValueSetting extends AbstractSetting<I18nDefaultVa
 		return type.name() + udt;
 	}
 
+	/**
+	 * @return the type
+	 */
+	public DefaultValueTypes getType()
+	{
+		return type;
+	}
+
+	/**
+	 * @return the userDefinedText
+	 */
+	public String getUserDefinedText()
+	{
+		return userDefinedText;
+	}
+
 	public static enum DefaultValueTypes
 	{
 		KEY, // use the key of the I18nNode

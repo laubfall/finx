@@ -3,7 +3,7 @@ package de.ludwig.finx;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import de.ludwig.finx.gui.controller.AppLayout;
+import de.ludwig.finx.gui.controller.AppLayoutAnchorPane;
 
 /**
  * 
@@ -20,7 +20,7 @@ public class I18nApp extends Application
 	@Override
 	public void start(Stage stage) throws Exception
 	{
-		AppLayout applayout = new AppLayout();
+		AppLayoutAnchorPane applayout = new AppLayoutAnchorPane();
 		Scene scene = new Scene(applayout.getContent());
 		stage.setScene(scene);
 

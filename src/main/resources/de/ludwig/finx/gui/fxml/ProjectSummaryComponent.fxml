@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<fx:root type="javafx.scene.layout.VBox" fx:id="projectSummary" minWidth="-Infinity" prefWidth="317.0" spacing="1.0" xmlns:fx="http://javafx.com/fxml">
+  <TitledPane animated="false" maxHeight="-Infinity" text="untitled" VBox.vgrow="SOMETIMES">
+    <content>
+      <AnchorPane id="Content" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+        <children>
+          <VBox fx:id="projectsContainer" prefHeight="181.0" prefWidth="313.0" />
+        </children>
+      </AnchorPane>
+    </content>
+    <graphic>
+      <MenuButton mnemonicParsing="false" text="action">
+        <items>
+          <MenuItem mnemonicParsing="false" onAction="#newWorkingSet" text="new WorkingSet" fx:id="newWorkingSet" />
+        </items>
+      </MenuButton>
+    </graphic>
+  </TitledPane>
+  <stylesheets>
+    <URL value="@../css/projectSummaryComponent.css" />
+  </stylesheets>
+</fx:root>
