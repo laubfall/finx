@@ -49,8 +49,8 @@ public class Project implements Serializable
 			// we don't return the existing one because this can lead to confusing behaviour because
 			// the caller of this method expected the given sourceFiles but we use the sourceFiles
 			// that where used for constructing the WorkingSet
-			throw new ApplicationCodingException(String.format("a workingset for this property-files %s alredy exists",
-					propertiesDir.getAbsolutePath()));
+			throw new ApplicationCodingException(String.format(
+					"a workingset for this property-files %s already exists", propertiesDir.getAbsolutePath()));
 		}
 
 		final WorkingSet ws = new WorkingSet(propertiesDir, sourceFiles);

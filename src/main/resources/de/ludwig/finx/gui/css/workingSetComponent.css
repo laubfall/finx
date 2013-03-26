@@ -1,0 +1,4 @@
+.indexed-cell {
+	-fx-cell-size: 16;
+	-fx-font: 10 sans-serif;
+}

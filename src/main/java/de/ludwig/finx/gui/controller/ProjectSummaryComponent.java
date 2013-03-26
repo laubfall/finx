@@ -1,12 +1,16 @@
 package de.ludwig.finx.gui.controller;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
 import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.workspace.Project;
+import de.ludwig.finx.workspace.WorkingSet;
 
 /**
  * @author Daniel
@@ -15,15 +19,17 @@ import de.ludwig.finx.ApplicationCodingException;
 public class ProjectSummaryComponent extends VBox
 {
 	@FXML
-	private VBox projectSummary;
+	private TitledPane projectTitledPane;
 
 	@FXML
-	private VBox projectsContainer;
+	private VBox workingSetsContainer;
 
 	/**
+	 * @param project
+	 *            TODO
 	 * 
 	 */
-	public ProjectSummaryComponent()
+	public ProjectSummaryComponent(Project project)
 	{
 		super();
 		FXMLLoader fxmlLoader = new FXMLLoader(
@@ -36,11 +42,20 @@ public class ProjectSummaryComponent extends VBox
 		} catch (IOException exception) {
 			throw new ApplicationCodingException("unable to load project summary", exception);
 		}
+
+		projectTitledPane.setText(project.getName());
+		final Set<WorkingSet> workingSets = project.getWorkingSets();
+		for (final WorkingSet ws : workingSets) {
+			final WorkingSetModel m = new WorkingSetModel(ws.getPropertiesDir(), ws.getI18nPropertiesFilePrefix(),
+					ws.getI18nPropertiesFilePostfix(), ws.getSourceDirsAsList());
+			final WorkingSetComponent w = new WorkingSetComponent(m);
+			workingSetsContainer.getChildren().add(w);
+		}
 	}
 
 	@FXML
 	private void newWorkingSet(Event e)
 	{
-		projectsContainer.getChildren().add(new WorkingSetComponent());
+		workingSetsContainer.getChildren().add(new WorkingSetComponent(null));
 	}
 }

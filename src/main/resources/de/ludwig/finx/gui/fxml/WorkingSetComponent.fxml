@@ -1,16 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
+<?import java.net.*?>
 <?import java.util.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<fx:root type="javafx.scene.layout.VBox" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="108.0" xmlns:fx="http://javafx.com/fxml">
+<fx:root type="javafx.scene.layout.VBox" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" xmlns:fx="http://javafx.com/fxml">
   <children>
-    <Pane maxHeight="-Infinity" prefHeight="26.0" prefWidth="293.0" style="-fx-background-color:grey" VBox.vgrow="ALWAYS" />
-    <GridPane fx:id="contentGridPane" prefHeight="69.0" prefWidth="265.0">
+    <Pane maxHeight="-Infinity" prefHeight="26.0" prefWidth="293.0" style="-fx-background-color:grey" VBox.vgrow="ALWAYS">
+      <children>
+        <Button fx:id="delete" graphicTextGap="0.0" layoutX="5.0" layoutY="3.0" minHeight="18.0" minWidth="22.666667938232422" mnemonicParsing="false" onAction="#delete" prefHeight="18.000099999997474" prefWidth="22.666667938232422">
+          <graphic>
+            <ImageView fitHeight="18.66668701171875" fitWidth="18.66668701171875" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" scaleX="0.7" scaleY="0.7">
+              <image>
+                <Image url="@../icons/16x16_Delete.png" preserveRatio="false" smooth="false" />
+              </image>
+            </ImageView>
+          </graphic>
+        </Button>
+      </children>
+    </Pane>
+    <GridPane fx:id="contentGridPane" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
       <children>
         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="I18n Directory" GridPane.columnIndex="0" GridPane.rowIndex="0">
           <font>
@@ -20,17 +35,27 @@
         <Text font="$x1" strokeType="OUTSIDE" strokeWidth="0.0" text="I18n File Prefix" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <Text font="$x1" strokeType="OUTSIDE" strokeWidth="0.0" text="I18n File Postfix" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <Text font="$x1" strokeType="OUTSIDE" strokeWidth="0.0" text="Source Directories" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <ListView fx:id="sourceDirs" prefHeight="126.0" style="-fx-font-color:black;" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.valignment="TOP" GridPane.vgrow="ALWAYS" />
+        <Text fx:id="propDir" font="$x1" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <Text fx:id="prefix" font="$x1" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <Text fx:id="postfix" font="$x1" strokeType="OUTSIDE" strokeWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
       </children>
       <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="132.0" minWidth="10.0" prefWidth="99.0" />
-        <ColumnConstraints hgrow="SOMETIMES" maxWidth="172.0" minWidth="10.0" prefWidth="166.0" />
+        <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="10.0" />
       </columnConstraints>
+      <padding>
+        <Insets left="4.0" top="4.0" />
+      </padding>
       <rowConstraints>
         <RowConstraints maxHeight="49.0" minHeight="10.0" prefHeight="16.0" vgrow="SOMETIMES" />
         <RowConstraints maxHeight="52.0" minHeight="3.0" prefHeight="17.0" vgrow="SOMETIMES" />
         <RowConstraints maxHeight="59.0" minHeight="10.0" prefHeight="18.0" vgrow="SOMETIMES" />
-        <RowConstraints maxHeight="59.0" minHeight="10.0" prefHeight="18.0" vgrow="ALWAYS" />
+        <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
       </rowConstraints>
     </GridPane>
   </children>
+  <stylesheets>
+    <URL value="@../css/workingSetComponent.css" />
+  </stylesheets>
 </fx:root>

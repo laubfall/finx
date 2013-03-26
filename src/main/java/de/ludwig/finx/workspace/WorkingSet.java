@@ -42,7 +42,7 @@ public class WorkingSet implements Serializable
 
 	private File[] sourceDirs;
 
-	WorkingSet(final File propertiesDir, File... sourceDirs)
+	public WorkingSet(final File propertiesDir, File... sourceDirs)
 	{
 		{
 			this.sourceDirs = sourceDirs;

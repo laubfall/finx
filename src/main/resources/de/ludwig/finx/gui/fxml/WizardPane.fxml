@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns:fx="http://javafx.com/fxml">
+  <children>
+    <VBox maxWidth="1.7976931348623157E308" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <children>
+        <HBox alignment="CENTER_RIGHT" prefHeight="21.0" prefWidth="266.0" style="-fx-background-color: #666666;">
+          <children>
+            <Text fx:id="wizardStepDescription" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
+          </children>
+          <padding>
+            <Insets right="5.0" fx:id="x1" />
+          </padding>
+        </HBox>
+        <StackPane fx:id="pages" maxWidth="1.7976931348623157E308" minHeight="-Infinity" />
+        <Separator prefWidth="200.0" VBox.vgrow="ALWAYS" />
+        <HBox alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" padding="$x1">
+          <children>
+            <Text fx:id="validationMessage" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" visible="false">
+              <HBox.margin>
+                <Insets />
+              </HBox.margin>
+            </Text>
+          </children>
+        </HBox>
+        <HBox alignment="CENTER_RIGHT" spacing="5.0">
+          <children>
+            <Button fx:id="cancel" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
+            <Button fx:id="previous" mnemonicParsing="false" onAction="#previous" text="Previous" />
+            <Button fx:id="next" mnemonicParsing="false" onAction="#next" text="Next" />
+            <Button fx:id="finish" ellipsisString="" mnemonicParsing="false" onAction="#finish" text="Finish" />
+          </children>
+        </HBox>
+      </children>
+    </VBox>
+  </children>
+</AnchorPane>

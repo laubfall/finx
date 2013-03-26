@@ -2,3 +2,4 @@ bin/
 target/
 *.fxml.bak
 *.i18n
+rebel.xml
