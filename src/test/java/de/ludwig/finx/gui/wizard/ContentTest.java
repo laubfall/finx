@@ -90,7 +90,7 @@ public class ContentTest
 	}
 }
 
-class TestWizardPage extends WizardStep<Object>
+class TestWizardPage extends WizardStep
 {
 	private boolean next;
 
@@ -116,44 +116,24 @@ class TestWizardPage extends WizardStep<Object>
 		this.finish = finish;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardPage#next()
-	 */
 	@Override
 	public boolean next()
 	{
 		return next;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardPage#finish()
-	 */
 	@Override
 	public boolean finish()
 	{
 		return finish;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardPage#previous()
-	 */
 	@Override
 	public boolean previous()
 	{
 		return previous;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardPage#onNext()
-	 */
 	@Override
 	public void onNext()
 	{
@@ -161,11 +141,6 @@ class TestWizardPage extends WizardStep<Object>
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardPage#onFinish()
-	 */
 	@Override
 	public void onFinish()
 	{
@@ -173,11 +148,6 @@ class TestWizardPage extends WizardStep<Object>
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardPage#onPrevious()
-	 */
 	@Override
 	public void onPrevious()
 	{
@@ -185,11 +155,6 @@ class TestWizardPage extends WizardStep<Object>
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardPage#onCancel()
-	 */
 	@Override
 	public void onCancel()
 	{
@@ -197,23 +162,6 @@ class TestWizardPage extends WizardStep<Object>
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardStep#result()
-	 */
-	@Override
-	public Object modelObject()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardStep#validate()
-	 */
 	@Override
 	public void validate() throws StepValidationException
 	{
@@ -221,27 +169,10 @@ class TestWizardPage extends WizardStep<Object>
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardStep#wizardStepDescription()
-	 */
 	@Override
 	public String wizardStepDescription()
 	{
 		return "";
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardPage#content()
-	 */
-	// @Override
-	// public Parent content()
-	// {
-	// // TODO Auto-generated method stub
-	// return null;
-	// }
 
 }

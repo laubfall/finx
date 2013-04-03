@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import de.ludwig.finx.gui.controller.*?>
 <?import java.lang.*?>
 <?import java.net.*?>
 <?import java.util.*?>
@@ -8,13 +9,14 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
+<?scenebuilder-classpath-element ../../../../../../../../target/classes?>
 
-<fx:root type="javafx.scene.layout.VBox" fx:id="projectSummary" minWidth="-Infinity" prefWidth="317.0" spacing="1.0" xmlns:fx="http://javafx.com/fxml">
-  <TitledPane fx:id="projectTitledPane" animated="false" maxHeight="-Infinity" text="Project name" VBox.vgrow="SOMETIMES">
+<fx:root type="javafx.scene.layout.VBox" fx:id="projectSummary" maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefWidth="317.0" spacing="1.0" xmlns:fx="http://javafx.com/fxml">
+  <TitledPane fx:id="projectTitledPane" animated="false" maxHeight="-Infinity" text="Project name" VBox.vgrow="ALWAYS">
     <content>
-      <AnchorPane id="Content" maxWidth="1.7976931348623157E308" minWidth="0.0" prefHeight="180.0">
+      <AnchorPane id="Content" maxWidth="1.7976931348623157E308" minWidth="0.0">
         <children>
-          <ListView id="workingSetsComponent" fx:id="workingSetsContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+          <WorkingSetOverviewComponent id="workingSetsComponent" fx:id="workingSetsContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
         </children>
       </AnchorPane>
     </content>

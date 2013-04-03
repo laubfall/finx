@@ -31,7 +31,7 @@ import de.ludwig.jfxmodel.SupportCombined;
  * @author Daniel
  * 
  */
-class WorkingSetSettingsStep extends WizardStep<List<WorkingSetBackingBean>> implements SupportCombined
+class WorkingSetSettingsStep extends WizardStep implements SupportCombined
 {
 	@FXML
 	protected ListView<File> sourceDirOverview;
@@ -53,8 +53,6 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetBackingBean>> imp
 
 	@FXML
 	protected VBox configuredWorkingSets;
-
-	// private List<WorkingSetBackingBean> workingSetModels = new ArrayList<>();
 
 	@BindToBeanProperty(bindPropertyName = "items")
 	private WorkingSetOverviewComponent workingSetsComponent = new WorkingSetOverviewComponent();
@@ -125,23 +123,6 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetBackingBean>> imp
 
 		final WorkingSetSettingsBackingBean bean = (WorkingSetSettingsBackingBean) getModel().getModelObject();
 		bean.workingSetsComponentProperty().add(wm);
-
-		// workingSetModels.add(wm);
-		// final WorkingSetComponent wsc = new WorkingSetComponent(wm);
-
-		// wsc.deletedProperty().addListener(new ChangeListener<Boolean>() {
-		// @Override
-		// public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
-		// Boolean newValue)
-		// {
-		// if (newValue) {
-		// configuredWorkingSets.getChildren().remove(wsc);
-		// workingSetModels.remove(wm);
-		// }
-		// }
-		// });
-
-		// configuredWorkingSets.getChildren().add(wsc);
 	}
 
 	@FXML
@@ -201,18 +182,11 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetBackingBean>> imp
 	}
 
 	@Override
-	public List<WorkingSetBackingBean> modelObject()
-	{
-		return null;
-		// return workingSetModels;
-	}
-
-	@Override
 	public void validate() throws StepValidationException
 	{
-		// if (workingSetModels.isEmpty()) {
-		// throw new StepValidationException("you have to define at least one workingset");
-		// }
+		if (model.getModelObject().getWorkingSetsComponent().isEmpty()) {
+			throw new StepValidationException("you have to define at least one workingset");
+		}
 	}
 
 	/*
@@ -256,11 +230,6 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetBackingBean>> imp
 		return vc.isValid();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.jfxmodel.SupportCombined#getModel()
-	 */
 	@Override
 	public Model<?> getModel()
 	{

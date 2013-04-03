@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import de.ludwig.finx.workspace.WorkingSet;
 
 /**
  * @author Daniel
@@ -25,9 +27,26 @@ public class WorkingSetBackingBean
 
 	private SimpleStringProperty prefix = new SimpleStringProperty();
 
+	/**
+	 * Marks the backed component by this backing-bean as deleted. Container can hold a listener on
+	 * this property to decide if it shows this component or not.
+	 */
+	private SimpleBooleanProperty deleted = new SimpleBooleanProperty(false);
+
 	public WorkingSetBackingBean()
 	{
 
+	}
+
+	/**
+	 * Constructor to construct backing-bean from a concret workingset
+	 * 
+	 * @param workingSet
+	 */
+	public WorkingSetBackingBean(final WorkingSet workingSet)
+	{
+		this(workingSet.getPropertiesDir(), workingSet.getI18nPropertiesFilePrefix(), workingSet
+				.getI18nPropertiesFilePostfix(), workingSet.getSourceDirsAsList());
 	}
 
 	public WorkingSetBackingBean(final File propDir, final String prefix, final String postfix,
@@ -125,5 +144,27 @@ public class WorkingSetBackingBean
 	public SimpleStringProperty prefixProperty()
 	{
 		return prefix;
+	}
+
+	/**
+	 * @return the deleted
+	 */
+	public Boolean getDeleted()
+	{
+		return deleted.getValue();
+	}
+
+	/**
+	 * @param deleted
+	 *            the deleted to set
+	 */
+	public void setDeleted(Boolean deleted)
+	{
+		this.deleted.set(deleted);
+	}
+
+	public SimpleBooleanProperty deletedProperty()
+	{
+		return deleted;
 	}
 }

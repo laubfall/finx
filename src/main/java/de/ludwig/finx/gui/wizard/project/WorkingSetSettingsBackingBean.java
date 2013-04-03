@@ -22,9 +22,9 @@ public class WorkingSetSettingsBackingBean
 
 	private SimpleStringProperty postifx = new SimpleStringProperty();
 
-	// private ObservableList<WorkingSetBackingBean> workingSetsComponent = FXCollections
-	// .observableArrayList(new ArrayList<WorkingSetBackingBean>());
-
+	/**
+	 * All configured WorkingSets as BackingBeans
+	 */
 	private SimpleListProperty<WorkingSetBackingBean> workingSetsComponent = new SimpleListProperty<>(
 			FXCollections.observableArrayList(new ArrayList<WorkingSetBackingBean>()));
 

@@ -24,26 +24,6 @@ public class Wizard extends Stage
 		final Group root = new Group();
 		content = new Content(this);
 
-		// content.getCancel().addEventHandler(MouseEvent.MOUSE_PRESSED, new
-		// EventHandler<MouseEvent>() {
-		//
-		// @Override
-		// public void handle(MouseEvent event)
-		// {
-		// Wizard.this.onCancel();
-		// }
-		// });
-		//
-		// content.getFinish().addEventHandler(MouseEvent.MOUSE_PRESSED, new
-		// EventHandler<MouseEvent>() {
-		//
-		// @Override
-		// public void handle(MouseEvent event)
-		// {
-		// Wizard.this.onFinish();
-		// }
-		// });
-
 		root.getChildren().add(content.getContent());
 		final Scene scene = new Scene(root);
 		this.setScene(scene);

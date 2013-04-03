@@ -51,6 +51,13 @@ public class ProjectWizardBackingBean
 		final ProjectBackingBean pbb = new ProjectBackingBean();
 		pbb.setProjectTitledPane(projectSettingsStep.getProjectName());
 		pbb.setWorkingSetsContainer(workingSetSettingsStep.getWorkingSetsComponent());
+		// for (final WorkingSetBackingBean wsbb : workingSetSettingsStep.getWorkingSetsComponent())
+		// {
+		// final WorkingSetBackingBean nWsbb = new WorkingSetBackingBean(wsbb.getPropDir(),
+		// wsbb.getPrefix(),
+		// wsbb.getPostfix(), wsbb.getSourceDirs());
+		// pbb.getWorkingSetsContainer().add(nWsbb);
+		// }
 		return pbb;
 	}
 }

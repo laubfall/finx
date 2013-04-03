@@ -3,8 +3,6 @@ package de.ludwig.finx.gui.controller;
 import java.io.File;
 import java.io.IOException;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -26,7 +24,6 @@ import de.ludwig.jfxmodel.Model;
  */
 public class WorkingSetComponent extends VBox
 {
-
 	@FXML
 	private GridPane contentGridPane;
 
@@ -49,12 +46,6 @@ public class WorkingSetComponent extends VBox
 	@FXML
 	private Button delete;
 
-	/**
-	 * Marks that component as deleted. Container can hold a listener on this property to decide if
-	 * they show this component or not.
-	 */
-	private BooleanProperty deleted = new SimpleBooleanProperty(false);
-
 	private Model<WorkingSetBackingBean> model = new Model<>(this);
 
 	public WorkingSetComponent(WorkingSetBackingBean backingBean)
@@ -74,24 +65,9 @@ public class WorkingSetComponent extends VBox
 		this.model.bind();
 	}
 
-	public boolean isDeleted()
-	{
-		return deleted.get();
-	}
-
-	public void setDeleted(final boolean deleted)
-	{
-		this.deleted.set(deleted);
-	}
-
-	public BooleanProperty deletedProperty()
-	{
-		return deleted;
-	}
-
 	@FXML
 	private void delete(Event e)
 	{
-		deleted.set(true);
+		model.getModelObject().setDeleted(true);
 	}
 }

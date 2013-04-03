@@ -2,23 +2,25 @@ package de.ludwig.finx.gui.controller;
 
 import java.io.IOException;
 
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.gui.wizard.project.WorkingSetWizard;
+import de.ludwig.finx.gui.wizard.project.WorkingSetWizardBackingBean;
 import de.ludwig.jfxmodel.BindToBeanProperty;
 import de.ludwig.jfxmodel.Model;
+import de.ludwig.jfxmodel.SupportCombined;
 
 /**
  * @author Daniel
  * 
  */
-public class ProjectSummaryComponent extends VBox
+public class ProjectSummaryComponent extends VBox implements SupportCombined
 {
 	@BindToBeanProperty(bindPropertyName = "text")
 	@FXML
@@ -44,16 +46,6 @@ public class ProjectSummaryComponent extends VBox
 			throw new ApplicationCodingException("unable to load project summary", exception);
 		}
 
-		workingSetsContainer
-				.setCellFactory(new Callback<ListView<WorkingSetBackingBean>, ListCell<WorkingSetBackingBean>>() {
-
-					@Override
-					public ListCell<WorkingSetBackingBean> call(ListView<WorkingSetBackingBean> arg0)
-					{
-						return new WorkingSetCell();
-					}
-				});
-
 		if (modelObject != null) {
 			model.setModelObject(modelObject);
 		}
@@ -63,7 +55,17 @@ public class ProjectSummaryComponent extends VBox
 	@FXML
 	private void newWorkingSet(Event e)
 	{
-		// TODO call WizardStep to create a Working-Set. Then put this into the model
-		// --> model.getModelObject().workingSetsContainer.add(...)
+		final WorkingSetWizardBackingBean modelObject = new WorkingSetWizardBackingBean();
+		final WorkingSetWizard wsw = new WorkingSetWizard(modelObject);
+		wsw.showAndWait();
+		final ObservableList<WorkingSetBackingBean> workingSets = modelObject.getWorkingSetSettingsStep()
+				.getWorkingSetsComponent();
+		model.getModelObject().getWorkingSetsContainer().addAll(workingSets);
+	}
+
+	@Override
+	public Model<?> getModel()
+	{
+		return model;
 	}
 }

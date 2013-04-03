@@ -11,6 +11,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import de.ludwig.finx.gui.wizard.project.ProjectWizard;
 import de.ludwig.finx.gui.wizard.project.ProjectWizardBackingBean;
+import de.ludwig.jfxmodel.Model;
 
 /**
  * @author Daniel
@@ -26,14 +27,24 @@ public class ProjectListPane implements Initializable
 	private ScrollPane projects;
 
 	/**
-	 * TODO dl i think we have to change this to a listview in order to bind a model-object
+	 * TODO dl i think we have to change this to a listview in order to bind a model-object TODO
+	 * binding to model
 	 */
 	@FXML
 	private VBox projectsBox;
 
-	public ProjectListPane()
+	private Model<ProjectListPaneBackingBean> model = new Model<>(this);
+
+	/**
+	 * 
+	 * @param modelObject
+	 *            TODO bad idea. Thats a component and so can be initiated by fxml...
+	 */
+	public ProjectListPane(ProjectListPaneBackingBean modelObject)
 	{
 
+		model.setModelObject(modelObject);
+		model.bind();
 	}
 
 	@Override

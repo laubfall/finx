@@ -13,7 +13,7 @@ import de.ludwig.jfxmodel.SupportCombined;
  * @author Daniel
  * 
  */
-class ProjectSettingsStep extends WizardStep<ProjectSettingsBackingBean> implements SupportCombined
+class ProjectSettingsStep extends WizardStep implements SupportCombined
 {
 	@BindToBeanProperty(bindPropertyName = "text")
 	@FXML

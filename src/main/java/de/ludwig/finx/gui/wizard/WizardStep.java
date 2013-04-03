@@ -13,11 +13,8 @@ import de.ludwig.finx.ApplicationCodingException;
  * @author Daniel
  * 
  */
-public abstract class WizardStep<T> extends Pane
+public abstract class WizardStep extends Pane
 {
-	@Deprecated
-	protected T model;
-
 	protected SimpleObjectProperty<ValidationContext> validationCtx = new SimpleObjectProperty<>();
 
 	public WizardStep()
@@ -63,18 +60,6 @@ public abstract class WizardStep<T> extends Pane
 	public abstract void onCancel();
 
 	// <--
-
-	/**
-	 * Implementing classes return an object that holds information gathered by the wizard step.
-	 * Normally this information should be available (not null) after the next step is called.
-	 * 
-	 * @return the model object.
-	 */
-	@Deprecated
-	public T modelObject()
-	{
-		return model;
-	}
 
 	public abstract void validate() throws StepValidationException;
 

@@ -41,7 +41,7 @@ public class Content extends BaseController
 	@FXML
 	private Text wizardStepDescription;
 
-	private SimpleObjectProperty<WizardStep<?>> currentPage = new SimpleObjectProperty<>();
+	private SimpleObjectProperty<WizardStep> currentPage = new SimpleObjectProperty<>();
 
 	private Wizard owningWizard;
 
@@ -60,10 +60,10 @@ public class Content extends BaseController
 		next.managedProperty().bind(next.visibleProperty());
 		previous.managedProperty().bind(previous.visibleProperty());
 
-		currentPage.addListener(new ChangeListener<WizardStep<?>>() {
+		currentPage.addListener(new ChangeListener<WizardStep>() {
 			@Override
-			public void changed(ObservableValue<? extends WizardStep<?>> observable, WizardStep<?> oldValue,
-					WizardStep<?> newValue)
+			public void changed(ObservableValue<? extends WizardStep> observable, WizardStep oldValue,
+					WizardStep newValue)
 			{
 				if (newValue == null)
 					return;
@@ -73,7 +73,7 @@ public class Content extends BaseController
 		});
 	}
 
-	public final void addPage(final WizardStep<?> page)
+	public final void addPage(final WizardStep page)
 	{
 		page.setVisible(false);
 		pages.getChildren().add(page);
@@ -104,7 +104,7 @@ public class Content extends BaseController
 	{
 		Node node = pages.getChildren().get(0);
 		node.setVisible(true);
-		currentPage.set((WizardStep<?>) node);
+		currentPage.set((WizardStep) node);
 		handleButtonVisibility();
 	}
 
@@ -112,7 +112,7 @@ public class Content extends BaseController
 	{
 		initCheck();
 
-		WizardStep<?> previousPage = previousPage();
+		WizardStep previousPage = previousPage();
 		finish.setVisible(false);
 		if (previousPage == null) {
 			previous.setVisible(false);
@@ -120,7 +120,7 @@ public class Content extends BaseController
 			previous.setVisible(true);
 		}
 
-		WizardStep<?> nextPage = nextPage();
+		WizardStep nextPage = nextPage();
 		if (nextPage == null) {
 			next.setVisible(false);
 			finish.setVisible(true);
@@ -129,17 +129,21 @@ public class Content extends BaseController
 		}
 	}
 
+	// private void handleButtonAccessibility(final WizardStep stepThatControlls) {
+	// previous.disableProperty().bind(Bindings.when(stepThatControlls.previous()))
+	// }
+
 	/**
 	 * checks if the current page has a previous page
 	 * 
 	 * @return null if there is no previous page otherwise the previous page
 	 */
-	private WizardStep<?> previousPage()
+	private WizardStep previousPage()
 	{
 		int indexOf = pages.getChildren().indexOf(currentPage.get());
 
 		if (indexOf > 0) {
-			return (WizardStep<?>) pages.getChildren().get(indexOf - 1);
+			return (WizardStep) pages.getChildren().get(indexOf - 1);
 		}
 
 		return null;
@@ -150,11 +154,11 @@ public class Content extends BaseController
 	 * 
 	 * @return see {@link #previousPage()}
 	 */
-	private WizardStep<?> nextPage()
+	private WizardStep nextPage()
 	{
 		int indexOf = pages.getChildren().indexOf(currentPage.get());
 		if (indexOf < pages.getChildren().size() - 1) {
-			return (WizardStep<?>) pages.getChildren().get(indexOf + 1);
+			return (WizardStep) pages.getChildren().get(indexOf + 1);
 		}
 		return null;
 	}
@@ -162,12 +166,12 @@ public class Content extends BaseController
 	@FXML
 	private void previous(Event e)
 	{
-		WizardStep<?> cp = currentPage.get();
+		WizardStep cp = currentPage.get();
 		cp.onPrevious();
 
 		int indexOf = pages.getChildren().indexOf(currentPage.get());
 		cp.setVisible(false);
-		currentPage.set((WizardStep<?>) pages.getChildren().get(indexOf - 1));
+		currentPage.set((WizardStep) pages.getChildren().get(indexOf - 1));
 		currentPage.get().setVisible(true);
 		handleButtonVisibility();
 	}
@@ -182,19 +186,19 @@ public class Content extends BaseController
 	@FXML
 	private void next(Event e)
 	{
-		WizardStep<?> cp = currentPage.get();
+		WizardStep cp = currentPage.get();
 		cp.onNext();
 		if (validate(cp) == false) {
 			return;
 		}
 		int indexOf = pages.getChildren().indexOf(currentPage.get());
 		cp.setVisible(false);
-		currentPage.set((WizardStep<?>) pages.getChildren().get(indexOf + 1));
+		currentPage.set((WizardStep) pages.getChildren().get(indexOf + 1));
 		currentPage.get().setVisible(true);
 		handleButtonVisibility();
 	}
 
-	private boolean validate(final WizardStep<?> stepToValidate)
+	private boolean validate(final WizardStep stepToValidate)
 	{
 		try {
 			validationMessage.setVisible(false);

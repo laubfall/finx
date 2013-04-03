@@ -38,16 +38,6 @@ public class ProjectWizard extends Wizard
 	@Override
 	public void onFinish()
 	{
-		// final ProjectSettingsBackingBean p = projectSettingsStep.modelObject();
-		// final List<WorkingSetBackingBean> ws = workingSetSettingsStep.modelObject();
-		//
-		// project = new Project(p.getProjectName());
-		// for (WorkingSetBackingBean wsm : ws) {
-		// project.addWorkingSet(wsm.getPropDir(), wsm.getSourceDirs().toArray(new
-		// File[wsm.getSourceDirs().size()]))
-		// .changePropertiesReader(wsm.getPostfix(), wsm.getPrefix());
-		// }
-
 		finished.setValue(true);
 		close();
 	}
