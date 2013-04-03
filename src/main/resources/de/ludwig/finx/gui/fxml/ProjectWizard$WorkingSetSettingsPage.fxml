@@ -43,16 +43,8 @@
         <Separator orientation="VERTICAL" prefHeight="372.0" />
         <AnchorPane prefHeight="400.0" prefWidth="353.0" HBox.hgrow="SOMETIMES">
           <children>
-            <ScrollPane layoutX="55.0" layoutY="57.0" prefHeight="302.0" prefWidth="243.0">
-              <content>
-                <AnchorPane id="Content" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
-                  <children>
-                    <VBox fx:id="configuredWorkingSets" />
-                  </children>
-                </AnchorPane>
-              </content>
-            </ScrollPane>
             <Text layoutX="55.0" layoutY="27.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Configured WorkingSets" />
+            <VBox fx:id="configuredWorkingSets" layoutX="34.0" layoutY="55.0" prefHeight="299.0" prefWidth="262.0" />
           </children>
         </AnchorPane>
       </children>

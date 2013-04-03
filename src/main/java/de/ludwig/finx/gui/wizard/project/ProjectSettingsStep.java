@@ -1,35 +1,33 @@
 package de.ludwig.finx.gui.wizard.project;
 
-import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
-
-import org.apache.commons.lang3.StringUtils;
-
-import de.ludwig.finx.gui.controller.ProjectModel;
 import de.ludwig.finx.gui.wizard.StepValidationException;
 import de.ludwig.finx.gui.wizard.WizardStep;
+import de.ludwig.jfxmodel.BindToBeanProperty;
+import de.ludwig.jfxmodel.Model;
+import de.ludwig.jfxmodel.SupportCombined;
 
 /**
  * 
  * @author Daniel
  * 
  */
-class ProjectSettingsStep extends WizardStep<ProjectModel>
+class ProjectSettingsStep extends WizardStep<ProjectSettingsBackingBean> implements SupportCombined
 {
+	@BindToBeanProperty(bindPropertyName = "text")
 	@FXML
 	protected TextField projectName;
 
+	private Model<ProjectSettingsBackingBean> model = new Model<ProjectSettingsBackingBean>(this,
+			new ProjectSettingsBackingBean());
+
 	/**
-	 * @param model
-	 *            TODO
 	 * @param fxml
 	 */
-	public ProjectSettingsStep(ProjectModel model)
+	public ProjectSettingsStep()
 	{
 		super(ProjectSettingsStep.class.getResource("/de/ludwig/finx/gui/fxml/ProjectWizard$ProjectSettingsPage.fxml"));
-		Bindings.bindBidirectional(projectName.textProperty(), model.nameProperty());
-		this.model = model;
 	}
 
 	@Override
@@ -71,26 +69,31 @@ class ProjectSettingsStep extends WizardStep<ProjectModel>
 	@Override
 	public void onCancel()
 	{
-		// TODO Auto-generated method stub
-
+		// NOOP
 	}
 
 	@Override
 	public void validate() throws StepValidationException
 	{
-		if (StringUtils.isBlank(model.getName())) {
-			throw new StepValidationException("Project name needs to be set");
-		}
+		// if (StringUtils.isBlank(model.getName())) {
+		// throw new StepValidationException("Project name needs to be set");
+		// }
+	}
+
+	@Override
+	public String wizardStepDescription()
+	{
+		return "Define project settings";
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see de.ludwig.finx.gui.wizard.WizardStep#wizardStepDescription()
+	 * @see de.ludwig.jfxmodel.SupportCombined#getModel()
 	 */
 	@Override
-	public String wizardStepDescription()
+	public Model<?> getModel()
 	{
-		return "Define project settings";
+		return model;
 	}
 }

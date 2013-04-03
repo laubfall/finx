@@ -9,17 +9,13 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import de.ludwig.finx.workspace.WorkingSet;
 
 /**
  * @author Daniel
  * 
  */
-public class WorkingSetModel
+public class WorkingSetBackingBean
 {
-	@Deprecated
-	private final WorkingSet ws;
-
 	private SimpleListProperty<File> sourceDirs = new SimpleListProperty<>(
 			FXCollections.observableList(new ArrayList<File>()));
 
@@ -29,11 +25,14 @@ public class WorkingSetModel
 
 	private SimpleStringProperty prefix = new SimpleStringProperty();
 
-	public WorkingSetModel(final File propDir, final String prefix, final String postfix,
+	public WorkingSetBackingBean()
+	{
+
+	}
+
+	public WorkingSetBackingBean(final File propDir, final String prefix, final String postfix,
 			final Collection<File> sourceDirs)
 	{
-		ws = new WorkingSet(propDir, sourceDirs.toArray(new File[sourceDirs.size()]));
-		ws.changePropertiesReader(postfix, prefix);
 		this.propDir.set(propDir);
 		this.postfix.set(postfix);
 		this.prefix.set(prefix);
@@ -126,13 +125,5 @@ public class WorkingSetModel
 	public SimpleStringProperty prefixProperty()
 	{
 		return prefix;
-	}
-
-	/**
-	 * @return the ws
-	 */
-	public WorkingSet getWs()
-	{
-		return ws;
 	}
 }

@@ -1,16 +1,18 @@
 package de.ludwig.finx.gui.controller;
 
 import java.io.IOException;
-import java.util.Set;
 
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 import de.ludwig.finx.ApplicationCodingException;
-import de.ludwig.finx.workspace.Project;
-import de.ludwig.finx.workspace.WorkingSet;
+import de.ludwig.jfxmodel.BindToBeanProperty;
+import de.ludwig.jfxmodel.Model;
 
 /**
  * @author Daniel
@@ -18,18 +20,17 @@ import de.ludwig.finx.workspace.WorkingSet;
  */
 public class ProjectSummaryComponent extends VBox
 {
+	@BindToBeanProperty(bindPropertyName = "text")
 	@FXML
 	private TitledPane projectTitledPane;
 
+	@BindToBeanProperty(bindPropertyName = "items")
 	@FXML
-	private VBox workingSetsContainer;
+	private ListView<WorkingSetBackingBean> workingSetsContainer;
 
-	/**
-	 * @param project
-	 *            TODO
-	 * 
-	 */
-	public ProjectSummaryComponent(Project project)
+	private Model<ProjectBackingBean> model = new Model<ProjectBackingBean>(this, new ProjectBackingBean());
+
+	public ProjectSummaryComponent(final ProjectBackingBean modelObject)
 	{
 		super();
 		FXMLLoader fxmlLoader = new FXMLLoader(
@@ -43,19 +44,26 @@ public class ProjectSummaryComponent extends VBox
 			throw new ApplicationCodingException("unable to load project summary", exception);
 		}
 
-		projectTitledPane.setText(project.getName());
-		final Set<WorkingSet> workingSets = project.getWorkingSets();
-		for (final WorkingSet ws : workingSets) {
-			final WorkingSetModel m = new WorkingSetModel(ws.getPropertiesDir(), ws.getI18nPropertiesFilePrefix(),
-					ws.getI18nPropertiesFilePostfix(), ws.getSourceDirsAsList());
-			final WorkingSetComponent w = new WorkingSetComponent(m);
-			workingSetsContainer.getChildren().add(w);
+		workingSetsContainer
+				.setCellFactory(new Callback<ListView<WorkingSetBackingBean>, ListCell<WorkingSetBackingBean>>() {
+
+					@Override
+					public ListCell<WorkingSetBackingBean> call(ListView<WorkingSetBackingBean> arg0)
+					{
+						return new WorkingSetCell();
+					}
+				});
+
+		if (modelObject != null) {
+			model.setModelObject(modelObject);
 		}
+		model.bind();
 	}
 
 	@FXML
 	private void newWorkingSet(Event e)
 	{
-		workingSetsContainer.getChildren().add(new WorkingSetComponent(null));
+		// TODO call WizardStep to create a Working-Set. Then put this into the model
+		// --> model.getModelObject().workingSetsContainer.add(...)
 	}
 }

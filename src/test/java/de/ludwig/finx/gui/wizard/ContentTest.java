@@ -16,7 +16,7 @@ public class ContentTest
 	@Test
 	public void buttonVisibilityOnePage()
 	{
-		final Content c = new Content();
+		final Content c = new Content(null);
 		c.addPage(new TestWizardPage());
 		c.start();
 		Assert.assertFalse(c.getPrevious().isVisible());
@@ -28,7 +28,7 @@ public class ContentTest
 	@Test
 	public void buttonVisibilityTwoPages() throws Exception
 	{
-		final Content c = new Content();
+		final Content c = new Content(null);
 		c.addPage(new TestWizardPage());
 		c.addPage(new TestWizardPage());
 		c.start();
@@ -56,7 +56,7 @@ public class ContentTest
 	@Test
 	public void buttonVisibilityThreePages() throws Exception
 	{
-		final Content c = new Content();
+		final Content c = new Content(null);
 		c.addPage(new TestWizardPage());
 		c.addPage(new TestWizardPage());
 		c.addPage(new TestWizardPage());

@@ -1,11 +1,8 @@
 package de.ludwig.finx.gui.wizard.project;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -16,17 +13,25 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
-import de.ludwig.finx.gui.controller.WorkingSetComponent;
-import de.ludwig.finx.gui.controller.WorkingSetModel;
+
+import org.apache.commons.lang3.StringUtils;
+
+import de.ludwig.finx.gui.controller.WorkingSetBackingBean;
+import de.ludwig.finx.gui.controller.WorkingSetOverviewComponent;
 import de.ludwig.finx.gui.wizard.StepValidationException;
+import de.ludwig.finx.gui.wizard.ValidationContext;
 import de.ludwig.finx.gui.wizard.WizardStep;
+import de.ludwig.finx.jfx.converter.FileStringConverter;
+import de.ludwig.jfxmodel.BindToBeanProperty;
+import de.ludwig.jfxmodel.Model;
+import de.ludwig.jfxmodel.SupportCombined;
 
 /**
  * 
  * @author Daniel
  * 
  */
-class WorkingSetSettingsStep extends WizardStep<List<WorkingSetModel>>
+class WorkingSetSettingsStep extends WizardStep<List<WorkingSetBackingBean>> implements SupportCombined
 {
 	@FXML
 	protected ListView<File> sourceDirOverview;
@@ -34,19 +39,28 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetModel>>
 	@FXML
 	protected Button removeSourceDir;
 
-	@FXML
-	protected VBox configuredWorkingSets;
-
+	@BindToBeanProperty(bindPropertyName = "text", converter = FileStringConverter.class)
 	@FXML
 	protected TextField propertiesDirPath;
 
+	@BindToBeanProperty(bindPropertyName = "text")
 	@FXML
 	protected TextField prefix;
 
+	@BindToBeanProperty(bindPropertyName = "text")
 	@FXML
 	protected TextField postfix;
 
-	private List<WorkingSetModel> workingSetModels = new ArrayList<>();
+	@FXML
+	protected VBox configuredWorkingSets;
+
+	// private List<WorkingSetBackingBean> workingSetModels = new ArrayList<>();
+
+	@BindToBeanProperty(bindPropertyName = "items")
+	private WorkingSetOverviewComponent workingSetsComponent = new WorkingSetOverviewComponent();
+
+	private Model<WorkingSetSettingsBackingBean> model = new Model<WorkingSetSettingsBackingBean>(this,
+			new WorkingSetSettingsBackingBean());
 
 	public WorkingSetSettingsStep()
 	{
@@ -65,6 +79,10 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetModel>>
 		});
 
 		sourceDirOverview.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+		configuredWorkingSets.getChildren().add(workingSetsComponent);
+
+		model.bind();
 	}
 
 	@FXML
@@ -92,23 +110,38 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetModel>>
 	@FXML
 	protected void createWorkingSet(final Event e)
 	{
-		final WorkingSetModel wm = new WorkingSetModel(new File(propertiesDirPath.getText()), prefix.getText(),
-				postfix.getText(), sourceDirOverview.getItems());
-		workingSetModels.add(wm);
-		final WorkingSetComponent wsc = new WorkingSetComponent(wm);
+		validationCtx.set(null);
 
-		wsc.deletedProperty().addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-			{
-				if (newValue) {
-					configuredWorkingSets.getChildren().remove(wsc);
-					workingSetModels.remove(wm);
-				}
-			}
-		});
+		if (validatePropertiesDirPath() == false) {
+			return;
+		}
 
-		configuredWorkingSets.getChildren().add(wsc);
+		final WorkingSetBackingBean wm = new WorkingSetBackingBean(new File(propertiesDirPath.getText()),
+				prefix.getText(), postfix.getText(), sourceDirOverview.getItems());
+
+		if (validateCreateWorkingSet(wm) == false) {
+			return;
+		}
+
+		final WorkingSetSettingsBackingBean bean = (WorkingSetSettingsBackingBean) getModel().getModelObject();
+		bean.workingSetsComponentProperty().add(wm);
+
+		// workingSetModels.add(wm);
+		// final WorkingSetComponent wsc = new WorkingSetComponent(wm);
+
+		// wsc.deletedProperty().addListener(new ChangeListener<Boolean>() {
+		// @Override
+		// public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
+		// Boolean newValue)
+		// {
+		// if (newValue) {
+		// configuredWorkingSets.getChildren().remove(wsc);
+		// workingSetModels.remove(wm);
+		// }
+		// }
+		// });
+
+		// configuredWorkingSets.getChildren().add(wsc);
 	}
 
 	@FXML
@@ -152,8 +185,7 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetModel>>
 	@Override
 	public void onFinish()
 	{
-		// TODO Auto-generated method stub
-
+		// NOOP
 	}
 
 	@Override
@@ -169,16 +201,18 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetModel>>
 	}
 
 	@Override
-	public List<WorkingSetModel> modelObject()
+	public List<WorkingSetBackingBean> modelObject()
 	{
-		return workingSetModels;
+		return null;
+		// return workingSetModels;
 	}
 
 	@Override
 	public void validate() throws StepValidationException
 	{
-		// TODO Auto-generated method stub
-
+		// if (workingSetModels.isEmpty()) {
+		// throw new StepValidationException("you have to define at least one workingset");
+		// }
 	}
 
 	/*
@@ -190,6 +224,47 @@ class WorkingSetSettingsStep extends WizardStep<List<WorkingSetModel>>
 	public String wizardStepDescription()
 	{
 		return "Create workingsets";
+	}
+
+	private boolean validatePropertiesDirPath()
+	{
+		final ValidationContext vc = new ValidationContext();
+		if (StringUtils.isBlank(propertiesDirPath.getText())) {
+			vc.addValidationMessage("no Properties-Directory is set");
+		}
+		validationCtx.set(vc);
+		return vc.isValid();
+	}
+
+	private boolean validateCreateWorkingSet(final WorkingSetBackingBean model)
+	{
+		final ValidationContext vc = new ValidationContext();
+		if (StringUtils.isBlank(model.getPostfix())) {
+			vc.addValidationMessage("postfix has not to be empty");
+		}
+
+		if (StringUtils.isBlank(model.getPrefix())) {
+			vc.addValidationMessage("prefix has not to be empty");
+		}
+
+		final List<File> sourceDirs = model.getSourceDirs();
+		if (sourceDirs == null || sourceDirs.isEmpty()) {
+			vc.addValidationMessage("at least you have to define minimum one source directory");
+		}
+
+		validationCtx.set(vc);
+		return vc.isValid();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ludwig.jfxmodel.SupportCombined#getModel()
+	 */
+	@Override
+	public Model<?> getModel()
+	{
+		return model;
 	}
 
 }

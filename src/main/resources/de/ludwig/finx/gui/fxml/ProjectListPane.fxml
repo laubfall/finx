@@ -11,7 +11,7 @@
 <?import javafx.scene.text.*?>
 <?scenebuilder-classpath-element ../../../../../../../../target/classes?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="396.0" prefWidth="203.0" xmlns:fx="http://javafx.com/fxml" fx:controller="de.ludwig.finx.gui.controller.ProjectOverviewPane">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="396.0" prefWidth="203.0" xmlns:fx="http://javafx.com/fxml" fx:controller="de.ludwig.finx.gui.controller.ProjectListPane">
   <children>
     <VBox fx:id="projectBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <children>

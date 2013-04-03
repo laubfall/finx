@@ -20,6 +20,7 @@
             <TextField fx:id="emptyText" prefWidth="200.0" VBox.vgrow="SOMETIMES" />
           </children>
         </VBox>
+        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Project Save Directory" GridPane.columnIndex="0" GridPane.rowIndex="1" />
       </children>
       <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="262.0" minWidth="10.0" prefWidth="262.0" />

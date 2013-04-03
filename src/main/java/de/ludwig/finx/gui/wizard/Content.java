@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.gui.controller.BaseController;
@@ -35,21 +36,24 @@ public class Content extends BaseController
 	private StackPane pages;
 
 	@FXML
-	private Text validationMessage;
+	private VBox validationMessage;
 
 	@FXML
 	private Text wizardStepDescription;
 
-	// private WizardStep<?> currentPage;
-
 	private SimpleObjectProperty<WizardStep<?>> currentPage = new SimpleObjectProperty<>();
 
+	private Wizard owningWizard;
+
 	/**
+	 * @param owningWizard
+	 *            TODO
 	 */
-	public Content()
+	public Content(Wizard owningWizard)
 	{
 		super(Content.class.getResource("/de/ludwig/finx/gui/fxml/WizardPane.fxml"));
 
+		this.owningWizard = owningWizard;
 		// we set the managed-Property to make sure that visible buttons can invade the space of
 		// buttons that are invisible.
 		finish.managedProperty().bind(finish.visibleProperty());
@@ -73,6 +77,24 @@ public class Content extends BaseController
 	{
 		page.setVisible(false);
 		pages.getChildren().add(page);
+		page.validationCtx.addListener(new ChangeListener<ValidationContext>() {
+
+			@Override
+			public void changed(ObservableValue<? extends ValidationContext> observable, ValidationContext oldValue,
+					ValidationContext newValue)
+			{
+				if (newValue == null) {
+					validationMessage.setVisible(false);
+					clearValidationMessages();
+				} else {
+					validationMessage.setVisible(true);
+					// validationMessage.setText(newValue.getValidationMessage());
+					for (String msg : newValue.getValidationMessages()) {
+						addNewValidationMessage(msg);
+					}
+				}
+			}
+		});
 	}
 
 	/**
@@ -92,10 +114,8 @@ public class Content extends BaseController
 
 		WizardStep<?> previousPage = previousPage();
 		finish.setVisible(false);
-		// finish.setPrefWidth(0);
 		if (previousPage == null) {
 			previous.setVisible(false);
-			// previous.setPrefWidth(0);
 		} else {
 			previous.setVisible(true);
 		}
@@ -164,14 +184,7 @@ public class Content extends BaseController
 	{
 		WizardStep<?> cp = currentPage.get();
 		cp.onNext();
-		try {
-			validationMessage.setText("");
-			validationMessage.setVisible(false);
-			cp.validate();
-		} catch (StepValidationException ex) {
-			// TODO maybe highlighting of affected input elements
-			validationMessage.setText(ex.getMessage());
-			validationMessage.setVisible(true);
+		if (validate(cp) == false) {
 			return;
 		}
 		int indexOf = pages.getChildren().indexOf(currentPage.get());
@@ -181,16 +194,46 @@ public class Content extends BaseController
 		handleButtonVisibility();
 	}
 
+	private boolean validate(final WizardStep<?> stepToValidate)
+	{
+		try {
+			validationMessage.setVisible(false);
+			clearValidationMessages();
+			stepToValidate.validate();
+			return true;
+		} catch (StepValidationException ex) {
+			// TODO maybe highlighting of affected input elements
+			addNewValidationMessage(ex.getMessage());
+			validationMessage.setVisible(true);
+		}
+		return false;
+	}
+
+	private void addNewValidationMessage(final String msg)
+	{
+		validationMessage.getChildren().add(new Text(msg));
+	}
+
+	private void clearValidationMessages()
+	{
+		validationMessage.getChildren().clear();
+	}
+
 	@FXML
 	private void finish(Event e)
 	{
+		if (validate(currentPage.get()) == false) {
+			return;
+		}
 		currentPage.get().onFinish();
+		owningWizard.onFinish();
 	}
 
 	@FXML
 	private void cancel(Event e)
 	{
 		currentPage.get().onCancel();
+		owningWizard.onCancel();
 	}
 
 	/**

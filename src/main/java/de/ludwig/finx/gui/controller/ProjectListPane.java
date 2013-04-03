@@ -10,13 +10,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import de.ludwig.finx.gui.wizard.project.ProjectWizard;
-import de.ludwig.finx.workspace.Project;
+import de.ludwig.finx.gui.wizard.project.ProjectWizardBackingBean;
 
 /**
  * @author Daniel
  * 
  */
-public class ProjectOverviewPane implements Initializable
+public class ProjectListPane implements Initializable
 {
 
 	@FXML
@@ -25,10 +25,13 @@ public class ProjectOverviewPane implements Initializable
 	@FXML
 	private ScrollPane projects;
 
+	/**
+	 * TODO dl i think we have to change this to a listview in order to bind a model-object
+	 */
 	@FXML
 	private VBox projectsBox;
 
-	public ProjectOverviewPane()
+	public ProjectListPane()
 	{
 
 	}
@@ -49,10 +52,10 @@ public class ProjectOverviewPane implements Initializable
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
 			{
 				if (newValue) {
-					final Project project = pw.getProject();
-					final ProjectSummaryComponent psc = new ProjectSummaryComponent(project);
+					final ProjectWizardBackingBean modelObject = pw.modelObject();
+					final ProjectSummaryComponent psc = new ProjectSummaryComponent(modelObject.convert());
 					projectsBox.getChildren().add(psc);
-					ProjectOverviewPane.this.projects();
+					ProjectListPane.this.projects();
 				}
 			}
 		});

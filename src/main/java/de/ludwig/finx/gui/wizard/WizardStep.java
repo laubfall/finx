@@ -3,6 +3,7 @@ package de.ludwig.finx.gui.wizard;
 import java.io.IOException;
 import java.net.URL;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
@@ -14,7 +15,10 @@ import de.ludwig.finx.ApplicationCodingException;
  */
 public abstract class WizardStep<T> extends Pane
 {
+	@Deprecated
 	protected T model;
+
+	protected SimpleObjectProperty<ValidationContext> validationCtx = new SimpleObjectProperty<>();
 
 	public WizardStep()
 	{
@@ -66,6 +70,7 @@ public abstract class WizardStep<T> extends Pane
 	 * 
 	 * @return the model object.
 	 */
+	@Deprecated
 	public T modelObject()
 	{
 		return model;

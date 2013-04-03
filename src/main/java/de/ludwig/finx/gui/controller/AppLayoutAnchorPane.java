@@ -10,6 +10,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import de.ludwig.finx.gui.popup.AppSettingsPopup;
+import de.ludwig.finx.workspace.WorkspacePersistencyDao;
 
 /**
  * @author Daniel
@@ -20,7 +21,7 @@ public class AppLayoutAnchorPane extends BaseController
 	@FXML
 	private MenuItem menuItemClose;
 
-	// since this point: nested controllers:
+	// beyond this point: nested controllers:
 
 	/**
 	 * the include has the id projectOverviewPane. If you name this field like the id, you will run
@@ -29,7 +30,7 @@ public class AppLayoutAnchorPane extends BaseController
 	 * controller of the included fxml simply attach "Controller" to the end of the fields name!
 	 */
 	@FXML
-	private ProjectOverviewPane projectOverviewPaneController;
+	private ProjectListPane projectOverviewPaneController;
 
 	public AppLayoutAnchorPane()
 	{
@@ -42,6 +43,14 @@ public class AppLayoutAnchorPane extends BaseController
 		FileChooser fc = new FileChooser();
 		fc.setTitle("select workspace");
 		File workspace = fc.showOpenDialog(null);
+	}
+
+	@FXML
+	private void saveWorkspaceAs(Event e)
+	{
+		final WorkspacePersistencyDao pers = new WorkspacePersistencyDao();
+		// projectOverviewPaneController.
+		// pers.saveProject(project)
 	}
 
 	@FXML

@@ -3,7 +3,6 @@ package de.ludwig.finx.gui.controller;
 import java.io.File;
 import java.io.IOException;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
@@ -16,6 +15,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import de.ludwig.finx.jfx.converter.FileStringConverter;
 import de.ludwig.finx.workspace.WorkingSet;
+import de.ludwig.jfxmodel.BindToBeanProperty;
+import de.ludwig.jfxmodel.Model;
 
 /**
  * Shows all relevant information of {@link WorkingSet}s
@@ -29,15 +30,19 @@ public class WorkingSetComponent extends VBox
 	@FXML
 	private GridPane contentGridPane;
 
+	@BindToBeanProperty(bindPropertyName = "text", converter = FileStringConverter.class)
 	@FXML
 	private Text propDir;
 
+	@BindToBeanProperty(bindPropertyName = "text")
 	@FXML
 	private Text postfix;
 
+	@BindToBeanProperty(bindPropertyName = "text")
 	@FXML
 	private Text prefix;
 
+	@BindToBeanProperty(bindPropertyName = "items")
 	@FXML
 	private ListView<File> sourceDirs;
 
@@ -50,7 +55,9 @@ public class WorkingSetComponent extends VBox
 	 */
 	private BooleanProperty deleted = new SimpleBooleanProperty(false);
 
-	public WorkingSetComponent(WorkingSetModel model)
+	private Model<WorkingSetBackingBean> model = new Model<>(this);
+
+	public WorkingSetComponent(WorkingSetBackingBean backingBean)
 	{
 		FXMLLoader fxmlLoader = new FXMLLoader(
 				WorkingSetComponent.class.getResource("/de/ludwig/finx/gui/fxml/WorkingSetComponent.fxml"));
@@ -63,10 +70,8 @@ public class WorkingSetComponent extends VBox
 			throw new RuntimeException(exception);
 		}
 
-		Bindings.bindContentBidirectional(sourceDirs.itemsProperty().get(), model.sourceDirsProperty());
-		Bindings.bindBidirectional(propDir.textProperty(), model.propDirProperty(), new FileStringConverter());
-		Bindings.bindBidirectional(postfix.textProperty(), model.postfixProperty());
-		Bindings.bindBidirectional(prefix.textProperty(), model.prefixProperty());
+		this.model.setModelObject(backingBean == null ? new WorkingSetBackingBean() : backingBean);
+		this.model.bind();
 	}
 
 	public boolean isDeleted()

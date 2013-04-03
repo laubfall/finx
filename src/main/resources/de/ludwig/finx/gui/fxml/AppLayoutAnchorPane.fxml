@@ -18,6 +18,7 @@
             <Menu mnemonicParsing="false" text="File">
               <items>
                 <MenuItem mnemonicParsing="false" onAction="#openWorkspace" text="Open Workspace" fx:id="openWorkspace" />
+                <MenuItem mnemonicParsing="false" onAction="#saveWorkspaceAs" text="Save Workspace ..." fx:id="saveWorkspaceAs" />
                 <MenuItem mnemonicParsing="false" text="Close" fx:id="menuItemClose" />
               </items>
             </Menu>
@@ -43,7 +44,7 @@
                       <content>
                         <VBox prefWidth="100.0">
                           <children>
-                            <fx:include fx:id="projectOverviewPane" source="ProjectOverviewPane.fxml" maxHeight="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
+                            <fx:include fx:id="projectOverviewPane" source="ProjectListPane.fxml" maxHeight="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
                           </children>
                         </VBox>
                       </content>

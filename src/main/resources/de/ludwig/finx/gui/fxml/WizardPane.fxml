@@ -8,7 +8,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns:fx="http://javafx.com/fxml">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" style="-fx-background-color:#AAAAAA" xmlns:fx="http://javafx.com/fxml">
   <children>
     <VBox maxWidth="1.7976931348623157E308" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <children>
@@ -22,14 +22,13 @@
         </HBox>
         <StackPane fx:id="pages" maxWidth="1.7976931348623157E308" minHeight="-Infinity" />
         <Separator prefWidth="200.0" VBox.vgrow="ALWAYS" />
-        <HBox alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" padding="$x1">
+        <HBox alignment="CENTER_RIGHT" padding="$x1" VBox.vgrow="ALWAYS">
           <children>
-            <Text fx:id="validationMessage" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" visible="false">
-              <HBox.margin>
-                <Insets />
-              </HBox.margin>
-            </Text>
+            <VBox fx:id="validationMessage" prefWidth="100.0" />
           </children>
+          <VBox.margin>
+            <Insets />
+          </VBox.margin>
         </HBox>
         <HBox alignment="CENTER_RIGHT" spacing="5.0">
           <children>
@@ -38,6 +37,9 @@
             <Button fx:id="next" mnemonicParsing="false" onAction="#next" text="Next" />
             <Button fx:id="finish" ellipsisString="" mnemonicParsing="false" onAction="#finish" text="Finish" />
           </children>
+          <padding>
+            <Insets bottom="10.0" right="10.0" />
+          </padding>
         </HBox>
       </children>
     </VBox>
