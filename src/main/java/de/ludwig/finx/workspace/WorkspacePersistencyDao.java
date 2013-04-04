@@ -58,6 +58,19 @@ public class WorkspacePersistencyDao
 		}
 	}
 
+	public final Project loadProjectBySaveFileName(final String saveFileName)
+	{
+		return loadProject(new File(AppSettings.projectSaveDir.setting(), saveFileName));
+	}
+
+	public final void updateProject(final Project from, final Project to)
+	{
+		to.getWorkingSets().clear();
+		to.setWorkingSets(from.getWorkingSets());
+		to.setName(from.getName());
+		saveProject(to);
+	}
+
 	public final void deleteProject(final Project project)
 	{
 		final File file = new File(AppSettings.projectSaveDir.setting(), project.getSaveFileName());

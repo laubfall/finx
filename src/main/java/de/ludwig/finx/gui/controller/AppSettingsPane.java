@@ -1,15 +1,20 @@
 package de.ludwig.finx.gui.controller;
 
+import java.io.File;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Window;
 
 import org.apache.log4j.Logger;
 
+import de.ludwig.finx.settings.AppSettings;
 import de.ludwig.finx.settings.I18nDefaultValueSetting;
 import de.ludwig.finx.settings.I18nDefaultValueSetting.DefaultValueTypes;
 import de.ludwig.finx.settings.SettingsDaoImpl;
@@ -29,6 +34,9 @@ public class AppSettingsPane extends BaseController
 
 	@FXML
 	private TextField emptyText;
+
+	@FXML
+	private TextField saveDir;
 
 	/**
 	 * @param owner
@@ -62,6 +70,23 @@ public class AppSettingsPane extends BaseController
 				.setting();
 		emptyText.setVisible(i18nDefaultValueSetting.getType().equals(DefaultValueTypes.TEXT));
 		emptyText.setText(i18nDefaultValueSetting.getUserDefinedText());
+		emptyText.managedProperty().bind(emptyText.visibleProperty());
+
+		saveDir.setText(AppSettings.projectSaveDir.setting().getAbsolutePath());
+		saveDir.setEditable(false);
+	}
+
+	@FXML
+	private void changeSaveDir(Event event)
+	{
+		final DirectoryChooser dc = new DirectoryChooser();
+		dc.setInitialDirectory(AppSettings.projectSaveDir.setting());
+		final File selectedDir = dc.showDialog(null);
+		if (selectedDir == null) {
+			return;
+		}
+
+		saveDir.setText(selectedDir.getAbsolutePath());
 	}
 
 	@FXML
@@ -70,7 +95,8 @@ public class AppSettingsPane extends BaseController
 		String selectedItem = defaultEmpty.getSelectionModel().getSelectedItem();
 		String newValue = selectedItem
 				+ (selectedItem.equals(DefaultValueTypes.TEXT.name()) ? ":" + emptyText.getText() : "");
-		de.ludwig.finx.settings.AppSettings.i18nDefaultValue.change(newValue);
+		AppSettings.i18nDefaultValue.change(newValue);
+		AppSettings.projectSaveDir.change(saveDir.getText());
 		SettingsDaoImpl.instance().saveSettings();
 		LOG.info("saved settings for application");
 		owner.hide();

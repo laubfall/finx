@@ -100,6 +100,11 @@ public class Project implements Serializable
 		this.saveFileName = saveFileName;
 	}
 
+	final void setWorkingSets(Set<WorkingSet> workingSets)
+	{
+		this.workingSets = workingSets;
+	}
+
 	public String getSaveFileName()
 	{
 		return this.saveFileName;

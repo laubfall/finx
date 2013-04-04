@@ -1,8 +1,10 @@
 package de.ludwig.finx.gui.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 
 /**
  * @author Daniel
@@ -10,27 +12,28 @@ import javafx.beans.property.SimpleListProperty;
  */
 public class ProjectListPaneBackingBean
 {
-	private SimpleListProperty<ProjectBackingBean> projectsBox = new SimpleListProperty<>();
+	private SimpleListProperty<ProjectBackingBean> projectsView = new SimpleListProperty<>(
+			FXCollections.observableArrayList(new ArrayList<ProjectBackingBean>()));
 
 	/**
 	 * @return the projectsBox
 	 */
-	public List<ProjectBackingBean> getProjectsBox()
+	public List<ProjectBackingBean> getProjectsView()
 	{
-		return projectsBox.get();
+		return projectsView.get();
 	}
 
 	/**
 	 * @param projectsBox
 	 *            the projectsBox to set
 	 */
-	public void setProjectsBox(List<ProjectBackingBean> projectsBox)
+	public void setProjectsView(List<ProjectBackingBean> projectsView)
 	{
-		this.projectsBox.addAll(projectsBox);
+		this.projectsView.addAll(projectsView);
 	}
 
-	public SimpleListProperty<ProjectBackingBean> projectsBoxProperty()
+	public SimpleListProperty<ProjectBackingBean> projectsViewProperty()
 	{
-		return projectsBox;
+		return projectsView;
 	}
 }

@@ -61,11 +61,6 @@ public class ProjectsInfo implements Serializable
 			this.saveFile = saveFile;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see org.apache.commons.collections.Predicate#evaluate(java.lang.Object)
-		 */
 		@Override
 		public boolean evaluate(Object object)
 		{
@@ -73,48 +68,5 @@ public class ProjectsInfo implements Serializable
 			return pi.getProjectSaveFileName().equals(saveFile.getName());
 		}
 
-	}
-}
-
-class ProjInfo implements Serializable
-{
-	private static final long serialVersionUID = -4295560827410959192L;
-
-	private String projectName;
-
-	private String projectSaveFileName;
-
-	/**
-	 * @return the projectInfo
-	 */
-	public String getProjectName()
-	{
-		return projectName;
-	}
-
-	/**
-	 * @param projectInfo
-	 *            the projectInfo to set
-	 */
-	public void setProjectName(String projectName)
-	{
-		this.projectName = projectName;
-	}
-
-	/**
-	 * @return the projectSaveFileName
-	 */
-	public String getProjectSaveFileName()
-	{
-		return projectSaveFileName;
-	}
-
-	/**
-	 * @param projectSaveFileName
-	 *            the projectSaveFileName to set
-	 */
-	public void setProjectSaveFileName(String projectSaveFileName)
-	{
-		this.projectSaveFileName = projectSaveFileName;
 	}
 }

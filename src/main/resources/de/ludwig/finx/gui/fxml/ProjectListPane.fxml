@@ -13,7 +13,7 @@
 
 <AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="396.0" prefWidth="203.0" xmlns:fx="http://javafx.com/fxml" fx:controller="de.ludwig.finx.gui.controller.ProjectListPane">
   <children>
-    <VBox fx:id="projectBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox id="projectBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <children>
         <ToolBar minHeight="26.0" prefHeight="26.0">
           <items>
@@ -38,11 +38,7 @@
                 <Text fx:id="noProjectText" strokeType="OUTSIDE" strokeWidth="0.0" text="No Project!" />
               </children>
             </VBox>
-            <ScrollPane fx:id="projects" fitToWidth="true" maxWidth="1.7976931348623157E308" prefHeight="370.0" StackPane.alignment="TOP_LEFT">
-              <content>
-                <VBox fx:id="projectsBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
-              </content>
-            </ScrollPane>
+            <ListView fx:id="projectsView" prefHeight="200.0" prefWidth="200.0" />
           </children>
         </StackPane>
       </children>

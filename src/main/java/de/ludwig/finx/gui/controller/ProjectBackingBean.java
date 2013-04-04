@@ -1,5 +1,6 @@
 package de.ludwig.finx.gui.controller;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,14 +23,14 @@ public class ProjectBackingBean
 	private SimpleListProperty<WorkingSetBackingBean> workingSetsContainer = new SimpleListProperty<>(
 			FXCollections.observableArrayList(new ArrayList<WorkingSetBackingBean>()));
 
-	private final String projectFilename;
+	private String projectFilename = null;
 
 	/**
 	 * For new Projects that are not persisted yet
 	 */
 	public ProjectBackingBean()
 	{
-		projectFilename = null;
+
 	}
 
 	/**
@@ -52,6 +53,17 @@ public class ProjectBackingBean
 		for (final WorkingSet ws : workingSets) {
 			workingSetsContainer.add(new WorkingSetBackingBean(ws));
 		}
+	}
+
+	public Project convert()
+	{
+		final Project proj = new Project(projectTitledPane.get());
+		for (WorkingSetBackingBean ws : workingSetsContainer.get()) {
+			final WorkingSet pws = proj.addWorkingSet(ws.getPropDir(), ws.getSourceDirs().toArray(new File[] {}));
+			pws.setI18nPropertiesFilePostfix(ws.getPostfix());
+			pws.setI18nPropertiesFilePrefix(ws.getPrefix());
+		}
+		return proj;
 	}
 
 	/**
@@ -104,5 +116,16 @@ public class ProjectBackingBean
 	public String getProjectFilename()
 	{
 		return projectFilename;
+	}
+
+	/**
+	 * This setter is meant only for internal purposes.
+	 * 
+	 * @param projectFilename
+	 *            the projectFilename to set
+	 */
+	void setProjectFilename(String projectFilename)
+	{
+		this.projectFilename = projectFilename;
 	}
 }

@@ -3,55 +3,54 @@ package de.ludwig.finx.gui.controller;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 import de.ludwig.finx.gui.wizard.project.ProjectWizard;
 import de.ludwig.finx.gui.wizard.project.ProjectWizardBackingBean;
+import de.ludwig.jfxmodel.BindToBeanProperty;
 import de.ludwig.jfxmodel.Model;
+import de.ludwig.jfxmodel.SupportCombinedAware;
 
 /**
  * @author Daniel
  * 
  */
-public class ProjectListPane implements Initializable
+public class ProjectListPane implements Initializable, SupportCombinedAware
 {
 
 	@FXML
 	private VBox noProjectVBox;
 
+	@BindToBeanProperty(bindPropertyName = "items")
 	@FXML
-	private ScrollPane projects;
+	private ListView<ProjectBackingBean> projectsView;
 
-	/**
-	 * TODO dl i think we have to change this to a listview in order to bind a model-object TODO
-	 * binding to model
-	 */
-	@FXML
-	private VBox projectsBox;
+	private Model<ProjectListPaneBackingBean> model = new Model<>(this, new ProjectListPaneBackingBean());
 
-	private Model<ProjectListPaneBackingBean> model = new Model<>(this);
-
-	/**
-	 * 
-	 * @param modelObject
-	 *            TODO bad idea. Thats a component and so can be initiated by fxml...
-	 */
-	public ProjectListPane(ProjectListPaneBackingBean modelObject)
-	{
-
-		model.setModelObject(modelObject);
-		model.bind();
-	}
+	private BooleanBinding emptyBinding;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		noProjects();
-		projects.setContent(projectsBox);
+
+		projectsView.setCellFactory(new Callback<ListView<ProjectBackingBean>, ListCell<ProjectBackingBean>>() {
+			@Override
+			public ListCell<ProjectBackingBean> call(ListView<ProjectBackingBean> param)
+			{
+				return new ProjectCell();
+			}
+		});
+
+		model.bind();
 	}
 
 	@FXML
@@ -64,9 +63,7 @@ public class ProjectListPane implements Initializable
 			{
 				if (newValue) {
 					final ProjectWizardBackingBean modelObject = pw.modelObject();
-					final ProjectSummaryComponent psc = new ProjectSummaryComponent(modelObject.convert());
-					projectsBox.getChildren().add(psc);
-					ProjectListPane.this.projects();
+					projectsView.getItems().add(modelObject.convert());
 				}
 			}
 		});
@@ -76,12 +73,61 @@ public class ProjectListPane implements Initializable
 	private void noProjects()
 	{
 		noProjectVBox.setVisible(true);
-		projects.setVisible(false);
+		projectsView.setVisible(false);
 	}
 
 	private void projects()
 	{
 		noProjectVBox.setVisible(false);
-		projects.setVisible(true);
+		projectsView.setVisible(true);
+	}
+
+	@Override
+	public Model<?> getModel()
+	{
+		return model;
+	}
+
+	class ProjectCell extends ListCell<ProjectBackingBean>
+	{
+		@Override
+		protected void updateItem(ProjectBackingBean arg0, boolean empty)
+		{
+			super.updateItem(arg0, empty);
+			if (empty == false) {
+				final ProjectSummaryComponent psc = new ProjectSummaryComponent(arg0);
+				setGraphic(psc);
+			}
+		}
+
+		@Override
+		public void updateSelected(boolean arg0)
+		{
+			// NOOP not selectable
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.ludwig.jfxmodel.SupportCombinedAware#afterCombinedBinding()
+	 */
+	@Override
+	public void afterCombinedBinding()
+	{
+		emptyBinding = Bindings.isEmpty(model.getModelObject().projectsViewProperty());
+
+		emptyBinding.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			{
+				if (newValue) {
+					noProjects();
+				} else {
+					projects();
+				}
+			}
+		});
 	}
 }
