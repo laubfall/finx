@@ -1,4 +1,4 @@
-package de.ludwig.finx.gui.controller;
+package de.ludwig.finx.gui.component;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -40,11 +40,13 @@ class WorkingSetCell extends ListCell<WorkingSetBackingBean>
 
 	}
 
-	@Override
-	public void updateSelected(boolean arg0)
-	{
-		// NOOP Prevent this cell from beeing selectable
-	}
+	//
+	// @Override
+	// public void updateSelected(boolean arg0)
+	// {
+	// // NOOP Prevent this cell from beeing selectable
+	// // super.updateSelected(arg0);
+	// }
 
 	public void onDeletion(final WorkingSetBackingBean wsc)
 	{

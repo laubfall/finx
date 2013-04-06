@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.ludwig.finx.gui.controller.*?>
+<?import de.ludwig.finx.gui.component.*?>
 <?import java.lang.*?>
 <?import java.net.*?>
 <?import java.util.*?>

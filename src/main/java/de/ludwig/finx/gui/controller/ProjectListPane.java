@@ -5,14 +5,19 @@ import java.util.ResourceBundle;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+import de.ludwig.finx.gui.component.ProjectBackingBean;
+import de.ludwig.finx.gui.component.ProjectSummaryComponent;
 import de.ludwig.finx.gui.wizard.project.ProjectWizard;
 import de.ludwig.finx.gui.wizard.project.ProjectWizardBackingBean;
 import de.ludwig.jfxmodel.BindToBeanProperty;
@@ -49,6 +54,8 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 				return new ProjectCell();
 			}
 		});
+
+		projectsView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
 		model.bind();
 	}
@@ -97,6 +104,8 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 			if (empty == false) {
 				final ProjectSummaryComponent psc = new ProjectSummaryComponent(arg0);
 				setGraphic(psc);
+				System.out.println("ProjectListPane$ProjectCell: project count "
+						+ getListView().itemsProperty().get().size());
 			}
 		}
 
@@ -129,5 +138,12 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 				}
 			}
 		});
+	}
+
+	public ObjectProperty<MultipleSelectionModel<ProjectBackingBean>> projectsViewSelectionProperty()
+	{
+		final ObjectProperty<MultipleSelectionModel<ProjectBackingBean>> selectionModelProperty = projectsView
+				.selectionModelProperty();
+		return selectionModelProperty;
 	}
 }

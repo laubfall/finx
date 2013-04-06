@@ -16,8 +16,8 @@ import javafx.stage.DirectoryChooser;
 
 import org.apache.commons.lang3.StringUtils;
 
-import de.ludwig.finx.gui.controller.WorkingSetBackingBean;
-import de.ludwig.finx.gui.controller.WorkingSetOverviewComponent;
+import de.ludwig.finx.gui.component.WorkingSetBackingBean;
+import de.ludwig.finx.gui.component.WorkingSetOverviewComponent;
 import de.ludwig.finx.gui.wizard.StepValidationException;
 import de.ludwig.finx.gui.wizard.ValidationContext;
 import de.ludwig.finx.gui.wizard.WizardStep;

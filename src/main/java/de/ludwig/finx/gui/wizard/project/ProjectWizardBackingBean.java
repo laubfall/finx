@@ -1,6 +1,6 @@
 package de.ludwig.finx.gui.wizard.project;
 
-import de.ludwig.finx.gui.controller.ProjectBackingBean;
+import de.ludwig.finx.gui.component.ProjectBackingBean;
 
 /**
  * @author Daniel

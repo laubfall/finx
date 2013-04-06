@@ -2,11 +2,17 @@ package de.ludwig.finx.gui.controller;
 
 import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
+import de.ludwig.finx.gui.component.I18nViewRow;
+import de.ludwig.finx.gui.component.ProjectBackingBean;
+import de.ludwig.finx.gui.component.WorkingSetBackingBean;
 import de.ludwig.finx.gui.popup.AppSettingsPopup;
+import de.ludwig.finx.jfx.event.SelectListItemEvent;
 import de.ludwig.finx.workspace.ProjInfo;
 import de.ludwig.finx.workspace.Project;
 import de.ludwig.finx.workspace.ProjectsInfo;
@@ -23,7 +29,8 @@ public class AppLayoutAnchorPane extends BaseController
 	@FXML
 	private MenuItem menuItemClose;
 
-	// beyond this point: nested controllers:
+	@FXML
+	private TableView<I18nViewRow> i18nView;
 
 	/**
 	 * the include has the id projectOverviewPane. If you name this field like the id, you will run
@@ -43,6 +50,23 @@ public class AppLayoutAnchorPane extends BaseController
 		super(AppLayoutAnchorPane.class.getResource("/de/ludwig/finx/gui/fxml/AppLayoutAnchorPane.fxml"));
 
 		model.bind();
+
+		getContent().addEventHandler(SelectListItemEvent.SELECT, new EventHandler<Event>() {
+
+			@Override
+			public void handle(Event event)
+			{
+				System.out.println("table received item select");
+				SelectListItemEvent<WorkingSetBackingBean> ev = (SelectListItemEvent<WorkingSetBackingBean>) event;
+
+			}
+		});
+	}
+
+	@FXML
+	private void mouseClickedCapture(Event e)
+	{
+		System.out.println("clicked");
 	}
 
 	@FXML

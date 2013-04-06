@@ -1,4 +1,4 @@
-package de.ludwig.finx.gui.controller;
+package de.ludwig.finx.gui.component;
 
 import java.io.File;
 import java.util.ArrayList;

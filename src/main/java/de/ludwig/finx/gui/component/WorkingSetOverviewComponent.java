@@ -1,4 +1,4 @@
-package de.ludwig.finx.gui.controller;
+package de.ludwig.finx.gui.component;
 
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -37,5 +37,6 @@ public class WorkingSetOverviewComponent extends ListView<WorkingSetBackingBean>
 				};
 			}
 		});
+
 	}
 }

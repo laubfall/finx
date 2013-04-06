@@ -3,6 +3,8 @@ package de.ludwig.finx.gui.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.ludwig.finx.gui.component.ProjectBackingBean;
+
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 
