@@ -16,7 +16,7 @@ import javafx.scene.layout.VBox;
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.gui.wizard.project.WorkingSetWizard;
 import de.ludwig.finx.gui.wizard.project.WorkingSetWizardBackingBean;
-import de.ludwig.finx.jfx.event.SelectListItemEvent;
+import de.ludwig.finx.jfx.event.SelectWorkingSetEvent;
 import de.ludwig.jfxmodel.BindToBeanProperty;
 import de.ludwig.jfxmodel.Model;
 import de.ludwig.jfxmodel.SupportCombinedAware;
@@ -64,8 +64,7 @@ public class ProjectSummaryComponent extends VBox implements SupportCombinedAwar
 					public void changed(ObservableValue<? extends WorkingSetBackingBean> observable,
 							WorkingSetBackingBean oldValue, WorkingSetBackingBean newValue)
 					{
-						Event.fireEvent(ProjectSummaryComponent.this, new SelectListItemEvent<WorkingSetBackingBean>(
-								newValue));
+						Event.fireEvent(ProjectSummaryComponent.this, new SelectWorkingSetEvent(newValue));
 					}
 				});
 	}
@@ -91,15 +90,6 @@ public class ProjectSummaryComponent extends VBox implements SupportCombinedAwar
 	public void afterCombinedBinding()
 	{
 		// bindSelectionModel();
-	}
-
-	private void bindSelectionModel()
-	{
-		// workingSetsContainer.selectionModelProperty().bindBidirectional(
-		// model.getModelObject().workingSetSelectionProperty());
-		// workingSetsContainer.selectionModelProperty().get().selectedItemProperty().
-		// model.getModelObject().selected
-		// .bind(workingSetsContainer.selectionModelProperty().get().selectedItemProperty());
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import javafx.event.EventType;
  * @author Daniel
  * 
  */
-public class SelectListItemEvent<T> extends Event
+public abstract class SelectListItemEvent<T> extends Event
 {
 	public static final EventType<SelectListItemEvent<?>> SELECT = new EventType<>("select");
 

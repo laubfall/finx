@@ -13,11 +13,11 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 import de.ludwig.finx.gui.component.ProjectBackingBean;
 import de.ludwig.finx.gui.component.ProjectSummaryComponent;
+import de.ludwig.finx.gui.component.accordion.AccordionTitledPaneBackingBean;
+import de.ludwig.finx.gui.component.accordion.ModelBindedAccordion;
 import de.ludwig.finx.gui.wizard.project.ProjectWizard;
 import de.ludwig.finx.gui.wizard.project.ProjectWizardBackingBean;
 import de.ludwig.jfxmodel.BindToBeanProperty;
@@ -38,6 +38,8 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 	@FXML
 	private ListView<ProjectBackingBean> projectsView;
 
+	private ModelBindedAccordion<AccordionTitledPaneBackingBean<ProjectBackingBean>, ProjectBackingBean> projectsView2;
+
 	private Model<ProjectListPaneBackingBean> model = new Model<>(this, new ProjectListPaneBackingBean());
 
 	private BooleanBinding emptyBinding;
@@ -47,15 +49,18 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 	{
 		noProjects();
 
-		projectsView.setCellFactory(new Callback<ListView<ProjectBackingBean>, ListCell<ProjectBackingBean>>() {
-			@Override
-			public ListCell<ProjectBackingBean> call(ListView<ProjectBackingBean> param)
-			{
-				return new ProjectCell();
-			}
-		});
+		// projectsView.setCellFactory(new Callback<ListView<ProjectBackingBean>,
+		// ListCell<ProjectBackingBean>>() {
+		// @Override
+		// public ListCell<ProjectBackingBean> call(ListView<ProjectBackingBean> param)
+		// {
+		// return new ProjectCell();
+		// }
+		// });
+		//
+		// projectsView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-		projectsView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		// projectsView2.setR
 
 		model.bind();
 	}

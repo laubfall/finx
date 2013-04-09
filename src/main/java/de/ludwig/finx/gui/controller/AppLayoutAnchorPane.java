@@ -1,5 +1,6 @@
 package de.ludwig.finx.gui.controller;
 
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -12,7 +13,10 @@ import de.ludwig.finx.gui.component.I18nViewRow;
 import de.ludwig.finx.gui.component.ProjectBackingBean;
 import de.ludwig.finx.gui.component.WorkingSetBackingBean;
 import de.ludwig.finx.gui.popup.AppSettingsPopup;
+import de.ludwig.finx.io.PropertiesReader;
+import de.ludwig.finx.io.RootNode;
 import de.ludwig.finx.jfx.event.SelectListItemEvent;
+import de.ludwig.finx.jfx.event.SelectWorkingSetEvent;
 import de.ludwig.finx.workspace.ProjInfo;
 import de.ludwig.finx.workspace.Project;
 import de.ludwig.finx.workspace.ProjectsInfo;
@@ -51,22 +55,21 @@ public class AppLayoutAnchorPane extends BaseController
 
 		model.bind();
 
+		// Event-Handler for updating the TableView if user selects another WorkingSet
 		getContent().addEventHandler(SelectListItemEvent.SELECT, new EventHandler<Event>() {
-
 			@Override
 			public void handle(Event event)
 			{
-				System.out.println("table received item select");
-				SelectListItemEvent<WorkingSetBackingBean> ev = (SelectListItemEvent<WorkingSetBackingBean>) event;
-
+				final SelectWorkingSetEvent ev = (SelectWorkingSetEvent) event;
+				final WorkingSetBackingBean ws = ev.getSelectedItem();
+				final PropertiesReader pr = new PropertiesReader(ws.getPropDir(), ws.getPostfix(), ws.getPrefix());
+				final RootNode nodeView = pr.createNodeView();
+				I18nViewHelper.addColumns(i18nView, nodeView);
+				final ObservableList<I18nViewRow> viewData = I18nViewHelper.createViewData(nodeView);
+				i18nView.getItems().clear();
+				i18nView.itemsProperty().set(viewData);
 			}
 		});
-	}
-
-	@FXML
-	private void mouseClickedCapture(Event e)
-	{
-		System.out.println("clicked");
 	}
 
 	@FXML
