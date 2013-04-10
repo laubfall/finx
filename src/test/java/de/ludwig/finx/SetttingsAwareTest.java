@@ -4,6 +4,7 @@ import org.junit.After;
 
 import de.ludwig.finx.io.PropertiesWriter;
 import de.ludwig.finx.io.PropertyFile;
+import de.ludwig.finx.settings.AppSettings;
 import de.ludwig.finx.settings.SettingsDaoImpl;
 
 /**
@@ -19,5 +20,6 @@ public abstract class SetttingsAwareTest
 	{
 		SettingsDaoImpl.instance().init(PropertiesWriter.class);
 		SettingsDaoImpl.instance().init(PropertyFile.class);
+		SettingsDaoImpl.instance().init(AppSettings.class);
 	}
 }

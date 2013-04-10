@@ -1,12 +1,9 @@
 package de.ludwig.finx.gui.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import javafx.beans.property.SimpleObjectProperty;
 import de.ludwig.finx.gui.component.ProjectBackingBean;
-
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
+import de.ludwig.finx.gui.component.accordion.AccordionBackingBean;
+import de.ludwig.finx.gui.component.accordion.AccordionTitledPaneBackingBean;
 
 /**
  * @author Daniel
@@ -14,28 +11,28 @@ import javafx.collections.FXCollections;
  */
 public class ProjectListPaneBackingBean
 {
-	private SimpleListProperty<ProjectBackingBean> projectsView = new SimpleListProperty<>(
-			FXCollections.observableArrayList(new ArrayList<ProjectBackingBean>()));
+	private SimpleObjectProperty<AccordionBackingBean<AccordionTitledPaneBackingBean<ProjectBackingBean>>> projectsView2 = new SimpleObjectProperty<>(
+			new AccordionBackingBean<AccordionTitledPaneBackingBean<ProjectBackingBean>>());
 
 	/**
-	 * @return the projectsBox
+	 * @return the projectsView2
 	 */
-	public List<ProjectBackingBean> getProjectsView()
+	public AccordionBackingBean<AccordionTitledPaneBackingBean<ProjectBackingBean>> getProjectsView2()
 	{
-		return projectsView.get();
+		return projectsView2.get();
 	}
 
 	/**
-	 * @param projectsBox
-	 *            the projectsBox to set
+	 * @param projectsView2
+	 *            the projectsView2 to set
 	 */
-	public void setProjectsView(List<ProjectBackingBean> projectsView)
+	public void setProjectsView2(AccordionBackingBean<AccordionTitledPaneBackingBean<ProjectBackingBean>> projectsView2)
 	{
-		this.projectsView.addAll(projectsView);
+		this.projectsView2.set(projectsView2);
 	}
 
-	public SimpleListProperty<ProjectBackingBean> projectsViewProperty()
+	public SimpleObjectProperty<AccordionBackingBean<AccordionTitledPaneBackingBean<ProjectBackingBean>>> projectsView2Property()
 	{
-		return projectsView;
+		return projectsView2;
 	}
 }

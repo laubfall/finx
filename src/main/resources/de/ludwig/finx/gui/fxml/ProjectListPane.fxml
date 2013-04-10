@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.ludwig.finx.gui.component.accordion.*?>
+<?import de.ludwig.finx.gui.component.accordion.ModelBindedAccordion?>
 <?import de.ludwig.finx.gui.controller.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
@@ -11,7 +12,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 <?scenebuilder-classpath-element ../../../../../../../../target/classes?>
-<?import de.ludwig.finx.gui.component.accordion.ModelBindedAccordion?>
+<?scenebuilder-classpath-element ../../../../../../../../../modelfx/target/classes?>
 
 <AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="396.0" prefWidth="203.0" xmlns:fx="http://javafx.com/fxml" fx:controller="de.ludwig.finx.gui.controller.ProjectListPane">
   <children>
@@ -33,15 +34,13 @@
             <Insets />
           </VBox.margin>
         </ToolBar>
-        <StackPane maxWidth="1.7976931348623157E308" prefHeight="150.0" VBox.vgrow="ALWAYS">
+        <StackPane fx:id="projectListContent" maxWidth="1.7976931348623157E308" prefHeight="150.0" VBox.vgrow="ALWAYS">
           <children>
             <VBox fx:id="noProjectVBox" alignment="CENTER" maxHeight="1.7976931348623157E308" prefWidth="100.0">
               <children>
                 <Text fx:id="noProjectText" strokeType="OUTSIDE" strokeWidth="0.0" text="No Project!" />
               </children>
             </VBox>
-<!--             <ListView fx:id="projectsView" prefHeight="200.0" prefWidth="200.0" /> -->
-			<ModelBindedAccordion fx:id="projectsView" prefHeight="200.0" prefWidth="200.0" />
           </children>
         </StackPane>
       </children>

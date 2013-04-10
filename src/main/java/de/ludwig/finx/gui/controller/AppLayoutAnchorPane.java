@@ -1,5 +1,8 @@
 package de.ludwig.finx.gui.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -9,9 +12,13 @@ import javafx.scene.Group;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
+
+import org.apache.log4j.Logger;
+
 import de.ludwig.finx.gui.component.I18nViewRow;
 import de.ludwig.finx.gui.component.ProjectBackingBean;
 import de.ludwig.finx.gui.component.WorkingSetBackingBean;
+import de.ludwig.finx.gui.component.accordion.AccordionTitledPaneBackingBean;
 import de.ludwig.finx.gui.popup.AppSettingsPopup;
 import de.ludwig.finx.io.PropertiesReader;
 import de.ludwig.finx.io.RootNode;
@@ -49,6 +56,8 @@ public class AppLayoutAnchorPane extends BaseController
 	private Model<AppLayoutAnchorPaneBackingBean> model = new Model<AppLayoutAnchorPaneBackingBean>(this,
 			new AppLayoutAnchorPaneBackingBean());
 
+	private static final Logger LOG = Logger.getLogger(AppLayoutAnchorPane.class);
+
 	public AppLayoutAnchorPane()
 	{
 		super(AppLayoutAnchorPane.class.getResource("/de/ludwig/finx/gui/fxml/AppLayoutAnchorPane.fxml"));
@@ -64,6 +73,7 @@ public class AppLayoutAnchorPane extends BaseController
 				final WorkingSetBackingBean ws = ev.getSelectedItem();
 				final PropertiesReader pr = new PropertiesReader(ws.getPropDir(), ws.getPostfix(), ws.getPrefix());
 				final RootNode nodeView = pr.createNodeView();
+				// i18nView.getColumns().clear();
 				I18nViewHelper.addColumns(i18nView, nodeView);
 				final ObservableList<I18nViewRow> viewData = I18nViewHelper.createViewData(nodeView);
 				i18nView.getItems().clear();
@@ -77,13 +87,17 @@ public class AppLayoutAnchorPane extends BaseController
 	{
 		final WorkspacePersistencyDao pers = new WorkspacePersistencyDao();
 		final ProjectsInfo loadInfo = pers.loadInfo();
-		model.getModelObject().getProjectOverviewPaneController().getProjectsView().clear();
+		model.getModelObject().getProjectOverviewPaneController().getProjectsView2().getItems().clear();
 
+		final List<AccordionTitledPaneBackingBean<ProjectBackingBean>> projects = new ArrayList<>();
 		for (final ProjInfo pi : loadInfo.getInfo()) {
 			final Project project = pers.loadProjectBySaveFileName(pi.getProjectSaveFileName());
 			final ProjectBackingBean pbb = new ProjectBackingBean(project);
-			model.getModelObject().getProjectOverviewPaneController().getProjectsView().add(pbb);
+			projects.add(new AccordionTitledPaneBackingBean<ProjectBackingBean>(pbb));
 		}
+
+		model.getModelObject().getProjectOverviewPaneController().getProjectsView2().setItems(projects);
+		LOG.debug(String.format("loaded %d projects", projects.size()));
 	}
 
 	@FXML
@@ -93,15 +107,18 @@ public class AppLayoutAnchorPane extends BaseController
 
 		final ProjectListPaneBackingBean projectList = model.getModelObject().getProjectOverviewPaneController();
 
-		for (final ProjectBackingBean projBackingBean : projectList.getProjectsView()) {
-			final Project project = projBackingBean.convert();
+		List<AccordionTitledPaneBackingBean<ProjectBackingBean>> items = projectList.getProjectsView2().getItems();
+		for (final AccordionTitledPaneBackingBean<ProjectBackingBean> projBackingBean : items) {
+			final ProjectBackingBean pbb = projBackingBean.getTitledPaneContentModelObject();
+			final Project project = pbb.convert();
 
-			if (projBackingBean.getProjectFilename() != null) {
-				final Project persisted = pers.loadProjectBySaveFileName(projBackingBean.getProjectFilename());
+			if (pbb.getProjectFilename() != null) {
+				final Project persisted = pers.loadProjectBySaveFileName(pbb.getProjectFilename());
 				pers.updateProject(project, persisted);
 			} else {
 				pers.saveProject(project);
 			}
+			LOG.debug(String.format("saved project %s due to gui event", pbb.getText()));
 		}
 	}
 

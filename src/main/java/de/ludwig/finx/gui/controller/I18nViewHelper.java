@@ -1,8 +1,10 @@
 package de.ludwig.finx.gui.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -40,7 +42,7 @@ public class I18nViewHelper
 	 */
 	public static void addColumns(final TableView<I18nViewRow> i18nView, final RootNode root)
 	{
-		TableColumn<I18nViewRow, String> keyColumn = new TableColumn<>();
+		TableColumn<I18nViewRow, String> keyColumn = new TableColumn<>("key");
 		keyColumn.setCellValueFactory(new PropertyValueFactory<I18nViewRow, String>("key"));
 
 		final Set<TableColumn<I18nViewRow, String>> cols = new HashSet<>();
@@ -48,12 +50,12 @@ public class I18nViewHelper
 
 		final Set<Language> existingLanguages = root.getExistingLanguages();
 		for (final Language lang : existingLanguages) {
-			TableColumn<I18nViewRow, String> langColumn = new TableColumn<>();
+			TableColumn<I18nViewRow, String> langColumn = new TableColumn<>(lang.language());
 			langColumn.setCellValueFactory(new LanguageCellValueFactory(lang));
 			cols.add(langColumn);
 		}
 
-		i18nView.getColumns().addAll(cols);
+		i18nView.getColumns().setAll(cols);
 	}
 
 	/**
@@ -64,18 +66,28 @@ public class I18nViewHelper
 	 */
 	public static ObservableList<I18nViewRow> createViewData(final RootNode root)
 	{
-		final ObservableList<I18nViewRow> data = FXCollections.observableArrayList(new ArrayList<I18nViewRow>());
-		final List<I18nNode> all = root.flatten();
-		final Set<Language> existingLanguages = root.getExistingLanguages();
+		final List<I18nNode> rootNodes = root.getRootNodes();
 
-		for (final I18nNode node : all) {
-			final I18nViewRow row = new I18nViewRow();
-			row.setKey(node.key());
+		final Set<Language> existingLanguages = root.getExistingLanguages();
+		final Map<String, I18nViewRow> raw = new HashMap<>();
+		for (I18nNode rn : rootNodes) {
+
 			for (Language lang : existingLanguages) {
-				row.getTranslations().put(lang, new SimpleStringProperty(node.keyValue(lang)));
+				final List<I18nNode> contentNodes = rn.flattenToNonEmpty(lang);
+				for (I18nNode cn : contentNodes) {
+					String key = cn.key();
+					if (raw.containsKey(key) == false) {
+						final I18nViewRow row = new I18nViewRow();
+						row.setKey(cn.key());
+						raw.put(key, row);
+					}
+					final I18nViewRow row = raw.get(key);
+					row.getTranslations().put(lang, new SimpleStringProperty(cn.value(lang)));
+				}
 			}
 		}
-
+		final ObservableList<I18nViewRow> data = FXCollections.observableArrayList(new ArrayList<I18nViewRow>());
+		data.addAll(raw.values());
 		return data;
 	}
 

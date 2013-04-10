@@ -7,12 +7,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.ludwig.finx.ApplicationCodingException;
+import de.ludwig.finx.SetttingsAwareTest;
 
 /**
+ * 
+ * @extends SettingsAwareTest cause the PropertiesWriter failed in infinitest. I'm not sure about
+ *          this, because BlockTest does not change any settings. But now PropertiesWriterTest
+ *          succeeds in infinitest
+ * 
  * @author Daniel
  * 
  */
-public class BlockTest
+public class BlockTest extends SetttingsAwareTest
 {
 	@Test
 	public void insert()

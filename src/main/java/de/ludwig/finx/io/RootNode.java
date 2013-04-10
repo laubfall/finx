@@ -24,7 +24,10 @@ public class RootNode
 	private Logger log = Logger.getLogger(RootNode.class);
 
 	/**
-	 * de.ludwig.blah=jklfd page.title=ckjkdf
+	 * <code>
+	 * de.ludwig.blah=jklfd 
+	 * page.title=ckjkdf
+	 * </code>
 	 * 
 	 * dann wären hier zwei I18nNodes mit den keyParts de und page drin
 	 */

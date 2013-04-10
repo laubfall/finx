@@ -18,7 +18,7 @@ import de.ludwig.finx.workspace.WorkingSet;
  */
 public class ProjectBackingBean
 {
-	private SimpleStringProperty projectTitledPane = new SimpleStringProperty();
+	private SimpleStringProperty text = new SimpleStringProperty();
 
 	private SimpleListProperty<WorkingSetBackingBean> workingSetsContainer = new SimpleListProperty<>(
 			FXCollections.observableArrayList(new ArrayList<WorkingSetBackingBean>()));
@@ -48,7 +48,7 @@ public class ProjectBackingBean
 		}
 
 		projectFilename = project.getSaveFileName();
-		projectTitledPane.set(project.getName());
+		text.set(project.getName());
 		final Set<WorkingSet> workingSets = project.getWorkingSets();
 		for (final WorkingSet ws : workingSets) {
 			workingSetsContainer.add(new WorkingSetBackingBean(ws));
@@ -57,7 +57,7 @@ public class ProjectBackingBean
 
 	public Project convert()
 	{
-		final Project proj = new Project(projectTitledPane.get());
+		final Project proj = new Project(text.get());
 		for (WorkingSetBackingBean ws : workingSetsContainer.get()) {
 			final WorkingSet pws = proj.addWorkingSet(ws.getPropDir(), ws.getSourceDirs().toArray(new File[] {}));
 			pws.setI18nPropertiesFilePostfix(ws.getPostfix());
@@ -69,23 +69,23 @@ public class ProjectBackingBean
 	/**
 	 * @return the name
 	 */
-	public String getProjectTitledPane()
+	public String getText()
 	{
-		return projectTitledPane.get();
+		return text.get();
 	}
 
 	/**
 	 * @param projectName
 	 *            the name to set
 	 */
-	public void setProjectTitledPane(String projectTitledPane)
+	public void setText(String text)
 	{
-		this.projectTitledPane.set(projectTitledPane);
+		this.text.set(text);
 	}
 
-	public SimpleStringProperty projectTitledPaneProperty()
+	public SimpleStringProperty textProperty()
 	{
-		return projectTitledPane;
+		return text;
 	}
 
 	/**

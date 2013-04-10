@@ -1,8 +1,6 @@
 package de.ludwig.finx.gui.component;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -10,27 +8,23 @@ import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.control.TitledPane;
-import javafx.scene.layout.VBox;
 import de.ludwig.finx.ApplicationCodingException;
 import de.ludwig.finx.gui.wizard.project.WorkingSetWizard;
 import de.ludwig.finx.gui.wizard.project.WorkingSetWizardBackingBean;
 import de.ludwig.finx.jfx.event.SelectWorkingSetEvent;
+import de.ludwig.jfxmodel.BindInheritedToBeanProperty;
 import de.ludwig.jfxmodel.BindToBeanProperty;
 import de.ludwig.jfxmodel.Model;
-import de.ludwig.jfxmodel.SupportCombinedAware;
+import de.ludwig.jfxmodel.SupportCombined;
 
 /**
  * @author Daniel
  * 
  */
-public class ProjectSummaryComponent extends VBox implements SupportCombinedAware, Initializable
+@BindInheritedToBeanProperty(bindings = { @BindToBeanProperty(bindInheritedProperty = "text") })
+public class ProjectSummaryComponent extends TitledPane implements SupportCombined
 {
-	@BindToBeanProperty(bindPropertyName = "text")
-	@FXML
-	private TitledPane projectTitledPane;
-
 	@BindToBeanProperty(bindPropertyName = "items")
 	@FXML
 	private WorkingSetOverviewComponent workingSetsContainer;
@@ -84,18 +78,5 @@ public class ProjectSummaryComponent extends VBox implements SupportCombinedAwar
 	public Model<?> getModel()
 	{
 		return model;
-	}
-
-	@Override
-	public void afterCombinedBinding()
-	{
-		// bindSelectionModel();
-	}
-
-	@Override
-	public void initialize(URL location, ResourceBundle resources)
-	{
-		// TODO Results in NPE if you click in a workingSetComponent
-		// bindSelectionModel();
 	}
 }

@@ -5,14 +5,13 @@ import java.util.ResourceBundle;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.TitledPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import de.ludwig.finx.gui.component.ProjectBackingBean;
 import de.ludwig.finx.gui.component.ProjectSummaryComponent;
@@ -34,11 +33,19 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 	@FXML
 	private VBox noProjectVBox;
 
-	@BindToBeanProperty(bindPropertyName = "items")
 	@FXML
-	private ListView<ProjectBackingBean> projectsView;
+	private StackPane projectListContent;
 
-	private ModelBindedAccordion<AccordionTitledPaneBackingBean<ProjectBackingBean>, ProjectBackingBean> projectsView2;
+	@BindToBeanProperty
+	private ModelBindedAccordion<AccordionTitledPaneBackingBean<ProjectBackingBean>, ProjectBackingBean> projectsView2 = new ModelBindedAccordion<>(
+			new ModelBindedAccordion.TitledPaneFactory<ProjectBackingBean>() {
+
+				@Override
+				public TitledPane content(ProjectBackingBean modelObject)
+				{
+					return new ProjectSummaryComponent(modelObject);
+				}
+			});
 
 	private Model<ProjectListPaneBackingBean> model = new Model<>(this, new ProjectListPaneBackingBean());
 
@@ -49,18 +56,7 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 	{
 		noProjects();
 
-		// projectsView.setCellFactory(new Callback<ListView<ProjectBackingBean>,
-		// ListCell<ProjectBackingBean>>() {
-		// @Override
-		// public ListCell<ProjectBackingBean> call(ListView<ProjectBackingBean> param)
-		// {
-		// return new ProjectCell();
-		// }
-		// });
-		//
-		// projectsView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-
-		// projectsView2.setR
+		projectListContent.getChildren().add(projectsView2);
 
 		model.bind();
 	}
@@ -75,7 +71,7 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 			{
 				if (newValue) {
 					final ProjectWizardBackingBean modelObject = pw.modelObject();
-					projectsView.getItems().add(modelObject.convert());
+					// projectsView.getItems().add(modelObject.convert());
 				}
 			}
 		});
@@ -85,13 +81,13 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 	private void noProjects()
 	{
 		noProjectVBox.setVisible(true);
-		projectsView.setVisible(false);
+		projectsView2.setVisible(false);
 	}
 
 	private void projects()
 	{
 		noProjectVBox.setVisible(false);
-		projectsView.setVisible(true);
+		projectsView2.setVisible(true);
 	}
 
 	@Override
@@ -130,7 +126,7 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 	@Override
 	public void afterCombinedBinding()
 	{
-		emptyBinding = Bindings.isEmpty(model.getModelObject().projectsViewProperty());
+		emptyBinding = Bindings.isEmpty(model.getModelObject().projectsView2Property().get().itemsProperty());
 
 		emptyBinding.addListener(new ChangeListener<Boolean>() {
 			@Override
@@ -143,12 +139,5 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 				}
 			}
 		});
-	}
-
-	public ObjectProperty<MultipleSelectionModel<ProjectBackingBean>> projectsViewSelectionProperty()
-	{
-		final ObjectProperty<MultipleSelectionModel<ProjectBackingBean>> selectionModelProperty = projectsView
-				.selectionModelProperty();
-		return selectionModelProperty;
 	}
 }

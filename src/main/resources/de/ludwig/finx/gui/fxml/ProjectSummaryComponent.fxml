@@ -12,8 +12,8 @@
 <?import javafx.scene.text.*?>
 <?scenebuilder-classpath-element ../../../../../../../../target/classes?>
 
-<fx:root type="javafx.scene.layout.VBox" fx:id="projectSummary" maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefWidth="317.0" spacing="1.0" xmlns:fx="http://javafx.com/fxml">
-  <TitledPane fx:id="projectTitledPane" animated="false" maxHeight="-Infinity" text="Project name" VBox.vgrow="ALWAYS">
+
+<fx:root type="javafx.scene.control.TitledPane" fx:id="projectSummary" maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefWidth="317.0" xmlns:fx="http://javafx.com/fxml">
     <content>
       <AnchorPane id="Content" maxWidth="1.7976931348623157E308" minWidth="0.0">
         <children>
@@ -28,7 +28,6 @@
         </items>
       </MenuButton>
     </graphic>
-  </TitledPane>
   <stylesheets>
     <URL value="@../css/projectSummaryComponent.css" />
   </stylesheets>
