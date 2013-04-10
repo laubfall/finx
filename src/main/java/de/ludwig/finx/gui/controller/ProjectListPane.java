@@ -21,6 +21,7 @@ import de.ludwig.finx.gui.component.accordion.AccordionTitledPaneBackingBean;
 import de.ludwig.finx.gui.component.accordion.ModelBindedAccordion;
 import de.ludwig.finx.gui.wizard.project.ProjectWizard;
 import de.ludwig.finx.gui.wizard.project.ProjectWizardBackingBean;
+import de.ludwig.finx.workspace.WorkspaceDao;
 import de.ludwig.jfxmodel.BindToBeanProperty;
 import de.ludwig.jfxmodel.Model;
 import de.ludwig.jfxmodel.SupportCombinedAware;
@@ -55,6 +56,8 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 
 	private BooleanBinding emptyBinding;
 
+	private WorkspaceDao workspaceDao = WorkspaceDao.instance();
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
@@ -67,7 +70,8 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 			public void changed(ObservableValue<? extends TitledPane> observable, TitledPane oldValue,
 					TitledPane newValue)
 			{
-
+				// workspaceDao.activateProject(newActive)
+				// workspaceDao.startMonitorion
 			}
 		});
 

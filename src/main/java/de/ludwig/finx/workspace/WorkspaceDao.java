@@ -65,12 +65,54 @@ public class WorkspaceDao
 	}
 
 	/**
+	 * Starts the monitoring for the WorkingSets of the active project. Does nothing if no Project
+	 * is activated.
+	 */
+	public void startMonitoring()
+	{
+		if (activeProject() == null)
+			return;
+
+		for (WorkingSetMonitoring wsm : wsMonitorings.values()) {
+			wsm.getMonitoring().startMonitoring();
+		}
+	}
+
+	/**
+	 * necessary if the only existing project is going to be deleted. Stops monitoring of every
+	 * workingset. Set activeProject to null
+	 */
+	public void deactivateProject()
+	{
+
+	}
+
+	public void addWorkingSet(WorkingSet ws)
+	{
+
+	}
+
+	public void deleteWorkingSet(WorkingSet ws)
+	{
+
+	}
+
+	/**
+	 * 
+	 * @param ws
+	 */
+	public void selectWorkingSet(WorkingSet ws)
+	{
+
+	}
+
+	/**
 	 * Create monitoring for the given workingSet
 	 * 
 	 * @param ws
 	 * @return the monitoring object instance
 	 */
-	public WorkingSetMonitoring createMonitoring(final WorkingSet ws)
+	WorkingSetMonitoring createMonitoring(final WorkingSet ws)
 	{
 		if (activeProject == null) {
 			throw new ApplicationException("there is no active project");

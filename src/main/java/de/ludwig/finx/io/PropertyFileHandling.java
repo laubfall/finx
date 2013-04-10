@@ -88,9 +88,8 @@ public class PropertyFileHandling
 	/**
 	 * "Serialize" the hole node structure to the property files
 	 * 
-	 * @param nodeStructure
 	 */
-	public void nodeStructureToFiles(final RootNode nodeStructure)
+	public void nodeStructureToFiles()
 	{
 
 	}
