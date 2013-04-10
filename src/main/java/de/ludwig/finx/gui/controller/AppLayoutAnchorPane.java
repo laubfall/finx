@@ -108,6 +108,7 @@ public class AppLayoutAnchorPane extends BaseController
 		final ProjectListPaneBackingBean projectList = model.getModelObject().getProjectOverviewPaneController();
 
 		List<AccordionTitledPaneBackingBean<ProjectBackingBean>> items = projectList.getProjectsView2().getItems();
+		LOG.debug(String.format("saving %n projects due to gui event", items.size()));
 		for (final AccordionTitledPaneBackingBean<ProjectBackingBean> projBackingBean : items) {
 			final ProjectBackingBean pbb = projBackingBean.getTitledPaneContentModelObject();
 			final Project project = pbb.convert();

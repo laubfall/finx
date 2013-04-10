@@ -80,7 +80,12 @@ public class AppSettingsPane extends BaseController
 	private void changeSaveDir(Event event)
 	{
 		final DirectoryChooser dc = new DirectoryChooser();
-		dc.setInitialDirectory(AppSettings.projectSaveDir.setting());
+
+		final File prjSaveDir = AppSettings.projectSaveDir.setting();
+		if (prjSaveDir.exists()) { // possible because not on every system where finx runs exists
+									// the path given by initial settings
+			dc.setInitialDirectory(AppSettings.projectSaveDir.setting());
+		}
 		final File selectedDir = dc.showDialog(null);
 		if (selectedDir == null) {
 			return;

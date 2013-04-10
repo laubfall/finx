@@ -9,10 +9,12 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
+import org.apache.log4j.Logger;
+
 import de.ludwig.finx.gui.component.ProjectBackingBean;
 import de.ludwig.finx.gui.component.ProjectSummaryComponent;
 import de.ludwig.finx.gui.component.accordion.AccordionTitledPaneBackingBean;
@@ -35,6 +37,8 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 
 	@FXML
 	private StackPane projectListContent;
+
+	private static final Logger LOG = Logger.getLogger(ProjectListPane.class);
 
 	@BindToBeanProperty
 	private ModelBindedAccordion<AccordionTitledPaneBackingBean<ProjectBackingBean>, ProjectBackingBean> projectsView2 = new ModelBindedAccordion<>(
@@ -71,7 +75,8 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 			{
 				if (newValue) {
 					final ProjectWizardBackingBean modelObject = pw.modelObject();
-					// projectsView.getItems().add(modelObject.convert());
+					projectsView2.getItems().add(
+							new AccordionTitledPaneBackingBean<ProjectBackingBean>(modelObject.convert()));
 				}
 			}
 		});
@@ -96,28 +101,6 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 		return model;
 	}
 
-	class ProjectCell extends ListCell<ProjectBackingBean>
-	{
-		@Override
-		protected void updateItem(ProjectBackingBean arg0, boolean empty)
-		{
-			super.updateItem(arg0, empty);
-			if (empty == false) {
-				final ProjectSummaryComponent psc = new ProjectSummaryComponent(arg0);
-				setGraphic(psc);
-				System.out.println("ProjectListPane$ProjectCell: project count "
-						+ getListView().itemsProperty().get().size());
-			}
-		}
-
-		@Override
-		public void updateSelected(boolean arg0)
-		{
-			// NOOP not selectable
-		}
-
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -126,7 +109,7 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 	@Override
 	public void afterCombinedBinding()
 	{
-		emptyBinding = Bindings.isEmpty(model.getModelObject().projectsView2Property().get().itemsProperty());
+		emptyBinding = Bindings.isEmpty(projectsView2.itemsProperty());
 
 		emptyBinding.addListener(new ChangeListener<Boolean>() {
 			@Override
@@ -134,8 +117,10 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 			{
 				if (newValue) {
 					noProjects();
+					LOG.debug("projectlist changelistener hides projectview");
 				} else {
 					projects();
+					LOG.debug("projectlist changelistener shows projectview");
 				}
 			}
 		});
