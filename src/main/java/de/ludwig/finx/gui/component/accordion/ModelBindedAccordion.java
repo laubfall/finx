@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 
 import de.ludwig.jfxmodel.BindToBeanProperty;
 import de.ludwig.jfxmodel.Model;
-import de.ludwig.jfxmodel.SupportCombinedAware;
+import de.ludwig.jfxmodel.SupportCombined;
 
 /**
  * Accordion that supports binding of a backing-bean via modelfx.
@@ -30,7 +30,7 @@ import de.ludwig.jfxmodel.SupportCombinedAware;
  *            area of the titled-pane
  */
 public class ModelBindedAccordion<T extends AccordionTitledPaneBackingBean<R>, R> extends Accordion implements
-		SupportCombinedAware
+		SupportCombined
 {
 
 	@BindToBeanProperty
@@ -119,17 +119,5 @@ public class ModelBindedAccordion<T extends AccordionTitledPaneBackingBean<R>, R
 	public Model<?> getModel()
 	{
 		return model;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.ludwig.jfxmodel.SupportCombinedAware#afterCombinedBinding()
-	 */
-	@Override
-	public void afterCombinedBinding()
-	{
-		// TODO Auto-generated method stub
-
 	}
 }

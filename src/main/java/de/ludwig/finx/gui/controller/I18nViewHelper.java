@@ -2,7 +2,6 @@ package de.ludwig.finx.gui.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +44,7 @@ public class I18nViewHelper
 		TableColumn<I18nViewRow, String> keyColumn = new TableColumn<>("key");
 		keyColumn.setCellValueFactory(new PropertyValueFactory<I18nViewRow, String>("key"));
 
-		final Set<TableColumn<I18nViewRow, String>> cols = new HashSet<>();
+		final List<TableColumn<I18nViewRow, String>> cols = new ArrayList<>();
 		cols.add(keyColumn);
 
 		final Set<Language> existingLanguages = root.getExistingLanguages();

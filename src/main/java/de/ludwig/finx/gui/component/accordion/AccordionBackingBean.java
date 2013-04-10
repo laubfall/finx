@@ -25,7 +25,7 @@ public class AccordionBackingBean<T extends AccordionTitledPaneBackingBean<?>>
 	 */
 	public List<T> getItems()
 	{
-		return items;
+		return items.get();
 	}
 
 	/**

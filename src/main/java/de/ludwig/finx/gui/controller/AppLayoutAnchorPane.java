@@ -73,9 +73,12 @@ public class AppLayoutAnchorPane extends BaseController
 				final WorkingSetBackingBean ws = ev.getSelectedItem();
 				final PropertiesReader pr = new PropertiesReader(ws.getPropDir(), ws.getPostfix(), ws.getPrefix());
 				final RootNode nodeView = pr.createNodeView();
-				// i18nView.getColumns().clear();
-				I18nViewHelper.addColumns(i18nView, nodeView);
+
 				final ObservableList<I18nViewRow> viewData = I18nViewHelper.createViewData(nodeView);
+				if (viewData.isEmpty() == false) {
+					I18nViewHelper.addColumns(i18nView, nodeView);
+				}
+
 				i18nView.getItems().clear();
 				i18nView.itemsProperty().set(viewData);
 			}
@@ -108,7 +111,7 @@ public class AppLayoutAnchorPane extends BaseController
 		final ProjectListPaneBackingBean projectList = model.getModelObject().getProjectOverviewPaneController();
 
 		List<AccordionTitledPaneBackingBean<ProjectBackingBean>> items = projectList.getProjectsView2().getItems();
-		LOG.debug(String.format("saving %n projects due to gui event", items.size()));
+		LOG.debug(String.format("saving %d projects due to gui event", items.size()));
 		for (final AccordionTitledPaneBackingBean<ProjectBackingBean> projBackingBean : items) {
 			final ProjectBackingBean pbb = projBackingBean.getTitledPaneContentModelObject();
 			final Project project = pbb.convert();

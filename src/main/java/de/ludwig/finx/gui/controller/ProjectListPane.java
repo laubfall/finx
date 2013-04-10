@@ -62,6 +62,15 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 
 		projectListContent.getChildren().add(projectsView2);
 
+		projectsView2.expandedPaneProperty().addListener(new ChangeListener<TitledPane>() {
+			@Override
+			public void changed(ObservableValue<? extends TitledPane> observable, TitledPane oldValue,
+					TitledPane newValue)
+			{
+
+			}
+		});
+
 		model.bind();
 	}
 
@@ -75,8 +84,13 @@ public class ProjectListPane implements Initializable, SupportCombinedAware
 			{
 				if (newValue) {
 					final ProjectWizardBackingBean modelObject = pw.modelObject();
-					projectsView2.getItems().add(
-							new AccordionTitledPaneBackingBean<ProjectBackingBean>(modelObject.convert()));
+
+					// projectsView2.itemsProperty()
+					// strange things happens here. If we add the elements to the bidirectional
+					// binded projectsView2.itemsproperty the model is not updated! Maybe its a bug
+					// in modelfx
+					model.getModelObject().getProjectsView2().getItems()
+							.add(new AccordionTitledPaneBackingBean<ProjectBackingBean>(modelObject.convert()));
 				}
 			}
 		});
